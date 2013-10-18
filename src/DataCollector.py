@@ -2,7 +2,7 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy import API
-import simplejson as json
+import json
 import sys 
 
 class DataCollector(StreamListener):
@@ -24,18 +24,14 @@ class DataCollector(StreamListener):
         self.count += 1
         tweet = json.loads(data)
 
-        encoder = json.JSONEncoder()
-
-        # Keeping useful data
-        payload = "{"
-        payload += "'id': '" + str(tweet['id']) + "',"
-        # to get the real posted time, we can use the user time zone
-        payload += "'created_at': '" + tweet['created_at'] + "',"
-        payload += "'userid': '" + str(tweet['user']['id']) + "',"
-        payload += "'text':" + encoder.encode(tweet['text']) + ","
-        payload += "'lang': '" + tweet['user']['lang'] + "',"
-        payload += "'geo': " + str(tweet['geo']) + "}\n"
-
+        # Keep the useful informations only
+        payload = {}
+        payload['id'] = tweet['id']
+        payload['created_at'] = tweet['created_at']
+        payload['uid'] = tweet['user']['id']
+        payload['text'] = tweet['text']
+        payload['lang'] = tweet['lang']
+        payload['geo'] = tweet['geo']
 
         # Building progress bar
         percent = float(self.count)/float(self.maxcount)
@@ -52,11 +48,10 @@ class DataCollector(StreamListener):
 
         # Handling the error when the characters are not all in unicode
         try:
-            if self.output_file == None: print payload
+            if self.output_file == None: json.dumps(payload)
             else: 
-                self.f.write(payload)
-                self.f.flush()
-
+                self.f.write(json.dumps(payload))
+                self.f.write("\n")
                 # Printing progress bar
                 sys.stdout.write('\r' + str(self.count) + "/" + str(self.maxcount) + " (" + str(self.count*100/self.maxcount) + "%) " +  progress)
                 sys.stdout.flush()

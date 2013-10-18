@@ -8,13 +8,14 @@ def display_usage(name):
     print "Usage: python " + name + " nb_tweets [output_file]"
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
+    nbargs = len(sys.argv)
+    if nbargs <= 1 or nbargs > 3 : # Wrong usage
         display_usage(sys.argv[0])
-        exit
-    elif len(sys.argv) == 2:
+        exit()
+    elif nbargs == 2: # Output collect to stdout
         nbtweets = int(sys.argv[1])
         c = DataCollector(maxcount = nbtweets)
-    elif len(sys.argv) == 3:
+    else: # Output collect in a file
         nbtweets = int(sys.argv[1])
         c = DataCollector(maxcount=nbtweets, output_file=sys.argv[2])
 
@@ -28,6 +29,7 @@ if __name__ == '__main__':
     access_token = settings['access_token']
     access_token_secret = settings['access_token_secret']
 
+    # Authenticate to the twitter API
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
