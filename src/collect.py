@@ -3,26 +3,22 @@ import sys
 from tweepy import OAuthHandler
 from tweepy import Stream
 import json
+import argparse
 
-def display_usage(name):
-    print "Usage: python " + name + " nb_tweets [output_file]"
+# Initialize the args parser
+parser = argparse.ArgumentParser(description='Collect the tweets related to sport-tracker apps.')
+
+parser.add_argument('-N', type=int, help='number of tweets to collect', metavar="quantity", required=True)
+parser.add_argument('-o', type=str, help='file to output the collected tweets', metavar="output-file")
+parser.add_argument('-s', type=str, help='json file containing the Twitter API key and token', metavar="settings-file", default="settings.json")
 
 if __name__ == '__main__':
-    nbargs = len(sys.argv)
-    if nbargs <= 1 or nbargs > 3 : # Wrong usage
-        display_usage(sys.argv[0])
-        exit()
-    elif nbargs == 2: # Output collect to stdout
-        nbtweets = int(sys.argv[1])
-        c = DataCollector(maxcount = nbtweets)
-    else: # Output collect in a file
-        nbtweets = int(sys.argv[1])
-        c = DataCollector(maxcount=nbtweets, output_file=sys.argv[2])
+    args = parser.parse_args()
+
+    c = DataCollector(maxcount=args.N, output_file=args.o)
 
     # Parsing settings file to get the developer key, secret and token.
-    json_file = open('settings.json')
-    settings = json.load(json_file)
-    json_file.close()
+    settings = json.load(open(args.s))
 
     consumer_key = settings['consumer_key']
     consumer_secret = settings['consumer_secret']

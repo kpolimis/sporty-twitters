@@ -48,7 +48,7 @@ class DataCollector(StreamListener):
 
         # Handling the error when the characters are not all in unicode
         try:
-            if self.output_file == None: json.dumps(payload)
+            if self.output_file == None: print json.dumps(payload)
             else: 
                 self.f.write(json.dumps(payload))
                 self.f.write("\n")
