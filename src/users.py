@@ -1,14 +1,12 @@
 import json
 import sys 
-import os
+import argparse
 
-def display_usage(name):
-    print "Usage: python " + name + " input_file [output_file]"
+# Initialize the args parser
+parser = argparse.ArgumentParser(description='Create a list of unique users from a dataset of tweets')
 
-def ensure_dir(f):
-    d = os.path.dirname(f)
-    if not os.path.exists(d):
-        os.makedirs(d)
+parser.add_argument('-i', type=str, help='file containing the tweets that need to be filtered', metavar="input-file", required=True)
+parser.add_argument('-o', type=str, help='file to output the filtered tweets', metavar="output-file")
 
 def collect_users(input_file, output=None):
     """Collect the unique users and store them into a file with the number of their tweets"""
@@ -24,22 +22,12 @@ def collect_users(input_file, output=None):
             else:
                 users[uid] = 1
     if output != None:
-        for u in sorted(set(users.keys())):
-            line = str(u) + "," + str(users[u]) + "\n"
-            out.write(line)
-        out.close()
+        out.write(json.dumps(users))
     else:
-        for u in sorted(set(users.keys())):
-            print str(u) + "," + str(users[u])
+        print json.dumps(users)
     return users
 
 if __name__ == "__main__":
-    nbargs = len(sys.argv)
-    if nbargs <= 1 or nbargs > 3: # Wrong usage
-        display_usage(sys.argv[0])
-        exit()
-    elif nbargs == 2:
-        users = collect_users(sys.argv[1])
-    else:
-        users = collect_users(sys.argv[1], sys.argv[2])
+    args = parser.parse_args()
+    collect_users(args.i, args.o)
         

@@ -2,19 +2,21 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy import API
+from ProgressBar import ProgressBar
 import json
-import sys 
 
 class DataCollector(StreamListener):
     count = 0
     maxcount = 0
     output_file = None
     f = None
+    bar = None
 
     def __init__(self, api=None, maxcount=10, output_file=None):
         super(DataCollector, self).__init__(api)
         self.maxcount = maxcount
         self.output_file = output_file
+        self.bar = ProgressBar(size=30)
 
     def on_data(self, data):
         # Opening the file for the first and only time
@@ -33,19 +35,6 @@ class DataCollector(StreamListener):
         payload['lang'] = tweet['lang']
         payload['geo'] = tweet['geo']
 
-        # Building progress bar
-        percent = float(self.count)/float(self.maxcount)
-        progress = "["
-        barsize = 20
-        for i in range(0,barsize-1):
-            step = 1./float(barsize)
-            if percent-step >= step:
-                progress += "="
-            elif percent-step < 0:
-                progress += " "
-            percent -= step
-        progress += "]"
-
         # Handling the error when the characters are not all in unicode
         try:
             if self.output_file == None: print json.dumps(payload)
@@ -53,8 +42,7 @@ class DataCollector(StreamListener):
                 self.f.write(json.dumps(payload))
                 self.f.write("\n")
                 # Printing progress bar
-                sys.stdout.write('\r' + str(self.count) + "/" + str(self.maxcount) + " (" + str(self.count*100/self.maxcount) + "%) " +  progress)
-                sys.stdout.flush()
+                self.bar.update(float(self.count)/float(self.maxcount))
         except UnicodeEncodeError:
             self.count -= 1
             return

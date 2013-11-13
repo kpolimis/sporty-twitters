@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Filter the tweets stored in a file
 parser.add_argument('-k', type=str, help='json file containing the keywords to filter', metavar="keyword-file", required=True)
 parser.add_argument('-i', type=str, help='file containing the tweets that need to be filtered', metavar="input-file", required=True)
 parser.add_argument('-o', type=str, help='file to output the filtered tweets', metavar="output-file")
-parser.add_argument('-act', choices=['keep', 'remove'], default='keep')
+parser.add_argument('-act', choices=['keep', 'remove'], default='keep', help='Action to do : keep the found tweets or remove them')
 
 def filter_contains(input_file, keywords_file, output=None, rm=False):
     """Filter the data in the input_file. Keep (or delete if the rm flag is True) the tweets that contains the elements in a given list of keywords stored in a json file. If an output file is given, then the tweets are saved in it. Otherwise, it is printed in the standard output."""
