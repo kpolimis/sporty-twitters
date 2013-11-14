@@ -52,15 +52,14 @@ if __name__ == "__main__":
 			restricted_users.append(u)
 	users = restricted_users
 
-	print users
 	bar = ProgressBar(30)
 	max_users = len(users)
 	actual = 0
 
 	for u in users:
-		#print actual, max_users
 		u = int(u)
 		actual += 1
+		bar.update(float(actual)/float(max_users))
 		user_directory = "./" + args.d + "/" + str(u)
 		ensure_dir(user_directory)
 		try:
@@ -80,7 +79,11 @@ if __name__ == "__main__":
 				friends_file.close()
 		except UnicodeEncodeError:
 			continue
-		except tweepy.error.TweepError:
+		except tweepy.error.TweepError, e:
+			# Handle TweepError correctly
+			print e.code
+			if e[0] == 88:
+				print e[0][0] + "\n" + "Waiting 1 minute to continue."
+				time.sleep(60)
 			# user tweets are not public, delete his folder
 			continue
-		bar.update(float(actual)/float(max_users))

@@ -21,7 +21,8 @@ class ProgressBar:
 			elif diff < 0:
 				progress += " "
 			percent = diff
-		progress += "] " + str(self.percent*100) + "%"
+		percent = self.percent*100
+		progress += "] " + str("%.2f" % percent) + "%"
 		sys.stdout.write(progress)
 		sys.stdout.flush()
 		return progress

@@ -1,6 +1,7 @@
 import json
 import sys 
 import argparse
+from ProgressBar import ProgressBar
 
 # Initialize the args parser
 parser = argparse.ArgumentParser(description='Create a list of unique users from a dataset of tweets')
@@ -13,14 +14,24 @@ def collect_users(input_file, output=None):
     if output != None:
         out = open(output, 'w')
     users = {} # dictionary of all the users
+    nb_lines = 0
     with open(input_file) as f:
         for line in f:
+            nb_lines += 1
+            pass
+    lineno = 0
+    bar = ProgressBar(30)
+
+    with open(input_file) as f:
+        for line in f:
+            lineno += 1
             tweet = json.loads(line)
             uid = tweet['uid']
             if uid in users.keys():
                 users[uid] += 1
             else:
                 users[uid] = 1
+            bar.update(float(lineno)/float(nb_lines))
     if output != None:
         out.write(json.dumps(users))
     else:
