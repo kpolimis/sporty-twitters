@@ -31,4 +31,4 @@ if __name__ == '__main__':
     stream = Stream(auth, c)
 
     # Start to collect tweets
-    stream.filter(track=['runkeeper,nikeplus,runtastic,endomondo,facebook'], languages=['en', 'en_EN', 'en_GB', 'en_US', 'en_CA', None])
+    stream.filter(track=['runkeeper,nikeplus,runtastic,endomondo'], languages=['en', 'en_EN', 'en_GB', 'en_US', 'en_CA', None])
