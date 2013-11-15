@@ -5,6 +5,7 @@ import time
 import os
 import sys
 from ProgressBar import ProgressBar
+import shutil
 
 def ensure_dir(directory):
 	if not os.path.exists(directory):
@@ -55,35 +56,50 @@ if __name__ == "__main__":
 	bar = ProgressBar(30)
 	max_users = len(users)
 	actual = 0
+	sleeptime = 1
 
-	for u in users:
-		u = int(u)
+	while users:
+		u = int(users[0])
 		actual += 1
 		bar.update(float(actual)/float(max_users))
 		user_directory = "./" + args.d + "/" + str(u)
 		ensure_dir(user_directory)
 		try:
 			if args.act == 'tweets' or args.act == 'both':
-				tweets_file = open(user_directory + "/tweets.json", "w")
+				tweets_file = open(user_directory + "/tweets", "w")
 				for tweet in tweepy.Cursor(api.user_timeline, id=u).items(args.N):
-					tweets_file.write(tweet.text + "\n")
+					try:
+						tweets_file.write(tweet.text + "\n")
+					except UnicodeEncodeError:
+						pass
 				tweets_file.close()
 			if args.act == 'friends' or args.act == 'both':
-				friends_file = open(user_directory + "/friends.json", "w")
+				friends_file = open(user_directory + "/friends", "w")
 				user = api.get_user(id=u)
 				friends = api.friends_ids(id=user.id)
 				followers = api.followers_ids(id=user.id)
+				if len(friends) > 1000 or len(followers) > 1000:
+					shutil.rmtree(user_directory)
+					del users[0]
+					continue
 				for userid in friends:
 					if userid in followers:
 						friends_file.write(str(userid) + "\n")
 				friends_file.close()
-		except UnicodeEncodeError:
-			continue
+			del users[0]
 		except tweepy.error.TweepError, e:
-			# Handle TweepError correctly
-			print e.code
-			if e[0] == 88:
-				print e[0][0] + "\n" + "Waiting 1 minute to continue."
-				time.sleep(60)
-			# user tweets are not public, delete his folder
-			continue
+			# Getting the code of the exception
+			exc = json.loads(e.__str__().replace("'", '"').replace('u"', '"'))
+			code = exc[0]['code']
+			if code == 88:
+				print
+				print "Error while processing user " + str(u)
+				print exc[0]['message'] + ". Waiting " + str(sleeptime) + " minute(s) to continue."
+				time.sleep(60*max(5,sleeptime))
+				sleeptime *= 2
+				actual -= 1
+				continue
+		except Exception, e:
+			print e
+			pass
+		sleeptime = 1

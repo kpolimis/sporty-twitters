@@ -1,6 +1,7 @@
 import sys 
 import argparse
 import json
+from ProgressBar import ProgressBar
 
 # Initialize the args parser
 parser = argparse.ArgumentParser(description='Filter the tweets stored in a file given a list of keywords.')
@@ -21,9 +22,18 @@ def filter_contains(input_file, keywords_file, output=None, rm=False):
     result=""
 
     keywords = json.load(open(keywords_file))
+    
+    nb_lines = 0
+    with open(input_file) as f:
+        for line in f:
+            nb_lines += 1
+            pass
+    lineno = 0
+    bar = ProgressBar(30)
 
     with open(input_file) as f:
         for line in f:
+            lineno += 1
             find = False
             write = False
             for word in keywords:
@@ -43,6 +53,7 @@ def filter_contains(input_file, keywords_file, output=None, rm=False):
                 sys.stdout.flush()
             elif write and not in_std_output:
                 out.write(line)
+            bar.update(float(lineno)/float(nb_lines))
 
     if not in_std_output:
         out.close()

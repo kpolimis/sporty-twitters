@@ -58,4 +58,4 @@ class DataCollector(StreamListener):
             return False
 
     def on_error(self, status):
-        print "Error " + status
+        print "Error " + str(status)
