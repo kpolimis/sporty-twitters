@@ -42,50 +42,59 @@ if __name__ == "__main__":
 	# Ensure that the directory where we want to store the user tweets and friends exists.
 	ensure_dir("./"+args.d)
 
-	# Load the list of known users
+	# Load the list of known users and sort them by id
 	users = json.load(open(args.i))
 	users = sorted(users, key=int)
 
-	restricted_users = []
-	for u in users:
-		u = int(u)
-		if (args.lb == -1 or u > args.lb) and (args.ub == -1 or u < args.ub):
-			restricted_users.append(u)
-	users = restricted_users
+	# list of users between lb and ub
+	in_bounds_users = filter(lambda u : (args.lb == -1 or int(u) > args.lb) and (args.ub == -1 or int(u) < args.ub))
+
+	users = in_bounds_users
 
 	bar = ProgressBar(30)
 	max_users = len(users)
 	actual = 0
 	sleeptime = 1
 
+	# While there is at least one unprocessed user
 	while users:
-		u = int(users[0])
-		actual += 1
-		bar.update(float(actual)/float(max_users))
+		u = int(users[0]) # get the next user to be processed
+
+		# create user_directory to store the list of tweets and/or the list of friends
 		user_directory = "./" + args.d + "/" + str(u)
 		ensure_dir(user_directory)
+
 		try:
+			# Getting the last tweets
 			if args.act == 'tweets' or args.act == 'both':
-				tweets_file = open(user_directory + "/tweets", "w")
-				for tweet in tweepy.Cursor(api.user_timeline, id=u).items(args.N):
-					try:
-						tweets_file.write(tweet.text + "\n")
-					except UnicodeEncodeError:
-						pass
-				tweets_file.close()
+				with open(user_directory + "/tweets", "w") as tweets_file:
+					# use the twitter API to get the N last tweets from an user timeline
+					for tweet in tweepy.Cursor(api.user_timeline, id=u).items(args.N):
+						try:
+							tweets_file.write(tweet.text + "\n")
+						except UnicodeEncodeError:
+							pass
+
+			# Getting the list of friends
 			if args.act == 'friends' or args.act == 'both':
-				friends_file = open(user_directory + "/friends", "w")
-				user = api.get_user(id=u)
-				friends = api.friends_ids(id=user.id)
-				followers = api.followers_ids(id=user.id)
+				friends = api.friends_ids(id=u)		# get the list of friends
+				followers = api.followers_ids(id=u)	# get the list of followers
+
+				# we remove the user from the dataset if he/she has more than 1000 friends or more than 1000 followers
 				if len(friends) > 1000 or len(followers) > 1000:
 					shutil.rmtree(user_directory)
 					del users[0]
 					continue
-				for userid in friends:
-					if userid in followers:
+
+				# we assume that the actual set of friends is the intersection between twitter "friends" and followers
+				intersect = filter(lambda x : x in friends and x in followers)
+
+				# saving the friends in a file
+				
+				with open(user_directory + "/friends", "w") as friends_file:
+					for userid in intersect:
 						friends_file.write(str(userid) + "\n")
-				friends_file.close()
+
 			del users[0]
 		except tweepy.error.TweepError, e:
 			# Getting the code of the exception
@@ -94,12 +103,14 @@ if __name__ == "__main__":
 			if code == 88:
 				print
 				print "Error while processing user " + str(u)
-				print exc[0]['message'] + ". Waiting " + str(sleeptime) + " minute(s) to continue."
-				time.sleep(60*max(5,sleeptime))
-				sleeptime *= 2
-				actual -= 1
+				print exc[0]['message'] + ". Waiting " + str(sleeptime*15) + " seconds to continue."
+				time.sleep(15*max(4,sleeptime))
+				sleeptime += 1
 				continue
 		except Exception, e:
 			print e
 			pass
+
+		actual += 1
+		bar.update(float(actual)/float(max_users))
 		sleeptime = 1

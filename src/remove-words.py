@@ -20,9 +20,9 @@ def remove_words(input_file, keywords_file, output=None, rmurl=None):
         out = open(output, 'w')
 
     result=""
-
     keywords = json.load(open(keywords_file))
-    
+
+    # initialize progress bar    
     nb_lines = 0
     with open(input_file) as f:
         for line in f:
@@ -33,19 +33,25 @@ def remove_words(input_file, keywords_file, output=None, rmurl=None):
 
     with open(input_file) as f:
         for line in f:
-            lineno += 1
+            lineno += 1 # update progress bar variable
+
+            # remove URLs if asked by user
             if rmurl == 'yes':
                 line = re.sub(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?]))''', '', line)
 
+            # remove undesired words
             words = re.findall(r'\w+', line.lower(),flags = re.UNICODE) 
             important_words = filter(lambda w : w not in keywords, words)
 
+            # output the obtained words in JSON format
             if important_words:
                 if in_std_output:
                     sys.stdout.write(json.dumps(important_words) + "\n")
                     sys.stdout.flush()
                 else:
                     out.write(json.dumps(important_words) + "\n")
+
+            # update the progress bar view
             bar.update(float(lineno)/float(nb_lines))
 
     if not in_std_output:
@@ -54,5 +60,6 @@ def remove_words(input_file, keywords_file, output=None, rmurl=None):
     return result
 
 if  __name__ == "__main__":
+    # parse arguments
     args = parser.parse_args()
     remove_words(args.i, args.k, args.o, args.rmurl)

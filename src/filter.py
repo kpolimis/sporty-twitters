@@ -20,9 +20,9 @@ def filter_contains(input_file, keywords_file, output=None, rm=False):
         out = open(output, 'w')
 
     result=""
-
     keywords = json.load(open(keywords_file))
-    
+
+    # Setting up progress bar
     nb_lines = 0
     with open(input_file) as f:
         for line in f:
@@ -31,28 +31,36 @@ def filter_contains(input_file, keywords_file, output=None, rm=False):
     lineno = 0
     bar = ProgressBar(30)
 
+    # Filtering input_file
     with open(input_file) as f:
         for line in f:
-            lineno += 1
-            find = False
-            write = False
+            lineno += 1     # update progress bar variable
+            find = False    # flag indicating that a keyword has been found
+            write = False   # flag indicating that the line is going to be written
+
             for word in keywords:
-                if line.lower().find(word.lower()) > -1:
+                if line.lower().find(word.lower()) > -1:    # a keyword has been found in the line
                     find = True
                     break
 
-            if not rm and find: 
+            # if the required action is to keep lines with keywords : we write every lines in which a keyword has been found.
+            if not rm and find:
                 write = True
                 result += line
+
+            # if the required action is to remove lines with keywords : we write every lines in which no keyword has been found.
             if rm and not find:
                 write = True
                 result += line
 
+            # saving in the correct output
             if write and in_std_output:
                 sys.stdout.write(line)
                 sys.stdout.flush()
             elif write and not in_std_output:
                 out.write(line)
+
+            # updating progress bar view
             bar.update(float(lineno)/float(nb_lines))
 
     if not in_std_output:
@@ -61,5 +69,6 @@ def filter_contains(input_file, keywords_file, output=None, rm=False):
     return result
 
 if  __name__ == "__main__":
+    # parse arguments
     args = parser.parse_args()
     filter_contains(args.i, args.k, args.o, args.act=='remove')

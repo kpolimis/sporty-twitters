@@ -1,8 +1,10 @@
 import sys
 
 class ProgressBar:
-	size = 20
-	percent = 0
+	"""Create a simple progress bar in ASCII"""
+
+	size = 20	# lenght of the progress bar
+	percent = 0	# filled percentage of the progress bar
 
 	def __init__(self, size=None, percent=None):
 		if size != None:
@@ -14,6 +16,7 @@ class ProgressBar:
 		progress = "\r["
 		step = 1./float(self.size)
 		percent = self.percent
+		
 		for i in range(0,self.size-1):
 			diff = percent-step
 			if diff >= step:
