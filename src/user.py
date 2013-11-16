@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	users = sorted(users, key=int)
 
 	# list of users between lb and ub
-	in_bounds_users = filter(lambda u : (args.lb == -1 or int(u) > args.lb) and (args.ub == -1 or int(u) < args.ub))
+	in_bounds_users = filter(lambda u : (args.lb == -1 or int(u) > args.lb) and (args.ub == -1 or int(u) < args.ub), users)
 
 	users = in_bounds_users
 
@@ -58,6 +58,7 @@ if __name__ == "__main__":
 
 	# While there is at least one unprocessed user
 	while users:
+		bar.update(float(actual)/float(max_users))
 		u = int(users[0]) # get the next user to be processed
 
 		# create user_directory to store the list of tweets and/or the list of friends
@@ -87,10 +88,9 @@ if __name__ == "__main__":
 					continue
 
 				# we assume that the actual set of friends is the intersection between twitter "friends" and followers
-				intersect = filter(lambda x : x in friends and x in followers)
+				intersect = filter(lambda x : x in followers, friends)
 
 				# saving the friends in a file
-				
 				with open(user_directory + "/friends", "w") as friends_file:
 					for userid in intersect:
 						friends_file.write(str(userid) + "\n")
@@ -101,9 +101,9 @@ if __name__ == "__main__":
 			exc = json.loads(e.__str__().replace("'", '"').replace('u"', '"'))
 			code = exc[0]['code']
 			if code == 88:
-				print
-				print "Error while processing user " + str(u)
-				print exc[0]['message'] + ". Waiting " + str(sleeptime*15) + " seconds to continue."
+				sys.stdout.write("\nError while processing user " + str(u))
+				sys.stdout.write(exc[0]['message'] + ". Waiting " + str(sleeptime*15) + " seconds to continue.")
+				sys.stdout.flush()
 				time.sleep(15*max(4,sleeptime))
 				sleeptime += 1
 				continue
@@ -112,5 +112,4 @@ if __name__ == "__main__":
 			pass
 
 		actual += 1
-		bar.update(float(actual)/float(max_users))
 		sleeptime = 1
