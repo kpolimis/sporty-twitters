@@ -39,6 +39,6 @@ if __name__ == "__main__":
 	classifier = nltk.NaiveBayesClassifier.train(training_set)
 	print "Training time: ", time.time() - start_time, "seconds"
 
-	with open("dump_classifier", "w") as f:
+	with open(args.o, "w") as f:
 		pickle.dump(classifier,f)
-	print classifier.show_most_informative_features(50)
+	#print classifier.show_most_informative_features(50)
