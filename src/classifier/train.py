@@ -25,7 +25,7 @@ if __name__ == "__main__":
 	training_set = nltk.classify.apply_features(extract_features, tweets)
 
 	start_time = time.time()
-	print "Start training classifier (" + args.type + ")"
+	print "Start training classifier (" + args.type + ") on training set of size " + str(len(training_set))
 
 	if args.type == 'bayes':
 		classifier = nltk.NaiveBayesClassifier.train(training_set)
