@@ -3,8 +3,6 @@ import json
 import argparse
 import re
 from ProgressBar import ProgressBar
-from nltk.collocations import BigramCollocationFinder
-from nltk.metrics import BigramAssocMeasures
 
 # Initialize the args parser
 parser = argparse.ArgumentParser(description='Filter the tweets stored in a file given a list of keywords.')
@@ -12,9 +10,8 @@ parser = argparse.ArgumentParser(description='Filter the tweets stored in a file
 parser.add_argument('-i', type=str, help='CSV file containing the training data', metavar="input-file", required=True)
 parser.add_argument('-o', type=str, help='file to output the training data in nltk format', metavar="output-file")
 parser.add_argument('-k', type=str, help='file containing the words to remove (eg. list of stopwords)', metavar='keywords-file')
-parser.add_argument('-bigrams', choices=['yes','no'], help='flag which value is yes if you want to user bigrams in your features', default='no')
 
-def line2feat(line, keywords, bigrams = False):
+def line2feat(line, keywords):
 	"""Transform a entry from the cvs file into a vector of features"""
 	text = line[5]
 	label = line[0]
@@ -22,17 +19,10 @@ def line2feat(line, keywords, bigrams = False):
 	words = re.findall(r'\w+', text.lower())
 	important_words = filter(lambda w : w not in keywords and len(str(w)) > 2, words)
 
-	if bigrams:
-		score_fn=BigramAssocMeasures.chi_sq
-		n=200
-		bigram_finder = BigramCollocationFinder.from_words(important_words)
-		bigrams = bigram_finder.nbest(score_fn, n)
-		important_words += bigrams
-
 	feature = (important_words, label)
 	return feature
 
-def csv2nltk(input_file, output_file = None, keywords_file = None, bigrams = False):
+def csv2nltk(input_file, output_file = None, keywords_file = None):
 	"""Function parsing a csv file from Sentiment140 dataset and transform them in the format to be used with a nltk classifier."""
 
 	in_std_output = output_file == None # True if we need to print in stdout, False otherwise
@@ -56,7 +46,7 @@ def csv2nltk(input_file, output_file = None, keywords_file = None, bigrams = Fal
 	    for line in reader:
 	    	lineno += 1
 	    	bar.update(float(lineno)/float(nb_lines))
-	    	features.append(line2feat(line, keywords, bigrams))
+	    	features.append(line2feat(line, keywords))
 
 	if in_std_output:
 		print json.dumps(features)
@@ -68,5 +58,5 @@ def csv2nltk(input_file, output_file = None, keywords_file = None, bigrams = Fal
 if __name__ == "__main__":
     # parse arguments
     args = parser.parse_args()
-    csv2nltk(args.i, args.o, args.k, args.bigrams == 'yes')
+    csv2nltk(args.i, args.o, args.k)
 

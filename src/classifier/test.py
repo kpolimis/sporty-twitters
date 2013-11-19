@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser(description='Test a classifier over a set of da
 
 parser.add_argument('-c', type=str, help='file containing the classifier', metavar="classifier-file", required=True)
 parser.add_argument('-t', type=str, help='file containing the testing data in nltk format', metavar="testing-data")
+parser.add_argument('-cutoff', type=int, help='value that indicates the quantity of features to keep (default: 3000)', default=3000)
 
 def extract_features(document):
 	return {w : True for w in filter(lambda x : x in document, word_features)}
@@ -18,7 +19,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	tweets = json.load(open(args.t))
-	word_features = features.tweets2features(tweets)
+	word_features = features.tweets2features(tweets, args.cutoff)
 	testing_set = nltk.classify.apply_features(extract_features, tweets)
 
 	with open(args.c) as f:
