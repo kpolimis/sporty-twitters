@@ -12,20 +12,18 @@ def get_bigrams_in_tweets(tweets):
 		all_bigrams.extend(nltk.bigrams(words))
 	return all_bigrams
 
-def tweets2features(tweets, bigrams=False, cutoff=3000, split=0.9):
-	features = {'unigrams':[], 'bigrams':[]}
-	cutoff_unigrams = cutoff*split
-	cutoff_bigrams = cutoff-cutoff_unigrams
+def tweets2features(tweets, bigrams=False, cutoff=3000, split=0.1):
+	cutoff_unigrams = int(cutoff*split)
+	cutoff_bigrams = int(cutoff-cutoff_unigrams)
 
 	# Getting unigrams
-	worldist = get_words_in_tweets(tweets)
+	wordlist = get_words_in_tweets(tweets)
 	wordlist = nltk.FreqDist(wordlist)
-	features['unigrams'] = wordlist.keys()[:cutoff_unigrams]
+	unigram_feats = wordlist.keys()[:cutoff_unigrams]
 
 	# Getting bigrams
 	bigramslist = get_bigrams_in_tweets(tweets)
 	bigramslist = nltk.FreqDist(bigramslist)
-	features['bigrams'] = bigramslist.keys()[:cutoff_bigrams]
+	bigram_feats = bigramslist.keys()[:cutoff_bigrams]
 
-	return features
-
+	return unigram_feats + bigram_feats

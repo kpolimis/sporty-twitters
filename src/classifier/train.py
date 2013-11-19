@@ -13,6 +13,7 @@ parser.add_argument('-o', type=str, help='file to output the classifier', metava
 parser.add_argument('-cutoff', type=int, help='value that indicates the quantity of features to keep (default: 3000)', default=3000)
 
 def extract_features(document):
+	document = document + nltk.bigrams(document)
 	return {w : True for w in filter(lambda x : x in document, word_features)}
 
 if __name__ == "__main__":
