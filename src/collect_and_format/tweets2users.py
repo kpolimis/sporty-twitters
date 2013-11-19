@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description='Create a list of unique users from
 parser.add_argument('-i', type=str, help='file containing the tweets that need to be filtered', metavar="input-file", required=True)
 parser.add_argument('-o', type=str, help='file to output the filtered tweets', metavar="output-file")
 
-def collect_users(input_file, output=None):
+def tweets2users(input_file, output=None):
     """Collect the unique users and store them into a file with the number of their tweets"""
     if output != None:
         out = open(output, 'w')
@@ -40,5 +40,5 @@ def collect_users(input_file, output=None):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    collect_users(args.i, args.o)
+    tweets2users(args.i, args.o)
         

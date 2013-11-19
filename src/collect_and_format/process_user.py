@@ -101,15 +101,11 @@ if __name__ == "__main__":
 			exc = json.loads(e.__str__().replace("'", '"').replace('u"', '"'))
 			code = exc[0]['code']
 			if code == 88:
-				sys.stdout.write("\nError while processing user " + str(u))
-				sys.stdout.write(exc[0]['message'] + ". Waiting " + str(sleeptime*15) + " seconds to continue.")
+				sys.stdout.write("\nError while processing user " + str(u) + "\n")
+				sys.stdout.write(exc[0]['message'] + ". Waiting " + str(max(4,sleeptime)*15) + " seconds to continue.\n")
 				sys.stdout.flush()
 				time.sleep(15*max(4,sleeptime))
 				sleeptime += 1
 				continue
-		except Exception, e:
-			print e
-			pass
-
 		actual += 1
 		sleeptime = 1

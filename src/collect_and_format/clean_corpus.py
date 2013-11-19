@@ -5,14 +5,14 @@ from ProgressBar import ProgressBar
 import re
 
 # Initialize the args parser
-parser = argparse.ArgumentParser(description='Remove a list of words from a corpus')
+parser = argparse.ArgumentParser(description='Clean a corpus from a list of words.')
 
 parser.add_argument('-k', type=str, help='json file containing the keywords to remove', metavar="keyword-file", required=True)
 parser.add_argument('-i', type=str, help='file containing the tweets that need to be filtered', metavar="input-file", required=True)
 parser.add_argument('-o', type=str, help='file to output the filtered tweets', metavar="output-file")
 parser.add_argument('-rmurl', type=str, choices=['yes','no'], help='flag that indicates if the URLs need to be removed from the corpus', default='no')
 
-def remove_words(input_file, keywords_file, output=None, rmurl=None):
+def clean_corpus(input_file, keywords_file, output=None, rmurl=None):
 
     in_std_output = output == None # True if we need to print in stdout, False otherwise
 
@@ -62,4 +62,4 @@ def remove_words(input_file, keywords_file, output=None, rmurl=None):
 if  __name__ == "__main__":
     # parse arguments
     args = parser.parse_args()
-    remove_words(args.i, args.k, args.o, args.rmurl)
+    clean_corpus(args.i, args.k, args.o, args.rmurl)
