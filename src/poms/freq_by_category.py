@@ -7,7 +7,7 @@ from collections import defaultdict
 from utils import loadPOMS
 
 MIN_APPEARANCES    = 100
-WORDS_PER_CATEGORY = 10
+WORDS_PER_CATEGORY = 100
 
 parser = argparse.ArgumentParser()
 parser.add_argument("poms_file", type=str)
@@ -34,19 +34,22 @@ if __name__ == "__main__":
         categories = [args.category]
 
     tfidf = {c : dict() for c in categories}
+    categories_freq = {c : dict() for c in categories}
+
     for cat in categories:
         cat_freq = defaultdict(int)
         for poms_word in poms[cat]:
             coocurrences = freq_results[poms_word]
             for cooc in coocurrences.keys():
                 cat_freq[cooc] += coocurrences[cooc]
-
+        
+        categories_freq[cat] = cat_freq
         for word in cat_freq.keys():
-            if doc_freq[word] > 30:
+            if doc_freq[word] > 100:
                 tfidf[cat][word] = float(cat_freq[word])/float(doc_freq[word])
 
     for cat in categories:
         sorted_tfidf = sorted(tfidf[cat].keys(), key=tfidf[cat].get, reverse=True)
         print cat + ":"
         for i in range(100):
-            print "\t" + sorted_tfidf[i] + "\t" + str(tfidf[cat][sorted_tfidf[i]])
+            print "\t" + sorted_tfidf[i] + "\t" + str(tfidf[cat][sorted_tfidf[i]]) + "\t" + str(categories_freq[cat][sorted_tfidf[i]]) + "\t" + str(doc_freq[sorted_tfidf[i]])
