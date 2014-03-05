@@ -31,7 +31,7 @@ if __name__ == "__main__":
     if args.category == "all":
         categories = poms.keys()
     else:
-        categories = [args.category]
+        categories = args.category
 
     tfidf = {c : dict() for c in categories}
     categories_freq = {c : dict() for c in categories}
@@ -45,11 +45,11 @@ if __name__ == "__main__":
         
         categories_freq[cat] = cat_freq
         for word in cat_freq.keys():
-            if doc_freq[word] > 100:
+            if doc_freq[word] > MIN_APPEARANCES:
                 tfidf[cat][word] = float(cat_freq[word])/float(doc_freq[word])
 
     for cat in categories:
         sorted_tfidf = sorted(tfidf[cat].keys(), key=tfidf[cat].get, reverse=True)
         print cat + ":"
-        for i in range(100):
+        for i in range(WORDS_PER_CATEGORY):
             print "\t" + sorted_tfidf[i] + "\t" + str(tfidf[cat][sorted_tfidf[i]]) + "\t" + str(categories_freq[cat][sorted_tfidf[i]]) + "\t" + str(doc_freq[sorted_tfidf[i]])
