@@ -1,51 +1,69 @@
 #! /usr/bin/env python
 import argparse
 import json
-import pickle
 import sys
 import re
 from collections import defaultdict
+from collections import Counter
+import numpy as np
+import sys
+import cProfile
 
-def computeWordContextMatrix(input_stream):
-    cur_cid = 1
-    cur_wid = 1
-    w2ctx = defaultdict(list)
-    c2cid = defaultdict(int)
-    cid2c = defaultdict(tuple)
-    w2wid = defaultdict(int)
-    wid2w = defaultdict(str)
-
+def buildContexts(input_stream):
+    contextdict = defaultdict(lambda: defaultdict(int))
+    
+    # sys.stderr.write("Start reading stream and create occurrences matrix...\n")
+    # sys.stderr.flush()
+    num_tweets = 1
     for tweet in input_stream:
+        # if num_tweets%1000 == 0:
+        #     sys.stderr.write("tweet " + str(num_tweets) + "\r")
+        #     sys.stderr.flush()
+        # num_tweets += 1
         words = re.split("\s+", tweet[:-1])
+        words = [x for x in words if x] # remove empty words
+
+        target = 0
         for w in words:
-            ctx = tuple(x for x in words if x != w)
-            cid = c2cid[ctx]
-            wid = w2wid[str(w)]
-            if cid == 0:
-                cid = c2cid[ctx] = cur_cid
-                cur_cid += 1
-            if wid == 0:
-                wid = w2wid[w] = cur_wid
-                cur_wid += 1
-            wid2w[wid] = str(w)
-            cid2c[cid] = ctx
-            w2ctx[wid].append(cid)
-    return w2ctx, c2cid, cid2c, w2wid, wid2w
+            w_dic = contextdict[w]
+            i = 0
+            for i in range(0, target):
+                entry = words[i] + "@" + str(i-target)
+                w_dic[entry] += 1
+            for i in range(target+1, len(words)):
+                entry = words[i] + "@" + str(i-target)
+                w_dic[entry] += 1
+            target += 1
+
+    # sys.stderr.write("\nDone...\n")
+    # sys.stderr.flush()
+    return contextdict
+    # counts = dict()
+    # num_words = 1.
+    # tot = float(len(contextdict.keys()))
+    # for word in contextdict.keys():
+    #     percentage = num_words*100./tot
+    #     sys.stderr.write(str(int(percentage)) + "% done\r")
+    #     num_words += 1
+    #     counts[word] = Counter(contextdict[word])
+
+    # sys.stderr.write("\nDone...\n")
+    # return counts
 
 if __name__ == "__main__":
-    w2ctx, c2cid, cid2c, w2wid, wid2w = computeWordContextMatrix(sys.stdin)
-    with open("w2ctx.pickle", "w") as f:
-        f.write(pickle.dumps(w2ctx))
-             
-    # with open("c2cid.pickle", "w") as f:
-    #     f.write(pickle.dumps(c2cid))
+    contexts = cProfile.run("buildContexts(sys.stdin)")
+    # sys.stderr.write("Saving to JSON format...\n")
+    # sys.stdout.write(json.dumps(contexts))
+    # sys.stderr.write("Done\n")
+    
+    # # l = len(contexts)
+    # similarityMatrix = [[0.]*l]*l
 
-    with open("cid2c.pickle", "w") as f:
-        f.write(pickle.dumps(cid2c))
+    # i = 0
+    # for k1 in contexts.keys():
+    #     j = 0
+    #     for k2 in contexts.keys():
+    #         similarityMatrix[i][j] = computeSimilarity(k1, k2, contexts)
+    #         j += 1
 
-    with open("w2wid.pickle", "w") as f:
-        f.write(pickle.dumps(w2wid))
-
-    with open("wid2w.pickle", "w") as f:
-        f.write(pickle.dumps(wid2w))
-
+    # sys.stdout.write(json.dumps(similarityMatrix))
