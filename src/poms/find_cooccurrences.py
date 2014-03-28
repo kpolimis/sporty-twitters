@@ -4,7 +4,7 @@ import json
 import sys
 import re
 from collections import defaultdict
-from utils import loadPOMS
+from utils.loadPOMS import loadPOMS
 
 parser = argparse.ArgumentParser()
 parser.add_argument("poms_file", type=str)

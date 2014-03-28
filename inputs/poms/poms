@@ -1,6 +1,6 @@
 TA	tense	2
 TA	shaky	10
-TA	on edge	16
+TA	on_edge	16
 TA	panicky	20
 TA	relaxed	-22
 TA	uneasy	26
@@ -33,13 +33,13 @@ AH	ready to fight	42
 AH	rebellious	47
 AH	deceived	52
 AH	furious	53
-AH	bad tempered	57
+AH	bad_tempered	57
 VA	lively	7
 VA	active	15
 VA	energetic	19
 VA	cheerful	38
 VA	alert	51
-VA	full of pep	56
+VA	full_of_pep	56
 VA	carefree	60
 VA	vigorous	63
 FI	worn out	4
@@ -50,16 +50,16 @@ FI	sluggish	46
 FI	weary	49
 FI	bushed	65
 CB	confused	8
-CB	unable to concentrate	28
+CB	unable_to_concentrate	28
 CB	muddled	  37
 CB	bewildered	50
 CB	efficient	-54
 CB	forgetful	59
-CB	uncertain about things	64
+CB	uncertain_about_things	64
 F	sympathetic
 F	trusting
 F	considerate
 F	good natured
 F	helpful
 F	friendly
-F	clear headed
+F	clear_headed
