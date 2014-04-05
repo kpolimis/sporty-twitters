@@ -2,3 +2,5 @@
 *
 # Except this file
 !.gitignore
+!poms_extended1M_DD
+!poms_extended1M_TA
