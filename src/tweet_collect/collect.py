@@ -32,9 +32,9 @@ def collect(api, output=sys.stdout, limit=-1, track=[]):
 					hashtags = set([h['text'].lower() for h in s['entities']['hashtags']])
 					if not hashtags.intersection(track):
 						select_tweet = False
-			if select_tweet:
-				output.write(json.dumps(s) + "\n")
-				count += 1
+				if select_tweet:
+					output.write(json.dumps(s) + "\n")
+					count += 1
 		except KeyError:
 			continue
 
