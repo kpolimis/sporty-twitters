@@ -1,6 +1,8 @@
 from math import sqrt
 from collections import defaultdict
+import sys
 
+   
 def cosineSimilarity(k1, k2, contexts):
     A = defaultdict(int, contexts[k1])
     B = defaultdict(int, contexts[k2])
@@ -12,6 +14,7 @@ def cosineSimilarity(k1, k2, contexts):
     else:
         M = B
         N = A
+
     normA = sqrt(sum([x**2 for x in A.values()]))
     normB = sqrt(sum([x**2 for x in B.values()]))
 
