@@ -4,7 +4,7 @@ import re
 from collections import defaultdict
 import json
 
-def getTweetsContaining(n, words_file, each_word_n=True, in_stream=sys.stdin, out_stream=sys.stdout):
+def get_tweets_containing(n, words_file, each_word_n=True, in_stream=sys.stdin, out_stream=sys.stdout):
 	words_set = set()
 	words_count = defaultdict(int)
 
@@ -15,15 +15,17 @@ def getTweetsContaining(n, words_file, each_word_n=True, in_stream=sys.stdin, ou
 			words_count[w] = 0
 	count = 0
 	total = 0
+
 	for line in in_stream:
 		total += 1
+
+		# get the tweet and check that words we look for are present in this tweet
 		line_words = set(x.lower() for x in re.split("\s+", line[:-1]))
 		inter = line_words.intersection(words_set)
-		to_remove = set()
-		for w in inter:
-			if words_count[w] >= n:
-				to_remove.add(w)
+
+		to_remove = set(w for w in inter if words_count[w] >= n)
 		words_set -= to_remove
+
 		if inter and not to_remove:
 			out_stream.write(line)
 			count += 1
@@ -41,4 +43,4 @@ if __name__ == "__main__":
 	parser.add_argument("words_file", type=str)
 	args = parser.parse_args()
 
-	getTweetsContaining(args.n, args.words_file)
+	get_tweets_containing(args.n, args.words_file)
