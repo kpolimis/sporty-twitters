@@ -3,9 +3,14 @@ import argparse
 import sys
 import re
 import string
+import codecs
+import json
 
-def clean(in_stream=sys.stdin, out_stream=sys.stdout, stopwords=[], rm_urls=True, rm_mentions=True, rm_punctuation=True):
+def clean(in_stream=sys.stdin, out_stream=sys.stdout, stopwords=[], rm_urls=True, rm_mentions=True, rm_punctuation=True, raw_json=False):
     """Clean a corpus given as an input stream by removing stopwords, URLs, mentions, and punctuation."""
+    out_stream = codecs.getwriter('utf8')(out_stream)
+    exclude = set(string.punctuation)
+
     if stopwords:
         # load stopwords file
         sw_file = open(stopwords, "r");
@@ -19,19 +24,21 @@ def clean(in_stream=sys.stdin, out_stream=sys.stdout, stopwords=[], rm_urls=True
 
     for line in in_stream:
         # put the line in lower case
-        line = line.lower()
+        if raw_json:
+            tw = json.loads(line)
+            line = tw['text'].lower()
+        else:
+            line = line.lower()
 
         if rm_mentions:
-            # remove mentions
             line = re.sub(mentionsregex, '', line) 
 
         if rm_urls:
-            # remove URLs
             line = re.sub(urlregex, '', line) 
         
         if rm_punctuation:
-            # remove punctuation
-            line = line.translate(string.maketrans("",""), string.punctuation)
+            line = ''.join(c for c in line if c not in exclude)
+            #line = line.translate(string.maketrans("",""), string.punctuation)
 
         word = re.split("[\s]+", line)
         word = [x for x in word if x] # remove starting space
@@ -42,6 +49,9 @@ def clean(in_stream=sys.stdin, out_stream=sys.stdout, stopwords=[], rm_urls=True
 
         # write result in the output stream
         if line:
+            if raw_json:
+                tw['text'] = line
+                line = json.dumps(tw) + "\n"
             out_stream.write(line)
 
 """Remove given stopwords, URLs, and punctuation from a corpus of raw tweets."""
@@ -51,7 +61,8 @@ if __name__ == "__main__":
     parser.add_argument("--keep-mentions", dest='rm_mentions', action='store_false')
     parser.add_argument("--keep-urls", dest='rm_urls', action='store_false')
     parser.add_argument("--keep-punctuation", dest='rm_punctuation', action='store_false')
-    parser.set_defaults(rm_mentions=True, rm_stopwords=True, rm_urls=True, rm_punctuation=True)
+    parser.add_argument("--raw-json", "--json", dest='raw_json', action='store_true')
+    parser.set_defaults(rm_mentions=True, rm_stopwords=True, rm_urls=True, rm_punctuation=True, raw_json=False)
     args = parser.parse_args()
 
-    clean(sys.stdin, sys.stdout, args.stopwords, args.rm_mentions, args.rm_urls, args.rm_punctuation)
+    clean(sys.stdin, sys.stdout, args.stopwords, args.rm_mentions, args.rm_urls, args.rm_punctuation, args.raw_json)
