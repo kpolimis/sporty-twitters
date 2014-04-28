@@ -2,7 +2,6 @@ from math import sqrt
 from collections import defaultdict
 import sys
 
-   
 def cosineSimilarity(k1, k2, contexts):
     A = defaultdict(int, contexts[k1])
     B = defaultdict(int, contexts[k2])

@@ -57,4 +57,3 @@ if __name__ == "__main__":
 	
 	api = authenticate(args.settings)
 	collect(tracked_words, count=args.count)
-    #tags2track = ['runkeeper','nikeplus','runtastic','endomondo','mapmyrun','strava','cyclemeter','fitstats','mapmyfitness','runmeter']

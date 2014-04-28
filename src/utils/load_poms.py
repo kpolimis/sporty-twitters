@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 
-def loadPOMS(input_file, key="word", cat=None):
+def load_poms(input_file, key="word", cat=None):
     # load poms words
     poms_file = open(input_file, "r")
     poms = defaultdict(list)
@@ -14,7 +14,7 @@ def loadPOMS(input_file, key="word", cat=None):
                 poms[fields[0]].append(fields[1])
     return poms 
 
-def loadPOMSlegend(input_file):
+def load_poms_legend(input_file):
     poms_file = open(input_file, "r")
     poms_legend = defaultdict(str)
     for line in poms_file:

@@ -1,6 +1,6 @@
 import argparse
 from nltk.corpus import wordnet as wn
-from utils.loadPOMS import loadPOMS
+from utils.load_poms import load_poms
 from collections import defaultdict
 
 parser = argparse.ArgumentParser()
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # load poms words and categories
-    poms = loadPOMS(args.poms_file, "category")
+    poms = load_poms(args.poms_file, "category")
     poms_words = set(poms.keys())
 
     if args.category == "all":

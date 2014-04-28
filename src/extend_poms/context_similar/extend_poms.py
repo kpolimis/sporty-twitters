@@ -5,7 +5,7 @@ import json
 from collections import defaultdict
 from collections import OrderedDict
 from similarity_scores import *
-from utils.loadPOMS import *
+from utils.load_poms import *
 
 def getNMostSimilarTo(words, n, similarityMatrix, debug=False):
     allscores = defaultdict(float)
@@ -51,7 +51,7 @@ def run(poms, poms_legend, n, args_categories, in_stream = sys.stdin, out_stream
     if debug:
         sys.stderr.write("Loading POMS legend...")
         sys.stderr.flush()
-    poms_legend = loadPOMSlegend(poms_legend)
+    poms_legend = load_poms_legend(poms_legend)
     categories = poms_legend.keys()
 
     if args_categories != "all":
@@ -64,7 +64,7 @@ def run(poms, poms_legend, n, args_categories, in_stream = sys.stdin, out_stream
         if debug:
             sys.stderr.write("Loading POMS for category '" + c + "'...")
             sys.stderr.flush()
-        poms_words = loadPOMS(poms, "word", c)
+        poms_words = load_poms(poms, "word", c)
         if debug:
             sys.stderr.write("Done\n")
             sys.stderr.flush()

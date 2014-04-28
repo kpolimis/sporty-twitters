@@ -4,7 +4,7 @@ import json
 import sys
 import re
 from collections import defaultdict
-from utils.loadPOMS import loadPOMS
+from utils.load_poms import load_poms
 
 parser = argparse.ArgumentParser()
 parser.add_argument("poms_file", type=str)
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # load poms words and categories
-    poms = loadPOMS(args.poms_file, "category")
+    poms = load_poms(args.poms_file, "category")
     # load cooccurences results
     freq_results = json.load(open(args.cooccurrences_file, "r"))
 

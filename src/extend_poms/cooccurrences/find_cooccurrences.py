@@ -4,7 +4,7 @@ import json
 import sys
 import re
 from collections import defaultdict
-from utils.loadPOMS import loadPOMS
+from utils.load_poms import load_poms
 
 parser = argparse.ArgumentParser()
 parser.add_argument("poms_file", type=str)
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # load poms words and categories
-    poms = loadPOMS(args.poms_file)
+    poms = load_poms(args.poms_file)
     poms_words = set(poms.keys())
 
     # init the term frequency, category frequency, and document frequency dictionaries
