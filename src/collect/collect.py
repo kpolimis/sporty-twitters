@@ -5,7 +5,6 @@ from collections import defaultdict
 import codecs
 import sys
 
-
 def authenticate(settings_file):
 	settings = json.load(open(settings_file, 'r'))
 
@@ -35,15 +34,23 @@ def collect(tracked_words, output=sys.stdout, count=0, lang=["en-EN", "en", "en-
 	if locations:
 		req_options['locations'] = locations
 
-	r = api.request('statuses/filter', req_options)
-	for item in r.get_iterator():
-		if 'limit' not in item.keys():
-			out.write(json.dumps(item))
-			out.write("\n")
-			out.flush()
-			i += 1
-			if count and i >= count:
-				break
+	while True:
+		try:
+			r = api.request('statuses/filter', req_options)
+			for item in r.get_iterator():
+				if 'limit' not in item.keys():
+					out.write(json.dumps(item))
+					out.write("\n")
+					out.flush()
+					i += 1
+					if count and i >= count:
+						break
+			break
+		except:
+			sys.stderr.write("ChunkedEncodingError\n")
+			continue
+
+
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
