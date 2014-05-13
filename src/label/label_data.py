@@ -5,17 +5,20 @@ import json
 import sys
 
 def ask_label(first_input, incorrect_input, labels):
-	ask = first_input
+	ask = "\n" + first_input
 	while True:
-		l = raw_input(ask)
-		if str(l) == 'q':
-			l = str(l)
-			break
-		elif int(l) in labels:
-			l = int(l)
-			break
-		else:
-			ask = incorrect_input	
+		try:
+			l = raw_input(ask)
+			if str(l) == 'q':
+				l = str(l)
+				break
+			elif int(l) in labels:
+				l = int(l)
+				break
+			else:
+				ask = incorrect_input	
+		except ValueError e:
+			continue
 	return l
 
 def label(labels, input_file, output_file, begin_line=0, raw_json=False):
