@@ -17,7 +17,8 @@ def ask_label(first_input, incorrect_input, labels):
 				break
 			else:
 				ask = incorrect_input	
-		except ValueError e:
+		except ValueError:
+			ask = incorrect_input
 			continue
 	return l
 
