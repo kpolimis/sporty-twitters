@@ -38,7 +38,7 @@ def get_tweets_containing(n, words_file, each_word_n=True, in_stream=sys.stdin, 
 		# case where we output the found tweet: words which count is < n were found in the tweet
 		if inter and not to_remove:
 			if raw_json:
-				out_stream.write(json.dumps(tw))
+				out_stream.write(json.dumps(tw) + "\n")
 				found_tweets.append(tw)
 			else:
 				out_stream.write(line)
