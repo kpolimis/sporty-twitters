@@ -5,7 +5,7 @@ import json
 import sys
 
 def ask_label(first_input, incorrect_input, labels):
-	ask = "\n" + first_input
+	ask = first_input
 	while True:
 		try:
 			l = raw_input(ask)
@@ -30,20 +30,25 @@ def label(labels, input_file, output_file, begin_line=0, raw_json=False):
 	# Force labels to be a set
 	labels = set(labels)
 
-	with open(output_file, "a+") as o:
+	# define the opening mode of the output file given the begin line
+	o_mode = "w"
+	if begin_line != 0:
+		o_mode = "a+"
+	with open(output_file, o_mode) as o:
 		with open(input_file, "r") as i:
 			count = 0
 			for line in i:
-				if raw_json:
-					tw = json.loads(line)
-					line = tw['text']
-
 				# read lines that are before the given beginning line
 				if count < begin_line:
 					count += 1
 					continue
+				if raw_json:
+					tw = json.loads(line)
+					text = tw['text']
+				else:
+					text = line.strip()
 				# show the line and ask the user to choose a label
-				sys.stdout.write(line)
+				sys.stdout.write(text + "\n")
 				l = ask_label(first_input, incorrect_input, labels)
 				if l == 'q':
 					break
@@ -52,7 +57,7 @@ def label(labels, input_file, output_file, begin_line=0, raw_json=False):
 					tw['label'] = l
 					outstr = json.dumps(tw) + "\n"
 				else:
-					outstr = line[:-1] + "\t" + str(l) + "\n"
+					outstr = text + "\t" + str(l) + "\n"
 				# output the line and the label separated by a tab
 				o.write(outstr)
 				o.flush()
