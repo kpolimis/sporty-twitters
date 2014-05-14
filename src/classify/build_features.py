@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import preprocessing
 from collections import defaultdict
 
-def build_features(tweets=sys.stdin, stopwords=[], keep_rt=True, label=False):
+def build_features(tweets=sys.stdin, stopwords=[], keep_rt=True, label=False, binary=False):
 	"""Returns a scaled Vectorizer built from tweets. If the label flag is true, then it also returns the list of labels."""
 	corpus = []
 	labels = []
@@ -26,9 +26,12 @@ def build_features(tweets=sys.stdin, stopwords=[], keep_rt=True, label=False):
 		terms = cc.tokenize(cc.preprocess(text), stopwords)
 		d = defaultdict(int)
 		for t in terms:
-			d[t] += 1	
+			if binary:
+				d[t] = 1	
+			else:
+				d[t] += 1
 
-		# extract the other features (retweet, mentions, hashtags, etc)
+		# extract the other features (mentions, hashtags, etc)
 		entities = tw['entities']
 		if len(entities["user_mentions"]) != 0:
 			d["USER_MENTIONS_NB"] = 1
@@ -46,7 +49,7 @@ def build_features(tweets=sys.stdin, stopwords=[], keep_rt=True, label=False):
 		if label:
 			labels.append(int(tw['label']))
 
-	return corpus, labels
+	return corpus, np.array(labels)
 
 def get_X(corpus, labels=[]):
 	# use the DictVectorizer method to fit the data, avoid sparse vectorizer in
@@ -54,7 +57,11 @@ def get_X(corpus, labels=[]):
 	vectorizer = DictVectorizer(sparse=False)
 	X = vectorizer.fit_transform(corpus)
 	X = preprocessing.scale(X)
-	return X, labels
+
+	# print vectorizer.get_feature_names()
+	# print X
+
+	return X
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -68,4 +75,4 @@ if __name__ == "__main__":
 			sw = set(x.strip() for x in sw_file)
 
 	corpus, labels = build_features(stopwords=sw, keep_rt=args.nort, label=args.labeled)
-	get_X(corpus, labels)
+	X = get_X(corpus, labels)
