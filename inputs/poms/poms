@@ -2,7 +2,6 @@ TA	tense	2
 TA	shaky	10
 TA	on_edge	16
 TA	panicky	20
-TA	relaxed	-22
 TA	uneasy	26
 TA	restless	27
 TA	nervous	34
@@ -29,7 +28,7 @@ AH	spiteful	24
 AH	annoyed	31
 AH	resentful	33
 AH	bitter	39
-AH	ready to fight	42
+AH	ready_to_fight	42
 AH	rebellious	47
 AH	deceived	52
 AH	furious	53
@@ -53,13 +52,12 @@ CB	confused	8
 CB	unable_to_concentrate	28
 CB	muddled	  37
 CB	bewildered	50
-CB	efficient	-54
 CB	forgetful	59
 CB	uncertain_about_things	64
 F	sympathetic
 F	trusting
 F	considerate
-F	good natured
+F	good_natured
 F	helpful
 F	friendly
 F	clear_headed
