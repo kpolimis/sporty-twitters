@@ -31,7 +31,7 @@ class api():
         self.expandVocabulary = self.expandVocabulary(self.vocabulary, self.corpus, n)
         return self.expandVocabulary.expandVocabulary()
 
-    def getFeatures(self, corpus, keep_rt=True, label=False, binary=False):
+    def getFeatures(self, corpus, keep_rt=True, labels=False, binary=False):
         self.corpus = corpus
         self.features = []
         self.labels = []
@@ -68,8 +68,11 @@ class api():
 
             # append to the corpus
             self.features.append(d)
-            if label:
-                self.labels.append(int(tw['label']))
+            if labels:
+                d = {}
+                for l in labels:
+                    d[l] = int(tw[l])
+                self.labels.append(d)
 
         return self.features, np.array(self.labels)
 

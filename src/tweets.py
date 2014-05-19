@@ -9,7 +9,6 @@ class api():
 
     def __init__(self, settings_file=None):
         self.settings_file = settings_file
-        self.settings = settings
         self.twitterapi = False
         self.authenticate()
         self.tweets = []
@@ -96,3 +95,56 @@ class api():
             if count >= n and break_cond:
                 break
         return self.filtered_tweets
+
+    def __ask_label(self, label_name, choices):
+        # Set instructions for user
+        first_input = "Choose " + label_name + " amongst " + str(choices) + " or (q)uit: "
+        choices = set(choices)
+        incorrect_input = "Incorrect input. " + first_input
+        ask = first_input
+        while True:
+            try:
+                l = raw_input(ask)
+                if str(l) == 'q':
+                    l = str(l)
+                    break
+                elif int(l) in choices:
+                    l = int(l)
+                    break
+                else:
+                    ask = incorrect_input   
+            except ValueError:
+                ask = incorrect_input
+                continue
+        return l
+
+    def label(self, labels, output_file, begin_line=0):
+
+        # define the opening mode of the output file given the begin line
+        o_mode = "w"
+        if begin_line != 0:
+            o_mode = "a+"
+        with open(output_file, o_mode) as o:
+            count = 0
+            for tw in self.tweets:
+                print "-"*20
+                # read lines that are before the given beginning line
+                if count < begin_line:
+                    count += 1
+                    continue
+                text = tw['text']
+                # show the line and ask the user to choose a label
+                sys.stdout.write(text + "\n")
+                if type(labels) == list:
+                    labels = {"label": labels}
+
+                for ln in labels:
+                    l = self.__ask_label(ln, labels[ln])
+                    if l == 'q':
+                        return()
+                    tw[ln] = l
+
+                outstr = json.dumps(tw) + "\n"
+                # output the line and the label separated by a tab
+                o.write(outstr)
+                o.flush()
