@@ -8,7 +8,7 @@ import json
 
 class Cleaner():
     """docstring for Cleaner"""
-    def __init__(self, stopwords=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True, raw_json=False, json_out=None):
+    def __init__(self, stopwords=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True, raw_json=False, json_out=False):
         self.stopwords = stopwords
         self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:self.[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^self.\s`()\[\]{};:'"<>?]))''')
         self.mentions_regex = re.compile(r'''(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)''')
@@ -20,10 +20,7 @@ class Cleaner():
         self.rm_punctuation = rm_punctuation
         self.rm_unicode = rm_unicode
         self.raw_json = raw_json
-        if json_out != raw_json:
-            self.json_out = json_out
-        else:
-            self.json_out = raw_json
+        self.json_out = json_out
         self.cleanCorpus = []
 
     def preprocess(self,line):
