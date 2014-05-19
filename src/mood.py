@@ -20,7 +20,7 @@ class api():
     Programming Interface dedicated to the study of the users' mood in the sporty twitters project.
     """
 
-    def __init__(self, expandVocabulary=expand_vocabulary.ContextSimilar, clf=svm.SVC(kernel='linear', C=1)):
+    def __init__(self, expandVocabulary=expand_vocabulary.ContextSimilar, clf=None):
         self.expandVocabulary = expandVocabulary
         self.corpus = []
         self.vocabulary = []
@@ -29,7 +29,8 @@ class api():
         self.vectorizer = None
         self.X = None
         self.tfidf = None
-        self.clf = clf
+        if clf == None:
+            self.clf = svm.SVC(kernel='linear', C=1)
 
     def expandVocabulary(self, vocabulary, corpus, n=20):
         self.vocabulary = vocabulary
@@ -76,14 +77,18 @@ class api():
 
         return self.features, self.labels
 
-    def buildTfidf(self, options):
+    def buildVectorizer(self, vec_type='tfidf', options={}):
         if not self.features:
             print "Error: no features defined yet. Call getFeatures method first."
             return False
-        self.vectorizer = TfidfVectorizer(**options)
-        self.tfidf = self.vectorizer.fit_transform(self.features)
-        self.X = preprocessing.scale(self.tfidf.toarray())
-        return self.X
+        if vec_type == 'tfidf':
+            self.vectorizer = TfidfVectorizer(**options)
+            self.tfidf = self.vectorizer.fit_transform(self.features)
+            self.X = preprocessing.scale(self.tfidf.toarray())
+            return self.X
+        else:
+            print "Error: vectorizer type (" + str(vec_type) + ")not supported yet."
+            return False
 
     def train(self, label="label"):
         # TODO: deal with multiple labels
@@ -98,7 +103,6 @@ class api():
         for label in self.labels[0]:
             print "-"*80
             labels = np.array([d[label] for d in self.labels])
-
             for method in scorings:
                 score = cross_validation.cross_val_score(self.clf, self.X, labels, cv=cv, scoring=method)
                 method_name = 'Average ' + method + ': '

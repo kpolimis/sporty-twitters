@@ -57,10 +57,14 @@ class Cleaner():
         return words
 
     def clean(self, corpus):
-        """Clean a corpus given as an input stream by removing stopwords, URLs, mentions, and punctuation."""
+        """Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation."""
         for line in corpus:
-            if self.raw_json:
-                tw = json.loads(line.strip())
+            if type(line) == str:
+                if self.raw_json:
+                    tw = json.loads(line.strip())
+                    line = tw['text']
+            elif type(line) == dict:
+                tw = line
                 line = tw['text']
             line = self.preprocess(line)
             words = self.tokenize(line)

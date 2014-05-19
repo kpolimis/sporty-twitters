@@ -64,7 +64,7 @@ class api():
                 # sys.stderr.write("ChunkedEncodingError\n")
                 continue
 
-    def filter(n, words, each_word=True, out_stream=sys.stdout):
+    def filter(self, n, words, each_word=True, out_stream=sys.stdout):
         self.filtered_tweets = []
         self.words_filtered = set(words)
 
@@ -118,18 +118,17 @@ class api():
                 continue
         return l
 
-    def label(self, labels, output_file, begin_line=0):
-
+    def label(self, labels, output_file, begin=0):
         # define the opening mode of the output file given the begin line
         o_mode = "w"
-        if begin_line != 0:
+        if begin != 0:
             o_mode = "a+"
         with open(output_file, o_mode) as o:
             count = 0
             for tw in self.tweets:
                 print "-"*20
                 # read lines that are before the given beginning line
-                if count < begin_line:
+                if count < begin:
                     count += 1
                     continue
                 text = tw['text']
