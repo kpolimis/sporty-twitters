@@ -10,7 +10,7 @@ class Cleaner():
     """docstring for Cleaner"""
     def __init__(self, stopwords=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True, raw_json=False, json_out=False):
         self.stopwords = stopwords
-        self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:self.[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^self.\s`()\[\]{};:'"<>?]))''')
+        self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'"<>?]))''')
         self.mentions_regex = re.compile(r'''(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)''')
         self.unicode_regex = re.compile(r'''[^\x00-\x7F]''')
         self.stem_regex = re.compile(r'''([a-zA-Z])\1{2,}''', re.DOTALL)
