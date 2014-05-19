@@ -49,7 +49,7 @@ class api():
 
         while True:
             try:
-                r = twitterapi.request('statuses/filter', req_options)
+                r = self.twitterapi.request('statuses/filter', req_options)
                 for item in r.get_iterator():
                     if 'limit' not in item.keys():
                         self.tweets.append(item)
