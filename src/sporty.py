@@ -8,8 +8,8 @@ class api():
     Main API that centralizes/wraps all the other APIs so that the user does not have to worry 
     about which API instanciate.
     """
-    def __init__(self, settings_file=None):
-        self.tweets = tweets.api(settings_file)
+    def __init__(self, settings_file=None, lazy=False):
+        self.tweets = tweets.api(settings_file, lazy)
         self.mood = mood.api()
 
     # Mood API #

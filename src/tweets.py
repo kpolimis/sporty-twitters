@@ -7,8 +7,10 @@ from collections import defaultdict
 
 class api():
 
-    def __init__(self, settings_file=None):
+    def __init__(self, settings_file=None, lazy=False):
         self.settings_file = settings_file
+        self.lazy = lazy
+        self.tweets_file = None
         self.twitterapi = False
         self.authenticate()
         self.tweets = []
@@ -18,8 +20,9 @@ class api():
 
     def load(self, input_file):
         self.tweets = []
-        with open(input_file, "r") as f:
-            for line in f:
+        self.tweets_file = open(input_file, 'r')
+        if not lazy:
+            for line in self.tweets_file:
                 tw = json.loads(line.strip())
                 self.tweets.append(tw)
         return self.tweets
@@ -52,7 +55,8 @@ class api():
                 r = self.twitterapi.request('statuses/filter', req_options)
                 for item in r.get_iterator():
                     if 'limit' not in item.keys():
-                        self.tweets.append(item)
+                        if not self.lazy:
+                            self.tweets.append(item)
                         out.write(json.dumps(item))
                         out.write("\n")
                         out.flush()
@@ -64,7 +68,16 @@ class api():
                 # sys.stderr.write("ChunkedEncodingError\n")
                 continue
 
-    def filter(self, n, words, each_word=True, out_stream=sys.stdout):
+    def _iter():
+        if self.lazy:
+            data = json.loads(self.tweets_file.readline().strip())
+        else:
+            if "tweet_iter" not in _iter.__dict__:
+                _iter.tweet_iter = iter(self.tweets)
+            data = _iter.tweet_iter.next()
+        yield data
+
+    def filter(self, n, words, each_word=True, out_stream=sys.stdout, from_file=True):
         self.filtered_tweets = []
         self.words_filtered = set(words)
 
@@ -72,7 +85,7 @@ class api():
         count = 0
 
         # Process each tweet
-        for tw in self.tweets:
+        for tw in _iter():
             text = tw['text']
 
             # check that words we look for are present in this tweet
@@ -125,7 +138,7 @@ class api():
             o_mode = "a+"
         with open(output_file, o_mode) as o:
             count = 0
-            for tw in self.tweets:
+            for tw in _iter():
                 print "-"*20
                 # read lines that are before the given beginning line
                 if count < begin:

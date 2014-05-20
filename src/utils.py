@@ -108,3 +108,6 @@ class LSF():
         with open(os.path.abspath(self.input_file), "r") as input_file:
             for line in input_file:
                 self.words.append(line.strip())
+
+    def tolist():
+        return words
