@@ -21,7 +21,7 @@ class api():
     def load(self, input_file):
         self.tweets = []
         self.tweets_file = open(input_file, 'r')
-        if not lazy:
+        if not self.lazy:
             for line in self.tweets_file:
                 tw = json.loads(line.strip())
                 self.tweets.append(tw)
@@ -68,7 +68,7 @@ class api():
                 # sys.stderr.write("ChunkedEncodingError\n")
                 continue
 
-    def _iter():
+    def _iter(self):
         if self.lazy:
             data = json.loads(self.tweets_file.readline().strip())
         else:
@@ -85,7 +85,7 @@ class api():
         count = 0
 
         # Process each tweet
-        for tw in _iter():
+        for tw in self._iter():
             text = tw['text']
 
             # check that words we look for are present in this tweet
@@ -138,7 +138,7 @@ class api():
             o_mode = "a+"
         with open(output_file, o_mode) as o:
             count = 0
-            for tw in _iter():
+            for tw in self._iter():
                 print "-"*20
                 # read lines that are before the given beginning line
                 if count < begin:
