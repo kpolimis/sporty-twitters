@@ -43,9 +43,7 @@ class api():
         self.features = []
         self.labels = []
 
-        for line in self.corpus:
-            # load the raw json and extract the text
-            tw = json.loads(line)
+        for tw in self.corpus:
             # filter on retweets
             if tw['retweeted'] and not keep_rt:
                 continue
@@ -79,7 +77,7 @@ class api():
 
     def buildVectorizer(self, vec_type='tfidf', options={}):
         if not self.features:
-            print "Error: no features defined yet. Call getFeatures method first."
+            print "Error: no features defined yet. Call buildFeatures method first."
             return False
         if vec_type == 'tfidf':
             self.vectorizer = TfidfVectorizer(**options)
@@ -90,17 +88,17 @@ class api():
             print "Error: vectorizer type (" + str(vec_type) + ")not supported yet."
             return False
 
-    def train(self, label="label"):
-        # TODO: deal with multiple labels
-        labels = [d[label] for d in self.labels]
-        self.clf.fit(self.X, labels)
+    def train(self):
+        array_labels = DictVectorizer().fit_transform(self.labels).toarray()
+        self.clf.fit(self.X, array_labels)
 
     def predict(self, X_pred):
         self.clf.predict(X_pred)
 
     def benchmark(self, cv=5, scorings=['accuracy', 'f1', 'precision', 'recall', 'roc_auc']):
-        # TODO: change this method to deal with multiple labels
-        for label in self.labels[0]:
+        for i, label in enumerate(self.labels[0]):
+            print "-"*80
+            print "- label: " + label
             print "-"*80
             labels = np.array([d[label] for d in self.labels])
             for method in scorings:
@@ -109,11 +107,9 @@ class api():
                 score_str = str(score.mean()) + " (+/- " + str(score.std()) + ")"
                 print method_name.ljust(25) + score_str.ljust(20)
 
-        print "-"*80
-        if hasattr(self.clf, 'coef_'):
-            print("Top 10 keywords:")
-            feature_names = np.asarray(self.vectorizer.get_feature_names())
-
-            top10 = np.argsort(self.clf.coef_[0])[-10:]
-            for idx  in top10:
-                print "\t" + feature_names[idx].ljust(15) + str(self.clf.coef_[0][idx]).ljust(10)
+            if hasattr(self.clf, 'coef_'):
+                print("Top 10 keywords:")
+                feature_names = np.asarray(self.vectorizer.get_feature_names())
+                top10 = np.argsort(self.clf.coef_[i])[-10:]
+                for idx  in top10:
+                    print "\t" + feature_names[idx].ljust(15) + str(self.clf.coef_[i][idx]).ljust(10)

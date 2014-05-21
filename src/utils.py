@@ -8,7 +8,7 @@ import json
 
 class Cleaner():
     """docstring for Cleaner"""
-    def __init__(self, stopwords=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True, raw_json=False, json_out=False):
+    def __init__(self, stopwords=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True):
         self.stopwords = stopwords
         self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'"<>?]))''')
         self.mentions_regex = re.compile(r'''(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)''')
@@ -19,95 +19,52 @@ class Cleaner():
         self.rm_mentions = rm_mentions
         self.rm_punctuation = rm_punctuation
         self.rm_unicode = rm_unicode
-        self.raw_json = raw_json
-        self.json_out = json_out
-        self.cleanCorpus = []
+        self.cleaned_corpus = []
 
-    def preprocess(self,line):
+    def preprocess(self,text):
         """
         Processes a string in order to remove urls, mentions, unicode characters,
         and punctuation. It also replaces characters that are repeated more than
         three times by two of the same character.
         """
-        line = line.lower()
+        text = text.lower()
 
         if self.rm_mentions:
-            line = re.sub(self.mentions_regex, '', line) 
+            text = re.sub(self.mentions_regex, '', text) 
 
         if self.rm_urls:
-            line = re.sub(self.url_regex, '', line) 
+            text = re.sub(self.url_regex, '', text) 
         
         if self.rm_unicode:
-            line = re.sub(self.unicode_regex, '', line)
+            text = re.sub(self.unicode_regex, '', text)
 
         if self.rm_punctuation:
-            line = ''.join(c for c in line if c not in self.exclude)
+            text = ''.join(c for c in text if c not in self.exclude)
 
-        line = re.sub(self.stem_regex, r'\1\1', line)
+        text = re.sub(self.stem_regex, r'\1\1', text)
 
-        return line
+        return text
 
-    def tokenize(self, line):
+    def tokenize(self, text):
         """Tokenize a string and remove given stopwords from the final list of words"""
-        words = re.split("[\s]+", line)
+        words = re.split("[\s]+", text)
         words = [x for x in words if x] # remove starting space
         if self.stopwords:
             # remove stopwords
             words = [x for x in words if x not in self.stopwords]
         return words
 
+    def _clean(self, tw):
+        text = tw['text']
+        text = self.preprocess(text)
+        words = self.tokenize(text)
+        text = " ".join(words)
+
+        if text:
+            tw['text'] = text
+        return tw
+
     def clean(self, corpus):
         """Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation."""
-        for line in corpus:
-            if type(line) == str:
-                if self.raw_json:
-                    tw = json.loads(line.strip())
-                    line = tw['text']
-            elif type(line) == dict:
-                tw = line
-                line = tw['text']
-            line = self.preprocess(line)
-            words = self.tokenize(line)
-            line = " ".join(words)
-
-            if line:
-                if self.json_out:
-                    tw['text'] = line
-                    line = json.dumps(tw)
-                self.cleanCorpus.append(line)
-        return self.cleanCorpus
-
-class POMS():
-    """
-    Tool to load the POMS vocabulary into several dictionaries.
-    """
-    def __init__(self, poms_file):
-        self.poms_file = poms_file
-        self.categories = defaultdict(list)
-        self.words = {}
-        self.load()
-        
-    def load(self):
-        with open(os.path.abspath(self.poms_file), "r") as poms_file:
-            for line in poms_file:
-                fields = re.split("\s+", line.strip())
-                self.categories[fields[0]].append(fields[1])
-                self.words[fields[1]] = fields[0]
-
-class LSF():
-    """
-    Tool to load a Line-Separated File. This kind of file contains a list of words, one word on 
-    each line.
-    """
-    def __init__(self, input_file):
-        self.input_file = input_file
-        self.words = []
-        self.load()
-    
-    def load(self):
-        with open(os.path.abspath(self.input_file), "r") as input_file:
-            for line in input_file:
-                self.words.append(line.strip())
-
-    def tolist():
-        return words
+        self.cleaned_corpus = (self._clean(tw) for tw in corpus)
+        return self.cleaned_corpus

@@ -8,8 +8,8 @@ class api():
     Main API that centralizes/wraps all the other APIs so that the user does not have to worry 
     about which API instanciate.
     """
-    def __init__(self, settings_file=None, lazy=False):
-        self.tweets = tweets.api(settings_file, lazy)
+    def __init__(self, settings_file=None):
+        self.tweets = tweets.api(settings_file)
         self.mood = mood.api()
 
     # Mood API #
@@ -22,8 +22,8 @@ class api():
     def buildVectorizer(self, vec_type='tfidf', options={}):
         return self.mood.buildVectorizer(vec_type, options)
 
-    def train(self, label="label"):
-        return self.mood.train(label)
+    def train(self):
+        return self.mood.train()
 
     def predict(self, X_pred):
         return self.mood.predict(X_pred)
@@ -32,17 +32,17 @@ class api():
         return self.mood.benchmark(cv, scorings)
 
     # Tweets API #
-    def load(self, input_file):
-        return self.tweets.load(input_file)
+    def load(self, input_file, lazy=False):
+        return self.tweets.load(input_file, lazy)
 
     def authenticate(self):
         return self.tweets.authenticate()
 
-    def collect(self, tracked_words, output=sys.stdout, count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
-        return self.tweets.collect(tracked_words, output, count, lang)
+    def collect(self, tracked_words, output=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
+        return self.tweets.collect(tracked_words, output, mode, count, lang)
 
-    def filter(self, n, words, each_word=True, out_stream=sys.stdout):
-        return self.tweets.filter(n, words, each_word, out_stream)
+    def filter(self, n, words, each_word=True, out_stream=None, mode='a+'):
+        return self.tweets.filter(n, words, each_word, out_stream, mode)
 
-    def label(self, labels, output_file, begin_line=0):
+    def label(self, labels, output_file=None, begin_line=0):
         return self.tweets.label(labels, output_file, begin_line)
