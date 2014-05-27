@@ -194,11 +194,11 @@ class api():
         count = 0
         for tw in self.tweets:
             tw_labeled = dict(tw)
-            print "-"*20
             # read lines that are before the given beginning line
+            count += 1
             if count < begin:
-                count += 1
                 continue
+            print "-"*20 + " " + str(count)
             text = tw_labeled['text']
             # show the line and ask the user to choose a label
             sys.stdout.write(text + "\n")
