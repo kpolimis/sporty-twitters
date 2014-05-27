@@ -77,11 +77,16 @@ class POMS():
         self.load()
         
     def load(self):
-        with open(os.path.abspath(self.poms_file), "r") as poms_file:
-            for line in poms_file:
-                fields = re.split("\s+", line.strip())
-                self.categories[fields[0]].append(fields[1])
-                self.words[fields[1]] = fields[0]
+        if type(self.poms_file) == str:
+            poms_file = open(self.poms_file)
+        elif type(self.poms_file) == file:
+            poms_file = self.poms_file
+        else:
+            raise Exception("Unsupported type for poms file.")
+        for line in poms_file:
+            fields = re.split("\s+", line.strip())
+            self.categories[fields[0]].append(fields[1])
+            self.words[fields[1]] = fields[0]
 
 class LSF():
     """
@@ -94,9 +99,14 @@ class LSF():
         self.load()
     
     def load(self):
-        with open(os.path.abspath(self.input_file)) as input_file:
-            for line in input_file:
-                self.words.append(line.strip())
+        if type(self.input_file) == str:
+            input_file = open(self.input_file)
+        elif type(self.input_file) == file:
+            input_file = self.input_file
+        else:
+            raise Exception("Unsupported type for input file.")
+        for line in input_file:
+            self.words.append(line.strip())
 
     def tolist(self):
         return self.words

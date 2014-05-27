@@ -95,13 +95,18 @@ class api():
 
     def authenticate(self):
         if self.settings_file:
-            with open(self.settings_file, 'r') as settings_f:
-                self.settings = json.load(settings_f)
-                consumer_key = self.settings['consumer_key']
-                consumer_secret = self.settings['consumer_secret']
-                access_token = self.settings['access_token']
-                access_token_secret = self.settings['access_token_secret']
-                self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+            if type(self.settings_file) == str:
+                settings_f = open(self.settings_file)
+            elif type(self.settings_file) == file:
+                settings_f = self.settings_file
+            else:
+                raise Exception("Unsupported type for settings file.")
+            self.settings = json.load(settings_f)
+            consumer_key = self.settings['consumer_key']
+            consumer_secret = self.settings['consumer_secret']
+            access_token = self.settings['access_token']
+            access_token_secret = self.settings['access_token_secret']
+            self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
 
     def collect(self, tracked_words, output=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
         if not self.settings_file:
