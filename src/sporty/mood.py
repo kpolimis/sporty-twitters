@@ -90,6 +90,8 @@ class api():
 
     def train(self):
         array_labels = DictVectorizer().fit_transform(self.labels).toarray()
+        if array_labels.shape[1] == 1:
+            array_labels = [x[0] for x in array_labels]
         self.clf.fit(self.X, array_labels)
 
     def predict(self, X_pred):
