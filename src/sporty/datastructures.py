@@ -99,6 +99,8 @@ class LSF():
         self.load()
     
     def load(self):
+        if not self.input_file:
+            return
         if type(self.input_file) == str:
             input_file = open(self.input_file)
         elif type(self.input_file) == file:
