@@ -20,7 +20,7 @@ if __name__ == "__main__":
                         nargs='+')
     # output(s)
     parser.add_argument('--output', '-o',
-                        type=file,
+                        type=argparse.FileType('a+'),
                         help='path to output file(s) (default to sys.stdout)',
                         default=sys.stdout,
                         nargs='+')
@@ -68,8 +68,10 @@ if __name__ == "__main__":
     elif args.action == 'label':
         if args.ln and args.lv:
             api = sporty.api()
-            api.load(args.input)
+            input_file = args.input[0]
+            output_file = args.output[0]
+            api.load(input_file)
             labels = {l:args.lv for l in args.ln}
-            api.label(labels, output_file=args.output, begin_line=args.begin)
+            api.label(labels, output_file, args.begin)
         else:
             raise Exception("Label name(s) and values are required when labeling tweets.")
