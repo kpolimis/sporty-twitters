@@ -41,8 +41,8 @@ class api():
     def collect(self, tracked_words, output=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
         return self.tweets.collect(tracked_words, output, mode, count, lang)
 
-    def filter(self, n, words, each_word=True, out_stream=None, mode='a+'):
-        return self.tweets.filter(n, words, each_word, out_stream, mode)
+    def filter(self, n, words, each_word=True, out_stream=None, mode='a+', rt=True):
+        return self.tweets.filter(n, words, each_word, out_stream, mode, rt)
 
     def label(self, labels, output_file=None, begin_line=0):
         return self.tweets.label(labels, output_file, begin_line)

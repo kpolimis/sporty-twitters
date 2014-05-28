@@ -137,7 +137,7 @@ class api():
                 continue
 
 
-    def filter(self, n, words, each_word=True, out_stream=None, mode='a+'):
+    def filter(self, n, words, each_word=True, out_stream=None, mode='a+', rt=True):
         self.filtered_tweets = Tweets(out_stream, mode)
         self.words_filtered = set(words)
 
@@ -147,7 +147,9 @@ class api():
         # Process each tweet
         for tw in self.tweets:
             text = tw['text']
-
+            tw_rt = text.find("RT") != -1
+            if not rt and tw_rt:
+                continue
             # check that the words we look for are present in this tweet
             terms = set(x.lower() for x in re.split("\s+", text))
             inter = terms.intersection(self.words_filtered)
