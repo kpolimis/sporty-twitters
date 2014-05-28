@@ -91,7 +91,6 @@ if __name__ == "__main__":
         if args.ln and args.lv:
             api = sporty.api()
             input_file = args.input[0]
-            output_file = args.output[0]
             labels = {l:args.lv for l in args.ln}
             if len(labels.keys()) > 1:
                 api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
