@@ -1,12 +1,15 @@
 """
 Usage: cli -h | --help
-       cli collect <settings_file> <output_file> <track_file> [<track_file>...] [--count=C]
+       cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [--count=C]
+       cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [--count=C] [--each] [--no-rt]
        cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
        cli mood benchmark <labeled_tweets> [--stopwords=SW] [--no-AH --no-DD --no-TA] [--min-df=M]
 
 Options:
     -h, --help      Show this screen.
-    --count=C       Number of tweets to collect [default: 100]
+    --count=C       Number of tweets to collect/filter [default: 100]
+    --each          Filter C tweets for each of the tracked words
+    --no-rt         Remove retweets when filtering
     --begin-line=L  Line to start labeling the tweets [default: 0]
     --no-AH         Do not label tweets on Anger/Hostility dimension
     --no-DD         Do not label tweets on Depression/Dejection dimension
@@ -25,15 +28,22 @@ from sklearn.multiclass import OneVsRestClassifier
 def main():
     args = docopt(__doc__)
 
+    print "ok"
     api = sporty.api()
-    if args['collect']:
-        # Authenticate to the Twitter API
-        api.tweets = sporty.tweets.api(settings_file=args['<settings_file>'])
+    if args['tweets']:
         # Concatenate the words to track
         totrack = set()
         for i in args['<track_file>']:
             totrack = totrack.union(set(LSF(i).tolist()))
-        api.collect(totrack, args['<output_file>'], count=int(args['--count']))
+
+        if args['collect']:
+            # Authenticate to the Twitter API
+            api.tweets = sporty.tweets.api(settings_file=args['<settings_file>'])
+            api.collect(totrack, args['<output_tweets>'], count=int(args['--count']))
+
+        if args['filter']:
+            api.load(args['<input_tweets>'])
+            api.filter(int(args['--count']), totrack, each_word=args['--each'], output_file=args['<output_tweets>'], rt=args['--no-rt']==False)
 
     elif args['mood']:
 
