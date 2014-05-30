@@ -108,12 +108,12 @@ class api():
             access_token_secret = self.settings['access_token_secret']
             self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
 
-    def collect(self, tracked_words, output=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
+    def collect(self, tracked_words, output_file=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
         if not self.settings_file:
             print "Error: TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets."
             return False
 
-        self.tweets = Tweets(output, mode)
+        self.tweets = Tweets(output_file, mode)
 
         req_options = dict()
         req_options['track'] = ",".join(tracked_words)
@@ -137,8 +137,8 @@ class api():
                 continue
 
 
-    def filter(self, n, words, each_word=True, out_stream=None, mode='a+', rt=True):
-        self.filtered_tweets = Tweets(out_stream, mode)
+    def filter(self, n, words, each_word=True, output_file=None, mode='a+', rt=True):
+        self.filtered_tweets = Tweets(output_file, mode)
         self.words_filtered = set(words)
 
         # initialize count variables
