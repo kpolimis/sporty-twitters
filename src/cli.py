@@ -1,106 +1,66 @@
+"""
+Usage: cli -h | --help
+       cli collect <settings_file> <output_file> <track_file> [<track_file>...] [--count=C]
+       cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
+       cli mood benchmark <labeled_tweets> [--stopwords=SW] [--no-AH --no-DD --no-TA] [--min-df=M]
+
+Options:
+    -h, --help      Show this screen.
+    --count=C       Number of tweets to collect [default: 100]
+    --begin-line=L  Line to start labeling the tweets [default: 0]
+    --no-AH         Do not label tweets on Anger/Hostility dimension
+    --no-DD         Do not label tweets on Depression/Dejection dimension
+    --no-TA         Do not label tweets on Tension/Anxiety dimension
+    --stopwords=SW  Path to file containing the stopwords to remove from the corpus
+    --min-df=M      See min_df from sklearn vectorizers [default: 1]
+"""
 import sporty.sporty as sporty
 import sporty.utils as utils
 from sporty.datastructures import *
-import argparse
+from docopt import docopt
 import sys
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Command Line Interface for the sporty twitter project')
-    # list of actions
-    parser.add_argument('action',
-                        type=str,
-                        choices=['collect', 'label', 'benchmark'],
-                        default='collect',
-                        help='action to execute (default: collect)')
-    # input(s)
-    parser.add_argument('--input', '-i',
-                        type=file,
-                        help='path to input file(s) (default to sys.stdin)',
-                        default=sys.stdin,
-                        nargs='+')
-    # output(s)
-    parser.add_argument('--output', '-o',
-                        type=argparse.FileType('a+'),
-                        help='path to output file(s) (default to sys.stdout)',
-                        default=sys.stdout,
-                        nargs='+')
-    # collect group
-    collect_group = parser.add_argument_group('Collect tweets given words to track')
-    collect_group.add_argument('--settings', '-s',
-                               type=file,
-                               help='path to settings file containing twitter key and token',
-                               default=None)
-    collect_group.add_argument('--count', '-c',
-                               type=int,
-                               help='action = collect: count of tweets to collect',
-                               default=0)
-    # label group
-    label_group = parser.add_argument_group('Label a list of tweets')
-    label_group.add_argument('--label-name', '-ln', dest='ln',
-                             type=str,
-                             help='name of the label(s)',
-                             nargs='+')
-    label_group.add_argument('--label-values', '-lv', dest='lv',
-                             type=int,
-                             help='possible values for the label(s)',
-                             nargs='+')
-    label_group.add_argument('--begin', '-b',
-                             type=int,
-                             help='line number to begin labeling',
-                             default=0)
-    # benchmark group
-    benchmark_group = parser.add_argument_group('Benchmark a classifier')
-    benchmark_group.add_argument('--stopwords', '-sw',
-                                 type=file,
-                                 help='path to the stopwords file',
-                                 default=None)
-    benchmark_group.add_argument('--min-df', 
-                                 dest='mindf',
-                                 type=int,
-                                 default=5)
-    # # filter group
-    # filter_group = parser.add_argument_group('Get N tweets amongst a bulk of tweets by filtering on keywords')
-    # filter_group.add_argument('n', type=int, default=10,
-    #                           help='')
+def main():
+    args = docopt(__doc__)
 
-    args = parser.parse_args()
+    api = sporty.api()
+    if args['collect']:
+        # Authenticate to the Twitter API
+        api.tweets = sporty.tweets.api(settings_file=args['<settings_file>'])
+        # Concatenate the words to track
+        totrack = set()
+        for i in args['<track_file>']:
+            totrack = totrack.union(set(LSF(i).tolist()))
+        api.collect(totrack, args['<output_file>'], count=int(args['--count']))
 
-    if args.action == 'collect':
-        if args.settings:
-            api = sporty.api(settings_file=args.settings)
-            totrack = []
-            for i in args.input:
-                totrack += LSF(i).tolist()
-            totrack = set(totrack) # remove duplicates
-            api.collect(totrack, args.output, count=args.count)
-        else:
-            raise Exception("No settings file defined, required to launch the tweets collect.")
-    elif args.action == 'label':
-        if args.ln and args.lv:
-            api = sporty.api()
-            input_file = args.input[0]
-            output_file = args.output[0]
-            api.load(input_file)
-            labels = {l:args.lv for l in args.ln}
-            api.label(labels, output_file, args.begin)
-        else:
-            raise Exception("Label name(s) and values are required when labeling tweets.")
-    elif args.action == 'benchmark':
-        if args.ln and args.lv:
-            api = sporty.api()
-            input_file = args.input[0]
-            labels = {l:args.lv for l in args.ln}
-            if len(labels.keys()) > 1:
+    elif args['mood']:
+
+        keys = ['AH', 'DD', 'TA']
+        if args['--no-AH']:
+            keys.remove('AH')
+        if args['--no-DD']:
+            keys.remove('DD')
+        if args['--no-TA']:
+            keys.remove('TA')
+
+        labels = {x: [0,1] for x in keys}
+
+        if args['label']:
+            api.load(args['<input_tweets>'])
+            api.label(labels, args['<labeled_tweets>'], int(args['--begin-line']))
+
+        elif args['benchmark']:
+            if len(keys) > 1:
                 api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
-            tweets = Tweets(input_file)
-            corpus = utils.Cleaner(stopwords=LSF(args.stopwords).tolist()).clean(tweets)
-
-            tfidf_options = {'min_df': args.mindf}
-            api.buildFeatures(corpus, labels=labels.keys())
-            api.buildVectorizer()
+            tweets = Tweets(args['<labeled_tweets>'])
+            corpus = utils.Cleaner(stopwords=LSF(args['--stopwords']).tolist()).clean(tweets)
+            tfidf_options = {'min_df': int(args['--min-df'])}
+            api.buildFeatures(corpus, labels=keys)
+            api.buildVectorizer(options=tfidf_options)
             api.train()
             api.benchmark(cv=2)
-        else:
-            raise Exception("Label name(s) and values are required when labeling tweets.")
+
+if __name__ == "__main__":
+    main()

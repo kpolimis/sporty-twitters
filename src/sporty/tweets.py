@@ -60,7 +60,7 @@ class Tweets():
     def append(self, tw):
         if self.lazy:
             if self.tweets != sys.stdout:
-                self.tweets.seek(0,os.SEEK_END)
+                self.tweets.seek(0, os.SEEK_END)
             if type(tw) == dict:
                 self.tweets.write(json.dumps(tw) + "\n")
             elif type(tw) == str:
@@ -77,9 +77,9 @@ class api():
         self.filtered_tweets = Tweets()
         self.labeled_tweets = Tweets()
         self.twitterapi = None
-        self.authenticate()
         self.words_count = defaultdict(int)
         self.words_filtered = set()
+        self.authenticate()
 
     def load(self, input_file, lazy=True):
         self.lazy = lazy
