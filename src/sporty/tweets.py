@@ -54,7 +54,7 @@ class Tweets():
             if sys.stdout != self.tweets:
                 self.tweets.seek(0)
                 for line in self.tweets:
-                    tweets_list.append(json.loads(line.strip))
+                    tweets_list.append(json.loads(line.strip()))
                 return tweets_list
 
     def append(self, tw):

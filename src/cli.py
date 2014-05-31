@@ -3,7 +3,7 @@ Usage: cli -h | --help
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [--count=C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [--count=C] [--each] [--no-rt]
        cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
-       cli mood benchmark <labeled_tweets> [--stopwords=SW] [--no-AH --no-DD --no-TA] [--min-df=M]
+       cli mood benchmark <labeled_tweets> [--stopwords=SW] [--emoticons=E] [--no-AH --no-DD --no-TA] [--min-df=M]
 
 Options:
     -h, --help      Show this screen.
@@ -15,6 +15,7 @@ Options:
     --no-DD         Do not label tweets on Depression/Dejection dimension
     --no-TA         Do not label tweets on Tension/Anxiety dimension
     --stopwords=SW  Path to file containing the stopwords to remove from the corpus
+    --emoticons=E   Path to file containing the list of emoticons to keep
     --min-df=M      See min_df from sklearn vectorizers [default: 1]
 """
 import sporty.sporty as sporty
@@ -64,7 +65,8 @@ def main():
             if len(keys) > 1:
                 api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
             tweets = Tweets(args['<labeled_tweets>'])
-            corpus = utils.Cleaner(stopwords=LSF(args['--stopwords']).tolist()).clean(tweets)
+            corpus = utils.Cleaner(stopwords=args['--stopwords']),
+                                   emoticons=args['--emoticons']).clean(tweets)
             tfidf_options = {'min_df': int(args['--min-df'])}
             api.buildFeatures(corpus, labels=keys)
             api.buildVectorizer(options=tfidf_options)

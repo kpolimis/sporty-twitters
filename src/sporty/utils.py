@@ -1,6 +1,7 @@
 import re
 import os.path
 from collections import defaultdict
+from datastructures import *
 import sys
 import string
 import codecs
@@ -8,8 +9,9 @@ import json
 
 class Cleaner():
     """docstring for Cleaner"""
-    def __init__(self, stopwords=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True):
-        self.stopwords = stopwords
+    def __init__(self, stopwords=None, emoticons=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True):
+        self.stopwords = LSF(stopwords).tolist()
+        self.emoticons = TSV(emoticons).keys
         self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'"<>?]))''')
         self.mentions_regex = re.compile(r'''(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)''')
         self.unicode_regex = re.compile(r'''[^\x00-\x7F]''')
@@ -25,7 +27,7 @@ class Cleaner():
         """
         Processes a string in order to remove urls, mentions, unicode characters,
         and punctuation. It also replaces characters that are repeated more than
-        three times by two of the same character.
+        three times by two of the same character and replaces emoticons with tags.
         """
         text = text.lower()
 
@@ -37,6 +39,12 @@ class Cleaner():
         
         if self.rm_unicode:
             text = re.sub(self.unicode_regex, '', text)
+
+        # replace emoticons
+        if self.emoticons:
+            for emo in self.emoticons:
+                for entry in self.emoticons[emo]:
+                    text = string.replace(text, entry, emo)
 
         if self.rm_punctuation:
             text = ''.join(c for c in text if c not in self.exclude)
