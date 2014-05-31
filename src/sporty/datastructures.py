@@ -14,12 +14,14 @@ class TSV():
         self.load()
         
     def load(self):
+        if not self.tsv_file:
+            return
         if type(self.tsv_file) == str:
             tsv_file = open(self.tsv_file)
         elif type(self.tsv_file) == file:
             tsv_file = self.tsv_file
         else:
-            raise Exception("Unsupported type for poms file.")
+            raise Exception("Unsupported type for tsv file.")
         for line in tsv_file:
             fields = re.split("\s+", line.strip())
             if len(fields) > 1:

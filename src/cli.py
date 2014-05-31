@@ -21,7 +21,7 @@ Options:
 import sporty.sporty as sporty
 import sporty.utils as utils
 from sporty.datastructures import *
-from tweets import Tweets
+from sporty.tweets import Tweets
 from docopt import docopt
 import sys
 from sklearn.svm import SVC
