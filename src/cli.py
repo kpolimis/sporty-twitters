@@ -65,7 +65,7 @@ def main():
             if len(keys) > 1:
                 api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
             tweets = Tweets(args['<labeled_tweets>'])
-            corpus = utils.Cleaner(stopwords=args['--stopwords']),
+            corpus = utils.Cleaner(stopwords=args['--stopwords'],
                                    emoticons=args['--emoticons']).clean(tweets)
             tfidf_options = {'min_df': int(args['--min-df'])}
             api.buildFeatures(corpus, labels=keys)
