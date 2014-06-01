@@ -2,42 +2,25 @@
 
 ## Abstract
 
-<!-- The 
-correlation between well-being and exercising users
+This project has been realized on a 6 month period (2014/1 - 2014/7) at the Illinois Institute of Technology. It has been supervised by [Dr. Aron Culotta](http://cs.iit.edu/~culotta/).
 
-- use of twitter to get a big amount of data
-- use of sport tracker apps to get users that exercise
-- extension of poms to "compute" the well-being of users
+The goal of this project is to find a correlation between the well-being of a person and the fact that this person regularly exercises.
 
-- create a classifier able to detect users that exercise
- -->
+This project relies on machine learning techniques, it uses the Twitter API to collect data on users, and it depends of sport tracking apps (RunKeeper, Nike+, ...) to detect sportive users.
+
 ## Installation
-<!-- 
-written in python using packages X,Y, etc
 
-which package do I have to install? (links, short description) -->
+This project is written in Python and uses the following packages:
+
+- [sklearn](http://scikit-learn.org/stable/)
+- [nltk](http://www.nltk.org/)
+- [TwitterAPI](https://github.com/geduldig/TwitterAPI)
+- [docopt](http://docopt.org/)
+
+<!-- TODO: setup.py -->
 
 ## Usage
 
-Each folder in the `src` folder is dedicated to one function. To use the scripts, open a terminal and go to the `src` folder, then use the following command: `python -m folder.script params [options]`
+This project has been developed so that other people can re-run the experiment, tweak some parameters, and maybe obtain better results. 
 
-- `clean_corpus` furnishes a script to remove stopwords, mentions, URLs, and punctuation from a given corpus. The default behaviour is to remove everything but flags exist to keep some properties. Moreover, if no stopwords file is given, then no words are removed.
-
-	`python -m clean_corpus.clean_corpus [stopwords_file,--keep-mentions,--keep-urls,--keep-punctuation] < corpus > cleaned_corpus`
-
-- `context_similar` contains three scripts which goal is to find words that have a similar context (i.e. similar neighbourhood) to a given set of words.
-	- `build_contexts` takes a corpus file as an input and outputs the contexts in a JSON format.
-
-		`python -m context_similar.build_contexts < corpus > contexts.json`
-
-	- `extend_poms` take the contexts and the POMS words as inputs and outputs the `n` most similar words for each POMS category. It is also possible to restrict the computed POMS categories to a subset using optional parameters.
-
-		`python -m context_similar.extend_poms poms_file poms_legend_file [n, categories] < contexts.json > similarWords`
-
-	- `similarity_scores` contains the implemented methods to compute similarity scores between two words given their contexts:
-		- cosineSimilarity
-
-- `poms` 
-- `tweet_collect`
-- `utils`
-- `wordnet`
+The different parts of the project are centralized in a unique API named `sporty`.

@@ -5,7 +5,11 @@ import re
 
 class TSV():
     """
-    Tool to load the POMS vocabulary into several dictionaries.
+    Tool to load a TSV file into several dictionaries. It is used in this project to load the POMS
+    vocabulary and the emoticons. Each word of these vocabularies belong to a category. This data
+    structure give access to a dictionary 'keys' that maps a category to a list of words belonging
+    to this category, and a dictionary 'values' that maps each word in the vocabulary to the 
+    category it belongs to.
     """
     def __init__(self, tsv_file):
         self.tsv_file = tsv_file
