@@ -1,85 +1,20 @@
-from TwitterAPI import TwitterAPI
 import json
 import codecs
 import sys
 import re
 import os
 from collections import defaultdict
+from utils import TwitterAPIUser
+from datastructures import Tweets
 
-class Tweets():
-    """
-    Manage a list of tweets loaded either from a file (in lazy mode) or from a list.
-    """
-    def __init__(self, tw_in=None, mode='a+'):
-        self.index = 0
-        self._load(tw_in, mode)
-
-    def _load(self, tw_in=None, mode='a+'):
-        if tw_in == None:
-            self.tweets = []
-            self.lazy = False
-        elif type(tw_in) == list:
-            self.tweets = tw_in
-            self.lazy = False
-        elif type(tw_in) == file:
-            self.tweets = tw_in
-            self.lazy = True
-        elif type(tw_in) == str:
-            self.tweets = open(tw_in, mode)
-            self.lazy = True
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        if self.lazy:
-            line = self.tweets.readline()
-            if line:
-                data = json.loads(line.strip())
-            else:
-                raise StopIteration
-        else:
-            try:
-                data = self.tweets[self.index]
-            except IndexError:
-                raise StopIteration
-            self.index += 1
-        return data
-
-    def tolist(self):
-        if type(self.tweets) == list:
-            return self.tweets
-        else:
-            tweets_list = []
-            if sys.stdout != self.tweets:
-                self.tweets.seek(0)
-                for line in self.tweets:
-                    tweets_list.append(json.loads(line.strip()))
-                return tweets_list
-
-    def append(self, tw):
-        if self.lazy:
-            if self.tweets != sys.stdout:
-                self.tweets.seek(0, os.SEEK_END)
-            if type(tw) == dict:
-                self.tweets.write(json.dumps(tw) + "\n")
-            elif type(tw) == str:
-                self.tweets.write(tw + "\n")
-            self.tweets.flush()
-        else:
-            self.tweets.append(tw)
-
-class api():
-
+class api(TwitterAPIUser):
     def __init__(self, settings_file=None):
-        self.settings_file = settings_file
+        super(api, self).__init__(settings_file)
         self.tweets = Tweets()
         self.filtered_tweets = Tweets()
         self.labeled_tweets = Tweets()
-        self.twitterapi = None
         self.words_count = defaultdict(int)
         self.words_filtered = set()
-        self.authenticate()
 
     def load(self, input_file, lazy=True):
         self.lazy = lazy
@@ -93,38 +28,12 @@ class api():
                     self.tweets.append(tw)
         return self.tweets
 
-    def authenticate(self):
-        if self.settings_file:
-            if type(self.settings_file) == str:
-                settings_f = open(self.settings_file)
-            elif type(self.settings_file) == file:
-                settings_f = self.settings_file
-            else:
-                raise Exception("Unsupported type for settings file.")
-            self.settings = json.load(settings_f)
-            consumer_key = self.settings['consumer_key']
-            consumer_secret = self.settings['consumer_secret']
-            access_token = self.settings['access_token']
-            access_token_secret = self.settings['access_token_secret']
-            self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
-
     def collect(self, tracked_words, output_file=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
-        if not self.settings_file:
-            print "Error: TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets."
-            return False
-
         self.tweets = Tweets(output_file, mode)
-
-        req_options = dict()
-        req_options['track'] = ",".join(tracked_words)
-        req_options['language'] = ",".join(lang)
-        if locations:
-            req_options['locations'] = locations
-
         i = 0
         while True:
             try:
-                r = self.twitterapi.request('statuses/filter', req_options)
+                r = self.getStatusStream(tracked_words, lang, locations)
                 for item in r.get_iterator():
                     if 'limit' not in item.keys():
                         self.tweets.append(item)
@@ -132,10 +41,9 @@ class api():
                         if count and i >= count:
                             break
                 break
-            except:
+            except Exception, e:
                 # sys.stderr.write("ChunkedEncodingError\n")
                 continue
-
 
     def filter(self, n, words, each_word=True, output_file=None, mode='a+', rt=True):
         self.filtered_tweets = Tweets(output_file, mode)
