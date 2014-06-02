@@ -6,9 +6,10 @@ import sys
 import string
 import codecs
 import json
+from TwitterAPI import TwitterAPI
 
 class Cleaner():
-    """docstring for Cleaner"""
+    """Cleaner of corpus"""
     def __init__(self, stopwords=None, emoticons=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True):
         self.stopwords = LSF(stopwords).tolist()
         self.emoticons = TSV(emoticons).keys
@@ -76,3 +77,54 @@ class Cleaner():
         """Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation."""
         self.cleaned_corpus = (self._clean(tw) for tw in corpus)
         return self.cleaned_corpus
+
+class TwitterAPIUser(object):
+    """TwitterAPIUser allows access to the Twitter API."""
+    def __init__(self, settings_file=None):
+        super(TwitterAPIUser, self).__init__()
+        self.settings_file = settings_file
+        self.twitterapi = None
+        self.settings = None
+        self.authenticate()
+
+    def authenticate(self):
+        if self.settings_file:
+            if type(self.settings_file) == str:
+                settings_f = open(self.settings_file)
+            elif type(self.settings_file) == file:
+                settings_f = self.settings_file
+            else:
+                raise Exception("Unsupported type for settings file.")
+            self.settings = json.load(settings_f)
+            consumer_key = self.settings['consumer_key']
+            consumer_secret = self.settings['consumer_secret']
+            access_token = self.settings['access_token']
+            access_token_secret = self.settings['access_token_secret']
+            self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+
+    def getStatusStream(self, tracked_words, lang, locations):
+        if not self.settings_file:
+            raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
+
+        req_options = dict()
+        req_options['track'] = ",".join(tracked_words)
+        req_options['language'] = ",".join(lang)
+        if locations:
+            req_options['locations'] = locations
+
+        r = self.twitterapi.request('statuses/filter', req_options)
+        return r
+
+    def getUserStream(self, user_id, since_id=None, max_id=None):
+        if not self.settings_file:
+            raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
+
+        req_options = dict()
+        req_options['user_id'] = user_id
+        if since_id:
+            req_options['since_id'] = since_id
+        if max_id:
+            req_options['max_id'] = max_id
+
+        r = self.twitterapi.request('statuses/user_timeline', req_options)
+        return r
