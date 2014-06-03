@@ -2,6 +2,7 @@ import json
 from tweets import Tweets
 from utils import TwitterAPIUser
 import time
+import sys
 
 class User(TwitterAPIUser):
     """docstring for User"""
@@ -23,10 +24,13 @@ class User(TwitterAPIUser):
                     if 'message' in item.keys():
                         remaining = r.get_rest_quota()['remaining']
                         if not remaining:
+                            sys.stderr.write("Limit rate reached. Wait for 1 minute.\n")
                             sleep_sec = 60
                             time.sleep(sleep_sec)
+                        else:
+                            sys.stderr.write(str(item) + "\n")
                     else:
-                        max_id = item['id']
+                        max_id = item['id'] - 1
                         self.tweets.append(item)
                         i += 1
                         if count and i >= count:
