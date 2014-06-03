@@ -13,12 +13,12 @@ class User(TwitterAPIUser):
     def collect_tweets(self, count=3200, output_file=None, mode='a+'):
         self.tweets = Tweets(output_file, mode)
         i = 0
-        max_id = 10
+        max_id = 0
         while True:
             try:
                 r = self.getUserStream(self.user_id, max_id=max_id)
                 if not r.get_iterator().results:
-                    return
+                    return self.tweets
                 for item in r.get_iterator():
                     if 'message' in item.keys():
                         remaining = r.get_rest_quota()['remaining']
@@ -30,7 +30,7 @@ class User(TwitterAPIUser):
                         self.tweets.append(item)
                         i += 1
                         if count and i >= count:
-                            break
+                            return self.tweets
             except Exception, e:
                 raise e
 

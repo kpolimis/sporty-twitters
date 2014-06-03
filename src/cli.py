@@ -2,12 +2,13 @@
 Usage: cli -h | --help
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [--count=C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [--count=C] [--each] [--no-rt]
+       cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [--count=C]
        cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
        cli mood benchmark <labeled_tweets> [--stopwords=SW] [--emoticons=E] [--no-AH --no-DD --no-TA] [--min-df=M]
 
 Options:
     -h, --help      Show this screen.
-    --count=C       Number of tweets to collect/filter [default: 100]
+    --count=C       Number of tweets to collect/filter [default: 3200]
     --each          Filter C tweets for each of the tracked words
     --no-rt         Remove retweets when filtering
     --begin-line=L  Line to start labeling the tweets [default: 0]
@@ -22,10 +23,12 @@ import sporty.sporty as sporty
 import sporty.utils as utils
 from sporty.datastructures import *
 from sporty.tweets import Tweets
+from sporty.user import User
 from docopt import docopt
 import sys
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
+import os.path
 
 def main():
     args = docopt(__doc__)
@@ -46,8 +49,15 @@ def main():
             api.load(args['<input_tweets>'])
             api.filter(int(args['--count']), totrack, each_word=args['--each'], output_file=args['<output_tweets>'], rt=args['--no-rt']==False)
 
-    elif args['mood']:
+    elif args['users']:
+        if args['collect_tweets']:
+            user = User(0, args['<settings_file>'])
+            for uid in LSF(args['<user_ids_file>']).tolist():
+                user_path = os.path.join(args['<output_dir>'], uid)
+                user.user_id = int(uid)
+                user.collect_tweets(int(args['--count']), user_path)
 
+    elif args['mood']:
         keys = ['AH', 'DD', 'TA']
         if args['--no-AH']:
             keys.remove('AH')
