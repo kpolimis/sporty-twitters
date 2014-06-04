@@ -5,7 +5,7 @@ Usage: cli -h | --help
        cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [--count=C]
        cli users list_friends <settings_file> <user_ids_file> <output_dir>
        cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
-       cli mood benchmark <labeled_tweets> [--stopwords=SW] [--emoticons=E] [--no-AH --no-DD --no-TA] [--min-df=M]
+       cli mood benchmark <labeled_tweets> [--stopwords=SW] [--emoticons=E] [--no-AH --no-DD --no-TA] [--min-df=M] [--binary]
 
 Options:
     -h, --help      Show this screen.
@@ -19,6 +19,7 @@ Options:
     --stopwords=SW  Path to file containing the stopwords to remove from the corpus
     --emoticons=E   Path to file containing the list of emoticons to keep
     --min-df=M      See min_df from sklearn vectorizers [default: 1]
+    --binary        No count of features, only using binary features.
 """
 import sporty.sporty as sporty
 import sporty.utils as utils
@@ -94,7 +95,9 @@ def main():
             tweets = Tweets(args['<labeled_tweets>'])
             corpus = utils.Cleaner(stopwords=args['--stopwords'],
                                    emoticons=args['--emoticons']).clean(tweets)
-            tfidf_options = {'min_df': int(args['--min-df'])}
+            tfidf_options = {'min_df': int(args['--min-df']),
+                             'binary': args['--binary'],
+                             'ngram_range': (1,2)}
             api.buildFeatures(corpus, labels=keys)
             api.buildVectorizer(options=tfidf_options)
             api.train()

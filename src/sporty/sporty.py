@@ -16,8 +16,8 @@ class api():
     def expandVocabulary(self, vocabulary, corpus, n=20):
         return self.mood.expandVocabulary(vocabulary, corpus, n)
 
-    def buildFeatures(self, corpus, keep_rt=True, labels=False, binary=False):
-        return self.mood.buildFeatures(corpus, keep_rt, labels, binary)
+    def buildFeatures(self, corpus, keep_rt=True, labels=False):
+        return self.mood.buildFeatures(corpus, keep_rt, labels)
 
     def buildVectorizer(self, vec_type='tfidf', options={}):
         return self.mood.buildVectorizer(vec_type, options)

@@ -38,7 +38,7 @@ class api():
         self.expandVocabulary = self.expandVocabulary(self.vocabulary, self.corpus, n)
         return self.expandVocabulary.expandVocabulary()
 
-    def buildFeatures(self, corpus, keep_rt=True, labels=False, binary=False):
+    def buildFeatures(self, corpus, keep_rt=True, labels=False):
         self.corpus = corpus
         self.features = []
         self.labels = []
