@@ -17,7 +17,9 @@ This project is written in Python and uses the following packages:
 - [TwitterAPI](https://github.com/geduldig/TwitterAPI)
 - [docopt](http://docopt.org/)
 
-<!-- TODO: setup.py -->
+To install it, just clone this github repo, go in the src folder, and run the following command:
+
+    python setup.py install
 
 ## Usage
 
@@ -62,13 +64,13 @@ This API as a variable expandVocabularyClass that defines the method to use to e
 The CLI has been built using the [docopt](http://docopt.org/) package and relies on the sporty API. The current usage for the CLI is the following:
 
     Usage: 
-       cli -h | --help
-       cli mood benchmark <labeled_tweets> [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA] [--min-df=M] 
-       cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
-       cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
-       cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C] [--each] [--no-rt]
-       cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [-c C]
-       cli users list_friends <settings_file> <user_ids_file> <output_dir>
+        sporty -h | --help
+        sporty mood benchmark <labeled_tweets> [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA] [--min-df=M] 
+        sporty mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
+        sporty tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
+        sporty tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C] [--each] [--no-rt]
+        sporty users collect_tweets <settings_file> <user_ids_file> <output_dir> [-c C]
+        sporty users list_friends <settings_file> <user_ids_file> <output_dir>
 
     Options:
         -h, --help              Show this screen.
