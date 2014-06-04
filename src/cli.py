@@ -64,7 +64,7 @@ def main():
         if args['list_friends']:
             user = User(0, args['<settings_file>'])
             for uid in LSF(args['<user_ids_file>']).tolist():
-                print 'Collect tweets for user ' + str(uid)
+                print 'Collect friends for user ' + str(uid)
                 user_path = os.path.join(args['<output_dir>'], uid)
                 if os.path.isfile(user_path):
                     continue
