@@ -3,6 +3,7 @@ Usage: cli -h | --help
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [--count=C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [--count=C] [--each] [--no-rt]
        cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [--count=C]
+       cli users list_friends <settings_file> <user_ids_file> <output_dir>
        cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
        cli mood benchmark <labeled_tweets> [--stopwords=SW] [--emoticons=E] [--no-AH --no-DD --no-TA] [--min-df=M]
 
@@ -55,8 +56,17 @@ def main():
             for uid in LSF(args['<user_ids_file>']).tolist():
                 user_path = os.path.join(args['<output_dir>'], uid)
                 user.user_id = int(uid)
-                user.collect_tweets(int(args['--count']), user_path)
+                user.collectTweets(int(args['--count']), user_path)
 
+        if args['list_friends']:
+            user = User(0, args['<settings_file>'])
+            for uid in LSF(args['<user_ids_file>']).tolist():
+                user_path = os.path.join(args['<output_dir>'], uid)
+                user.user_id = int(uid)
+                with open(user_path, 'w') as f:
+                    for friend_id in user.getFriends():
+                        f.write(str(friend_id) + "\n")
+                        
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
         if args['--no-AH']:

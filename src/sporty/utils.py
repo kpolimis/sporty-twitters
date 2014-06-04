@@ -115,8 +115,23 @@ class TwitterAPIUser(object):
         r = self.twitterapi.request('statuses/filter', req_options)
         return r
 
+    def getFolloweesStream(self, user_id, cursor=-1, count=5000):
+        req_options = dict()
+        req_options['user_id'] = user_id
+        req_options['cursor'] = cursor
+        req_options['count'] = count
+        r = self.twitterapi.request('friends/ids', req_options)
+        return r
+
+    def getFollowersStream(self, user_id, cursor=-1, count=5000):
+        req_options = dict()
+        req_options['user_id'] = user_id
+        req_options['cursor'] = cursor
+        req_options['count'] = count
+        r = self.twitterapi.request('followers/ids', req_options)
+        return r
+
     def getUserStream(self, user_id, since_id=None, max_id=None):
-        print "call getUserStream"
         if not self.settings_file:
             raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
 
