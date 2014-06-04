@@ -34,7 +34,7 @@ import os.path
 
 def main():
     args = docopt(__doc__)
-    print args
+
     api = sporty.api()
     if args['tweets']:
         # Concatenate the words to track
