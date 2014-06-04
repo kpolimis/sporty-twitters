@@ -54,19 +54,25 @@ def main():
         if args['collect_tweets']:
             user = User(0, args['<settings_file>'])
             for uid in LSF(args['<user_ids_file>']).tolist():
+                print 'Collect tweets for user ' + str(uid)
                 user_path = os.path.join(args['<output_dir>'], uid)
+                if os.path.isfile(user_path):
+                    continue
                 user.user_id = int(uid)
                 user.collectTweets(int(args['--count']), user_path)
 
         if args['list_friends']:
             user = User(0, args['<settings_file>'])
             for uid in LSF(args['<user_ids_file>']).tolist():
+                print 'Collect tweets for user ' + str(uid)
                 user_path = os.path.join(args['<output_dir>'], uid)
+                if os.path.isfile(user_path):
+                    continue
                 user.user_id = int(uid)
                 with open(user_path, 'w') as f:
                     for friend_id in user.getFriends():
                         f.write(str(friend_id) + "\n")
-                        
+
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
         if args['--no-AH']:
