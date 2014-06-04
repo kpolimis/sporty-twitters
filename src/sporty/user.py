@@ -20,7 +20,7 @@ class User(TwitterAPIUser):
         while cursor != 0:
             try:
                 response = json.loads(self.getFolloweesStream(self.user_id, cursor).text)
-                if 'errors' in response.keys():
+                if 'message' in response.keys():
                     sys.stderr.write("Limit rate reached. Wait for 1 minute.\n")
                     sleep_sec = 60
                     time.sleep(sleep_sec)
@@ -35,7 +35,7 @@ class User(TwitterAPIUser):
         while cursor != 0:
             try:
                 response = json.loads(self.getFollowersStream(self.user_id, cursor).text)
-                if 'errors' in response.keys():
+                if 'message' in response.keys():
                     sys.stderr.write("Limit rate reached. Wait for 1 minute.\n")
                     sleep_sec = 60
                     time.sleep(sleep_sec)
@@ -75,5 +75,6 @@ class User(TwitterAPIUser):
                         if count and i >= count:
                             return self.tweets
             except Exception, e:
+                print item
                 raise e
 
