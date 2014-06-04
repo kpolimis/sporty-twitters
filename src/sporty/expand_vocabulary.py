@@ -7,13 +7,17 @@ from collections import OrderedDict
 from collections import Counter
 from nltk.corpus import wordnet as wn
 
-class ContextSimilar():
+class ContextSimilar(object):
     """
-    Class that allows the user to expand a vocabulary by looking for the words in a corpus that have
-    the most similar contexts to the words in the vocabulary.
+    Class that allows the user to expand a vocabulary by looking for the words in a corpus that 
+    have the most similar contexts to the words in the vocabulary.
     """
 
     def __init__(self, vocabulary, corpus, n=100):
+        """
+        Initializes the ContextSimilar instance by setting the vocabulary and the corpus.
+        """
+        super(ContextSimilar, self).__init__()
         self.vocabulary = vocabulary
         self.corpus = corpus
         self.n = n
@@ -22,6 +26,10 @@ class ContextSimilar():
         self.sortedSimilarWords = OrderedDict()
 
     def buildContexts(self):
+        """
+        Builds the similarity contexts by looking at the 3-word neighbourhood of every word for
+        every tweet in the corpus.
+        """
         for tw in self.corpus:
             # split the tweet in a list of words
             words = re.split("\s+", tw.strip())
@@ -66,6 +74,9 @@ class ContextSimilar():
         return score
 
     def buildMostSimilar(self):
+        """
+        Returns the words that are most similar to all the words in the vocabulary.
+        """
         total_scores = defaultdict(float)
 
         # cumulate the similarity scores
@@ -83,9 +94,9 @@ class ContextSimilar():
 
     def buildSimilarityMatrix(self):
         """
-        Build a similiraty matrix based on the cosine similarity for a given list of words. For each
-        of the word U in the list, it computes the similarity with every word V in the contexts
-        previously built.
+        Builds a similiraty matrix based on the cosine similarity for a given list of words. For 
+        each of the word U in the list, it computes the similarity with every word V in the 
+        contexts previously built.
         """
         w = len(self.contexts)
         h = len(self.vocabulary)
@@ -98,17 +109,24 @@ class ContextSimilar():
         return self.similarityMatrix
 
     def expandVocabulary(self):
+        """
+        Combines methods of this class to expand the given vocabulary.
+        """
         self.buildContexts()
         self.buildSimilarityMatrix()
         self.buildMostSimilar()
         return self.sortedSimilarWords[:self.n]
 
-class WordNet():
+class WordNet(object):
     """
     Class that allows the user to expand a vocabulary using WordNet by finding the synonyms of the
     words in the vocabulary.
     """
     def __init__(self, vocabulary):
+        """
+        Initializes the WordNet instance by setting the vocabulary.
+        """
+        super(WordNet, self).__init__()
         self.vocabulary = vocabulary
         self.synonyms = set()
 
@@ -119,13 +137,17 @@ class WordNet():
                 self.synonyms = self.synonyms.union(set([l.name for l in s.lemmas]))
         return self.synonyms
 
-class Cooccurrences():
+class Cooccurrences(object):
     """
     Class that allows the user to expand a vocabulary by finding the words that are most frequently
     cooccurrences of the vocabulary words in a given corpus.
     """
 
     def __init__(self, vocabulary, corpus, n=5):
+        """
+        Initializes the Cooccurrences instance by setting the vocabulary and the corpus.
+        """
+        super(Cooccurrences, self).__init__()
         self.vocabulary = vocabulary
         self.corpus = corpus
         self.n = 5
@@ -135,6 +157,10 @@ class Cooccurrences():
         self.sortedTfidf = {}
 
     def buildCooccurrences(self):
+        """
+        For each word in the corpus, counts how much time each of the other words appear. Returns 
+        the dictionary that contains the results of the cooccurrences counting.
+        """
         for entry in self.corpus:
             # keep only the words that are in the corpus and in the vocabulary
             corpus_w = set(re.split("\s+", entry.strip()))
@@ -151,18 +177,17 @@ class Cooccurrences():
         return self.cooccurrences        
 
     def buildTfidf(self):
+        """
+        Sort the cooccurrences of each word in the cooccurrences dictionary using TF-IDF.
+        """
         for v in self.vocabulary:
             for c in self.cooccurrences[v]:
                 self.tfidf[v][c] = float(self.cooccurrences[v][c])/float(self.docFrequency[c])
             self.sortedTfidf[v] = sorted(self.tfidf[v].keys(), key=self.tfidf[v].get, reverse=True)
 
     def expandVocabulary(self):
-        print "Building cooccurrences"
         self.buildCooccurrences()
-        print "Done"
-        print "Building tfidf"
         self.buildTfidf()
-        print "Done"
         results = []
         for v in self.sortedTfidf.keys():
             results += self.sortedTfidf[v][:self.n]
