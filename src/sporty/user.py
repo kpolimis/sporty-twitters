@@ -4,15 +4,17 @@ from utils import TwitterAPIUser
 import time
 import sys
 
-class User(TwitterAPIUser):
-    """docstring for User"""
-    def __init__(self, user_id, settings_file=None):
-        super(User, self).__init__(settings_file)
+class api(TwitterAPIUser):
+    def __init__(self, user_id=0, settings_file=None):
+        super(api, self).__init__(settings_file)
         self.user_id = user_id
         self.tweets = Tweets()
         self.friends = set()
 
     def getFriends(self):
+        """
+        Returns the list of friends (intersection between followees and followers) for a user.
+        """
         cursor = -1
         followees = set()
         followers = set()
@@ -51,6 +53,9 @@ class User(TwitterAPIUser):
 
 
     def collectTweets(self, count=3200, output_file=None, mode='a+'):
+        """
+        Returns the 3200 last tweets of a user.
+        """
         self.tweets = Tweets(output_file, mode)
         i = 0
         max_id = 0

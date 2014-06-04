@@ -52,26 +52,24 @@ def main():
             api.filter(int(args['--count']), totrack, each_word=args['--each'], output_file=args['<output_tweets>'], rt=args['--no-rt']==False)
 
     elif args['users']:
+        # Authenticate to the Twitter API
+        api.user = sporty.user.api(settings_file=args['<settings_file>'])
         if args['collect_tweets']:
-            user = User(0, args['<settings_file>'])
             for uid in LSF(args['<user_ids_file>']).tolist():
-                print 'Collect tweets for user ' + str(uid)
                 user_path = os.path.join(args['<output_dir>'], uid)
                 if os.path.isfile(user_path):
                     continue
-                user.user_id = int(uid)
-                user.collectTweets(int(args['--count']), user_path)
+                api.user.user_id = int(uid)
+                api.collectTweets(int(args['--count']), user_path)
 
         if args['list_friends']:
-            user = User(0, args['<settings_file>'])
             for uid in LSF(args['<user_ids_file>']).tolist():
-                print 'Collect friends for user ' + str(uid)
                 user_path = os.path.join(args['<output_dir>'], uid)
                 if os.path.isfile(user_path):
                     continue
-                user.user_id = int(uid)
+                api.user.user_id = int(uid)
                 with open(user_path, 'w') as f:
-                    for friend_id in user.getFriends():
+                    for friend_id in api.getFriends():
                         f.write(str(friend_id) + "\n")
 
     elif args['mood']:

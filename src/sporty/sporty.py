@@ -1,5 +1,6 @@
 import mood
 import tweets
+import user
 import utils
 import sys
 
@@ -11,6 +12,7 @@ class api():
     def __init__(self, settings_file=None):
         self.tweets = tweets.api(settings_file)
         self.mood = mood.api()
+        self.user = user.api(settings_file=settings_file)
 
     # Mood API #
     def expandVocabulary(self, vocabulary, corpus, n=20):
@@ -46,3 +48,10 @@ class api():
 
     def label(self, labels, output_file=None, begin_line=0):
         return self.tweets.label(labels, output_file, begin_line)
+
+    # User API 
+    def getFriends(self):
+        return self.user.getFriends()
+
+    def collectTweets(self, count=3200, output_file=None, mode='a+'):
+        return self.user.collectTweets(count, output_file, mode)

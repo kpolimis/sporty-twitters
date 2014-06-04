@@ -9,6 +9,9 @@ from datastructures import Tweets
 
 class api(TwitterAPIUser):
     def __init__(self, settings_file=None):
+        """
+        Initializes the tweets api.
+        """
         super(api, self).__init__(settings_file)
         self.tweets = Tweets()
         self.filtered_tweets = Tweets()
@@ -16,19 +19,17 @@ class api(TwitterAPIUser):
         self.words_count = defaultdict(int)
         self.words_filtered = set()
 
-    def load(self, input_file, lazy=True):
-        self.lazy = lazy
-        if self.lazy:
-            self.tweets = Tweets(input_file)
-        else:
-            self.tweets = Tweets()
-            with open(input_file, 'r') as i:
-                for line in i:
-                    tw = json.loads(line.strip())
-                    self.tweets.append(tw)
-        return self.tweets
+    def load(self, input_file):
+        """
+        Load a corpus of tweets.
+        """
+        self.tweets = Tweets(input_file)
 
     def collect(self, tracked_words, output_file=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
+        """
+        Given options, this function collects tweets using the Streaming API and stores them in 
+        memory or on disk.
+        """
         self.tweets = Tweets(output_file, mode)
         i = 0
         while True:
@@ -46,6 +47,10 @@ class api(TwitterAPIUser):
                 continue
 
     def filter(self, n, words, each_word=True, output_file=None, mode='a+', rt=True):
+        """
+        Filter tweets from the loaded corpus by getting, for each term T in the list 'words', n 
+        tweets that contains T.
+        """
         self.filtered_tweets = Tweets(output_file, mode)
         self.words_filtered = set(words)
 
@@ -101,6 +106,9 @@ class api(TwitterAPIUser):
         return l
 
     def label(self, labels, output_file=None, begin=0):
+        """
+        Allows the user to easily label a corpus of tweets by giving the labels.
+        """
         # define the opening mode of the output file given the begin line
         o_mode = "w"
         if begin != 0:

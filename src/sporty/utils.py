@@ -9,7 +9,9 @@ import json
 from TwitterAPI import TwitterAPI
 
 class Cleaner():
-    """Cleaner of corpus"""
+    """
+    Cleaner of corpus
+    """
     def __init__(self, stopwords=None, emoticons=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True):
         self.stopwords = LSF(stopwords).tolist()
         self.emoticons = TSV(emoticons).keys
@@ -55,7 +57,9 @@ class Cleaner():
         return text
 
     def tokenize(self, text):
-        """Tokenize a string and remove given stopwords from the final list of words"""
+        """
+        Tokenize a string and remove given stopwords from the final list of words.
+        """
         words = re.split("[\s]+", text)
         words = [x for x in words if x] # remove starting space
         if self.stopwords:
@@ -74,12 +78,16 @@ class Cleaner():
         return tw
 
     def clean(self, corpus):
-        """Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation."""
+        """
+        Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation.
+        """
         self.cleaned_corpus = (self._clean(tw) for tw in corpus)
         return self.cleaned_corpus
 
 class TwitterAPIUser(object):
-    """TwitterAPIUser allows access to the Twitter API."""
+    """
+    TwitterAPIUser allows access to the Twitter API.
+    """
     def __init__(self, settings_file=None):
         super(TwitterAPIUser, self).__init__()
         self.settings_file = settings_file
@@ -88,6 +96,9 @@ class TwitterAPIUser(object):
         self.authenticate()
 
     def authenticate(self):
+        """
+        Authenticate to the Twitter API using the settings file given on initialization.
+        """
         if self.settings_file:
             if type(self.settings_file) == str:
                 settings_f = open(self.settings_file)
@@ -103,6 +114,10 @@ class TwitterAPIUser(object):
             self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
 
     def getStatusStream(self, tracked_words, lang, locations):
+        """
+        Returns the response sent by the Twitter API when requested the last statuses in the
+        Twitter timeline.
+        """
         if not self.settings_file:
             raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
 
@@ -116,6 +131,9 @@ class TwitterAPIUser(object):
         return r
 
     def getFolloweesStream(self, user_id, cursor=-1, count=5000):
+        """
+        Returns the response sent by the Twitter API when requested the followees of a user.
+        """
         req_options = dict()
         req_options['user_id'] = user_id
         req_options['cursor'] = cursor
@@ -124,6 +142,9 @@ class TwitterAPIUser(object):
         return r
 
     def getFollowersStream(self, user_id, cursor=-1, count=5000):
+        """
+        Returns the response sent by the Twitter API when requested the followers of a user.
+        """
         req_options = dict()
         req_options['user_id'] = user_id
         req_options['cursor'] = cursor
@@ -132,6 +153,9 @@ class TwitterAPIUser(object):
         return r
 
     def getUserStream(self, user_id, since_id=None, max_id=None):
+        """
+        Returns the response sent by the Twitter API when requested the timeline of a user.
+        """
         if not self.settings_file:
             raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
 

@@ -15,15 +15,18 @@ from sklearn import preprocessing
 from sklearn import svm
 from collections import defaultdict
 
-class api():
+class api(object):
     """
-    Programming Interface dedicated to the study of the users' mood in the sporty twitters project.
+    Programming Interface dedicated to the study of the users' mood.
     """
 
-    def __init__(self, expandVocabulary=expand_vocabulary.ContextSimilar, clf=None):
-        self.expandVocabulary = expandVocabulary
-        self.corpus = []
-        self.vocabulary = []
+    def __init__(self, expandVocabularyClass=expand_vocabulary.ContextSimilar, clf=None):
+        """
+        Initializes the api class using ContextSimilar to expand vocabulary and SVC as a classifier
+        by default.
+        """
+        super(api, self).__init__()
+        self.expandVocabularyClass = expandVocabularyClass
         self.features = []
         self.labels = []
         self.vectorizer = None
@@ -33,24 +36,28 @@ class api():
             self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
 
     def expandVocabulary(self, vocabulary, corpus, n=20):
-        self.vocabulary = vocabulary
-        self.corpus = corpus
-        self.expandVocabulary = self.expandVocabulary(self.vocabulary, self.corpus, n)
-        return self.expandVocabulary.expandVocabulary()
+        """
+        Calls the strategy loaded at the initialization to expand the vocabulary.
+        """
+        return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
     def buildFeatures(self, corpus, keep_rt=True, labels=False):
-        self.corpus = corpus
+        """
+        Builds and returns a list of features and a list of labels that can then be passed to a 
+        sklearn vectorizer.
+        """
         self.features = []
         self.labels = []
 
-        for tw in self.corpus:
-            # filter on retweets
-            if tw['retweeted'] and not keep_rt:
-                continue
-
+        for tw in corpus:
             # extract the text features
             text = tw['text']
             terms = re.split("\s+", text.strip())
+
+            # filter on retweets
+            tw_rt = text.find("RT") != -1
+            if not keep_rt and tw_rt:
+                continue
 
             # extract the other features (mentions, hashtags, etc)
             entities = tw['entities']
@@ -76,28 +83,39 @@ class api():
         return self.features, self.labels
 
     def buildVectorizer(self, vec_type='tfidf', options={}):
+        """
+        Builds the wanted vectorizer once the features have been built using buildFeatures.
+        """
         if not self.features:
-            print "Error: no features defined yet. Call buildFeatures method first."
-            return False
+            raise Exception("No features defined yet. Call buildFeatures method first.")
+
         if vec_type == 'tfidf':
             self.vectorizer = TfidfVectorizer(**options)
             self.tfidf = self.vectorizer.fit_transform(self.features)
             self.X = preprocessing.scale(self.tfidf.toarray())
             return self.X
         else:
-            print "Error: vectorizer type (" + str(vec_type) + ")not supported yet."
-            return False
+            raise Exception("Vectorizer type (" + str(vec_type) + ")not supported yet.")
 
     def train(self):
+        """
+        Trains the classifier.
+        """
         array_labels = DictVectorizer().fit_transform(self.labels).toarray()
         if array_labels.shape[1] == 1:
             array_labels = [x[0] for x in array_labels]
         self.clf.fit(self.X, array_labels)
 
     def predict(self, X_pred):
+        """
+        Predicts the label of entries.
+        """
         self.clf.predict(X_pred)
 
     def benchmark(self, cv=5, scorings=['accuracy', 'f1', 'precision', 'recall', 'roc_auc']):
+        """
+        Computes and displays several scores to evaluate the classifier.
+        """
         for i, label in enumerate(self.labels[0]):
             print "-"*80
             print "- label: " + label
