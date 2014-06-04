@@ -61,7 +61,8 @@ This API as a variable expandVocabularyClass that defines the method to use to e
 
 The CLI has been built using the [docopt](http://docopt.org/) package and relies on the sporty API. The current usage for the CLI is the following:
 
-    Usage: cli -h | --help
+    Usage: 
+       cli -h | --help
        cli mood benchmark <labeled_tweets> [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA] [--min-df=M] 
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
