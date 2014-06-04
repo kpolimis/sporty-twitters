@@ -9,11 +9,12 @@ setup(name='Sporty Twitters',
       author='Virgile Landeiro',
       author_email='vlandeir@hawk.iit.edu',
       url='https://github.com/vlandeiro/sporty-twitters',
-      packages=['sporty'],
-      py_modules=['cli'],
+      packages=['sporty', 'cli'],
+      package_dir={'sporty': 'src/sporty', 'cli': 'src/cli'},
+      py_modules=['sporty.mood', 'sporty.sporty', 'sporty.tweets', 'sporty.user', 'sporty.utils'],
       requires=['nltk', 'sklearn', 'TwitterAPI', 'docopt'],
       entry_points={
         'console_scripts': [
-            'sporty = cli:main'
+            'sporty = cli.cli:main'
         ]}
       )

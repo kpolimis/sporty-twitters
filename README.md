@@ -17,7 +17,7 @@ This project is written in Python and uses the following packages:
 - [TwitterAPI](https://github.com/geduldig/TwitterAPI)
 - [docopt](http://docopt.org/)
 
-To install it, just clone this github repo, go in the src folder, and run the following command:
+To install it, just clone this github repo, and run the following command:
 
     python setup.py install
 
