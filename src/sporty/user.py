@@ -24,6 +24,7 @@ class User(TwitterAPIUser):
                     sys.stderr.write("Limit rate reached. Wait for 1 minute.\n")
                     sleep_sec = 60
                     time.sleep(sleep_sec)
+                    continue
                 cursor = response['next_cursor']
                 followees = followees.union(set(response['ids']))
             except Exception, e:
@@ -38,6 +39,7 @@ class User(TwitterAPIUser):
                     sys.stderr.write("Limit rate reached. Wait for 1 minute.\n")
                     sleep_sec = 60
                     time.sleep(sleep_sec)
+                    continue
                 cursor = response['next_cursor']
                 followers = followers.union(set(response['ids']))
             except Exception, e:
