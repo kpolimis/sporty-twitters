@@ -1,25 +1,25 @@
 """
 Usage: cli -h | --help
-       cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [--count=C]
-       cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [--count=C] [--each] [--no-rt]
-       cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [--count=C]
+       cli mood benchmark <labeled_tweets> [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA] [--min-df=M] 
+       cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
+       cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
+       cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C] [--each] [--no-rt]
+       cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [-c C]
        cli users list_friends <settings_file> <user_ids_file> <output_dir>
-       cli mood label <input_tweets> <labeled_tweets> [--begin-line=L] [--no-AH --no-DD --no-TA]
-       cli mood benchmark <labeled_tweets> [--stopwords=SW] [--emoticons=E] [--no-AH --no-DD --no-TA] [--min-df=M] [--binary]
 
 Options:
-    -h, --help      Show this screen.
-    --count=C       Number of tweets to collect/filter [default: 3200]
-    --each          Filter C tweets for each of the tracked words
-    --no-rt         Remove retweets when filtering
-    --begin-line=L  Line to start labeling the tweets [default: 0]
-    --no-AH         Do not label tweets on Anger/Hostility dimension
-    --no-DD         Do not label tweets on Depression/Dejection dimension
-    --no-TA         Do not label tweets on Tension/Anxiety dimension
-    --stopwords=SW  Path to file containing the stopwords to remove from the corpus
-    --emoticons=E   Path to file containing the list of emoticons to keep
-    --min-df=M      See min_df from sklearn vectorizers [default: 1]
-    --binary        No count of features, only using binary features.
+    -h, --help              Show this screen.
+    --each                  Filter C tweets for each of the tracked words
+    --min-df=M              See min_df from sklearn vectorizers [default: 1]
+    --no-AH                 Do not label tweets on Anger/Hostility dimension
+    --no-DD                 Do not label tweets on Depression/Dejection dimension
+    --no-TA                 Do not label tweets on Tension/Anxiety dimension
+    --no-rt                 Remove retweets when filtering
+    -b, --binary            No count of features, only using binary features.
+    -c C, --count=C         Number of tweets to collect/filter [default: 3200]
+    -e E, --emoticons=E     Path to file containing the list of emoticons to keep
+    -l, --begin-line=L      Line to start labeling the tweets [default: 0]
+    -s SW, --stopwords=SW   Path to file containing the stopwords to remove from the corpus
 """
 import sporty.sporty as sporty
 import sporty.utils as utils
@@ -34,7 +34,7 @@ import os.path
 
 def main():
     args = docopt(__doc__)
-
+    print args
     api = sporty.api()
     if args['tweets']:
         # Concatenate the words to track
