@@ -34,8 +34,8 @@ class api():
         return self.mood.benchmark(cv, scorings)
 
     # Tweets API #
-    def load(self, input_file, lazy=True):
-        return self.tweets.load(input_file, lazy)
+    def load(self, input_file):
+        return self.tweets.load(input_file)
 
     def authenticate(self):
         return self.tweets.authenticate()
