@@ -30,7 +30,7 @@ class api():
         self.X = None
         self.tfidf = None
         if clf == None:
-            self.clf = svm.SVC(kernel='linear', C=1)
+            self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
 
     def expandVocabulary(self, vocabulary, corpus, n=20):
         self.vocabulary = vocabulary
