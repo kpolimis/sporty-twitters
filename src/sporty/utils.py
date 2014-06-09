@@ -8,11 +8,13 @@ import codecs
 import json
 from TwitterAPI import TwitterAPI
 
+
 class Cleaner():
     """
     Cleaner of corpus
     """
-    def __init__(self, stopwords=None, emoticons=None, rm_urls=True, rm_mentions=True, rm_punctuation=True, rm_unicode=True):
+    def __init__(self, stopwords=None, emoticons=None, rm_urls=True, rm_mentions=True,
+                 rm_punctuation=True, rm_unicode=True):
         self.stopwords = LSF(stopwords).tolist()
         self.emoticons = TSV(emoticons).keys
         self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'"<>?]))''')
@@ -26,7 +28,7 @@ class Cleaner():
         self.rm_unicode = rm_unicode
         self.cleaned_corpus = []
 
-    def preprocess(self,text):
+    def preprocess(self, text):
         """
         Processes a string in order to remove urls, mentions, unicode characters,
         and punctuation. It also replaces characters that are repeated more than
@@ -35,11 +37,11 @@ class Cleaner():
         text = text.lower()
 
         if self.rm_mentions:
-            text = re.sub(self.mentions_regex, '', text) 
+            text = re.sub(self.mentions_regex, '', text)
 
         if self.rm_urls:
-            text = re.sub(self.url_regex, '', text) 
-        
+            text = re.sub(self.url_regex, '', text)
+
         if self.rm_unicode:
             text = re.sub(self.unicode_regex, '', text)
 
@@ -61,7 +63,7 @@ class Cleaner():
         Tokenize a string and remove given stopwords from the final list of words.
         """
         words = re.split("[\s]+", text)
-        words = [x for x in words if x] # remove starting space
+        words = [x for x in words if x]  # remove starting space
         if self.stopwords:
             # remove stopwords
             words = [x for x in words if x not in self.stopwords]
@@ -83,6 +85,7 @@ class Cleaner():
         """
         self.cleaned_corpus = (self._clean(tw) for tw in corpus)
         return self.cleaned_corpus
+
 
 class TwitterAPIUser(object):
     """
@@ -111,7 +114,8 @@ class TwitterAPIUser(object):
             consumer_secret = self.settings['consumer_secret']
             access_token = self.settings['access_token']
             access_token_secret = self.settings['access_token_secret']
-            self.twitterapi = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+            self.twitterapi = TwitterAPI(consumer_key, consumer_secret,
+                                         access_token, access_token_secret)
 
     def getStatusStream(self, tracked_words, lang, locations):
         """
@@ -119,7 +123,8 @@ class TwitterAPIUser(object):
         Twitter timeline.
         """
         if not self.settings_file:
-            raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
+            raise Exception("TwitterAPI not authenticated. Please call the constructor using a "
+                            + " settings file if you want to collect tweets.")
 
         req_options = dict()
         req_options['track'] = ",".join(tracked_words)
@@ -157,7 +162,8 @@ class TwitterAPIUser(object):
         Returns the response sent by the Twitter API when requested the timeline of a user.
         """
         if not self.settings_file:
-            raise Exception("TwitterAPI not authenticated. Please call the constructor using a settings file if you want to collect tweets.")
+            raise Exception("TwitterAPI not authenticated. Please call the constructor using a"
+                            + " settings file if you want to collect tweets.")
 
         req_options = dict()
         req_options['user_id'] = user_id

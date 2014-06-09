@@ -4,11 +4,12 @@ from collections import defaultdict
 import re
 import sys
 
+
 class Tweets(object):
     """
-    Manages a list of tweets loaded from a file (possibly empty) or a list. Makes it possible to 
-    iterate over tweets using a unique structure when tweets are in a Python list or stored on 
-    disk in a file.
+    Manages a list of tweets loaded from a file (possibly empty) or a list.
+    Makes it possible to iterate over tweets using a unique structure when
+    tweets are in a Python list or stored on disk in a file.
     """
     def __init__(self, tw_in=None, mode='a+'):
         "Initializes an instance by loading file/list."
@@ -18,7 +19,7 @@ class Tweets(object):
 
     def _load(self, tw_in=None, mode='a+'):
         "Switches on the possible types of tw_in to correctly load the tweets."
-        if tw_in == None: # if no tw_in, creates an empty list
+        if not tw_in:  # if no tw_in, creates an empty list
             self.tweets = []
             self.lazy = False
         elif type(tw_in) == list:
@@ -58,7 +59,7 @@ class Tweets(object):
 
     def tolist(self):
         """
-        Returns a list of tweets. If the tweets are stored on disk, it loads all the tweets thus 
+        Returns a list of tweets. If the tweets are stored on disk, it loads all the tweets thus
         making the lazy loading mode useless.
         """
         if type(self.tweets) == list:
@@ -73,7 +74,7 @@ class Tweets(object):
 
     def append(self, tw):
         """
-        Appends a given tweet to the list of tweets. If the tweets are stored in a file on disk, 
+        Appends a given tweet to the list of tweets. If the tweets are stored in a file on disk,
         then the appended tweet is written at the end of the file.
         """
         if self.lazy:
@@ -86,12 +87,13 @@ class Tweets(object):
         else:
             self.tweets.append(tw)
 
+
 class TSV(object):
     """
     Tool to load a TSV file into several dictionaries. It is used in this project to load the POMS
     vocabulary and the emoticons. Each word of these vocabularies belong to a category. This data
     structure give access to a dictionary 'keys' that maps a category to a list of words belonging
-    to this category, and a dictionary 'values' that maps each word in the vocabulary to the 
+    to this category, and a dictionary 'values' that maps each word in the vocabulary to the
     category it belongs to.
     """
     def __init__(self, tsv_file):
@@ -103,7 +105,7 @@ class TSV(object):
         self.keys = defaultdict(list)
         self.values = {}
         self.load()
-        
+
     def load(self):
         """
         Loads the TSV file in the dictionaries.
@@ -120,9 +122,10 @@ class TSV(object):
                 self.keys[fields[0]].append(fields[1])
                 self.values[fields[1]] = fields[0]
 
+
 class LSF(object):
     """
-    Tool to load a Line-Separated File. This kind of file contains a list of words, one word on 
+    Tool to load a Line-Separated File. This kind of file contains a list of words, one word on
     each line.
     """
     def __init__(self, input_file):
@@ -133,7 +136,7 @@ class LSF(object):
         self.input_file = input_file
         self.words = []
         self.load()
-    
+
     def load(self):
         if type(self.input_file) == str:
             input_file = open(self.input_file)

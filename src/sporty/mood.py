@@ -15,6 +15,7 @@ from sklearn import preprocessing
 from sklearn import svm
 from collections import defaultdict
 
+
 class api(object):
     """
     Programming Interface dedicated to the study of the users' mood.
@@ -32,7 +33,7 @@ class api(object):
         self.vectorizer = None
         self.X = None
         self.tfidf = None
-        if clf == None:
+        if not clf:
             self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
 
     def expandVocabulary(self, vocabulary, corpus, n=20):
@@ -43,7 +44,7 @@ class api(object):
 
     def buildFeatures(self, corpus, keep_rt=True, labels=False):
         """
-        Builds and returns a list of features and a list of labels that can then be passed to a 
+        Builds and returns a list of features and a list of labels that can then be passed to a
         sklearn vectorizer.
         """
         self.features = []
@@ -122,7 +123,8 @@ class api(object):
             print "-"*80
             labels = np.array([d[label] for d in self.labels])
             for method in scorings:
-                score = cross_validation.cross_val_score(self.clf, self.X, labels, cv=cv, scoring=method)
+                score = cross_validation.cross_val_score(self.clf, self.X, labels,
+                                                         cv=cv, scoring=method)
                 method_name = 'Average ' + method + ': '
                 score_str = str(score.mean()) + " (+/- " + str(score.std()) + ")"
                 print method_name.ljust(25) + score_str.ljust(20)
@@ -131,5 +133,6 @@ class api(object):
                 print("Top 10 keywords:")
                 feature_names = np.asarray(self.vectorizer.get_feature_names())
                 top10 = np.argsort(self.clf.coef_[i])[-10:]
-                for idx  in top10:
-                    print "\t" + feature_names[idx].ljust(15) + str(self.clf.coef_[i][idx]).ljust(10)
+                for idx in top10:
+                    print "\t" + feature_names[idx].ljust(15)
+                    + str(self.clf.coef_[i][idx]).ljust(10)

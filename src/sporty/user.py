@@ -4,6 +4,7 @@ from utils import TwitterAPIUser
 import time
 import sys
 
+
 class api(TwitterAPIUser):
     def __init__(self, user_id=0, settings_file=None):
         super(api, self).__init__(settings_file)
@@ -49,7 +50,6 @@ class api(TwitterAPIUser):
         self.friends = followees.intersection(followers)
         return self.friends
 
-
     def collectTweets(self, count=3200, output_file=None, mode='a+'):
         """
         Returns the 3200 last tweets of a user.
@@ -79,4 +79,3 @@ class api(TwitterAPIUser):
                             return self.tweets
             except Exception, e:
                 raise e
-

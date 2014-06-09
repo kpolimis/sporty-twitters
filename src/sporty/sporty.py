@@ -4,9 +4,10 @@ import user
 import utils
 import sys
 
+
 class api():
     """
-    Main API that centralizes/wraps all the other APIs so that the user does not have to worry 
+    Main API that centralizes/wraps all the other APIs so that the user does not have to worry
     about which API instanciate.
     """
     def __init__(self, settings_file=None):
@@ -40,7 +41,8 @@ class api():
     def authenticate(self):
         return self.tweets.authenticate()
 
-    def collect(self, tracked_words, output_file=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
+    def collect(self, tracked_words, output_file=None, mode='a+', count=0,
+                lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
         return self.tweets.collect(tracked_words, output_file, mode, count, lang)
 
     def filter(self, n, words, each_word=True, output_file=None, mode='a+', rt=True):
@@ -49,7 +51,7 @@ class api():
     def label(self, labels, output_file=None, begin_line=0):
         return self.tweets.label(labels, output_file, begin_line)
 
-    # User API 
+    # User API
     def getFriends(self):
         return self.user.getFriends()
 

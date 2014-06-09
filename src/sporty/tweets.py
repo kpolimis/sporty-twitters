@@ -7,6 +7,7 @@ from collections import defaultdict
 from utils import TwitterAPIUser
 from datastructures import Tweets
 
+
 class api(TwitterAPIUser):
     def __init__(self, settings_file=None):
         """
@@ -25,9 +26,10 @@ class api(TwitterAPIUser):
         """
         self.tweets = Tweets(input_file)
 
-    def collect(self, tracked_words, output_file=None, mode='a+', count=0, lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
+    def collect(self, tracked_words, output_file=None, mode='a+', count=0,
+                lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
         """
-        Given options, this function collects tweets using the Streaming API and stores them in 
+        Given options, this function collects tweets using the Streaming API and stores them in
         memory or on disk.
         """
         self.tweets = Tweets(output_file, mode)
@@ -48,7 +50,7 @@ class api(TwitterAPIUser):
 
     def filter(self, n, words, each_word=True, output_file=None, mode='a+', rt=True):
         """
-        Filter tweets from the loaded corpus by getting, for each term T in the list 'words', n 
+        Filter tweets from the loaded corpus by getting, for each term T in the list 'words', n
         tweets that contains T.
         """
         self.filtered_tweets = Tweets(output_file, mode)
@@ -72,7 +74,8 @@ class api(TwitterAPIUser):
             to_remove = set(w for w in inter if self.words_count[w] >= n)
             self.words_filtered -= to_remove
 
-            # case where we output the found tweet: words which count is < n were found in the tweet            
+            # case where we output the found tweet: words which count is < n were
+            # found in the tweet
             if inter and not to_remove:
                 self.filtered_tweets.append(tw)
                 count += 1
@@ -99,7 +102,7 @@ class api(TwitterAPIUser):
                     l = int(l)
                     break
                 else:
-                    ask = incorrect_input   
+                    ask = incorrect_input
             except ValueError:
                 ask = incorrect_input
                 continue

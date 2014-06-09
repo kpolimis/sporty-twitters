@@ -7,9 +7,10 @@ from collections import OrderedDict
 from collections import Counter
 from nltk.corpus import wordnet as wn
 
+
 class ContextSimilar(object):
     """
-    Class that allows the user to expand a vocabulary by looking for the words in a corpus that 
+    Class that allows the user to expand a vocabulary by looking for the words in a corpus that
     have the most similar contexts to the words in the vocabulary.
     """
 
@@ -22,7 +23,7 @@ class ContextSimilar(object):
         self.corpus = corpus
         self.n = n
         self.contexts = defaultdict(lambda: defaultdict(int))
-        self.similarityMatrix = defaultdict(lambda:defaultdict(float))
+        self.similarityMatrix = defaultdict(lambda: defaultdict(float))
         self.sortedSimilarWords = OrderedDict()
 
     def buildContexts(self):
@@ -33,7 +34,7 @@ class ContextSimilar(object):
         for tw in self.corpus:
             # split the tweet in a list of words
             words = re.split("\s+", tw.strip())
-            words = [x for x in words if x] # remove empty words
+            words = [x for x in words if x]  # remove empty words
 
             # build the context for each word by considering the 3 left neighbours
             # and the 3 right neighbours of the each word.
@@ -81,7 +82,7 @@ class ContextSimilar(object):
 
         # cumulate the similarity scores
         for w in self.vocabulary:
-            dict4word = self.similarityMatrix[w] 
+            dict4word = self.similarityMatrix[w]
             for context_w in dict4word:
                 total_scores[context_w] += dict4word[context_w]
 
@@ -94,14 +95,14 @@ class ContextSimilar(object):
 
     def buildSimilarityMatrix(self):
         """
-        Builds a similiraty matrix based on the cosine similarity for a given list of words. For 
-        each of the word U in the list, it computes the similarity with every word V in the 
+        Builds a similiraty matrix based on the cosine similarity for a given list of words. For
+        each of the word U in the list, it computes the similarity with every word V in the
         contexts previously built.
         """
         w = len(self.contexts)
         h = len(self.vocabulary)
         # number of elements in the similarity matrix
-        total = h*w 
+        total = h*w
 
         for k1 in self.vocabulary:
             for k2 in self.contexts.keys():
@@ -158,7 +159,7 @@ class Cooccurrences(object):
 
     def buildCooccurrences(self):
         """
-        For each word in the corpus, counts how much time each of the other words appear. Returns 
+        For each word in the corpus, counts how much time each of the other words appear. Returns
         the dictionary that contains the results of the cooccurrences counting.
         """
         for entry in self.corpus:
@@ -174,7 +175,7 @@ class Cooccurrences(object):
                 # update the cooccurrences count
                 self.cooccurrences[w].update(list_words)
 
-        return self.cooccurrences        
+        return self.cooccurrences
 
     def buildTfidf(self):
         """
@@ -192,4 +193,3 @@ class Cooccurrences(object):
         for v in self.sortedTfidf.keys():
             results += self.sortedTfidf[v][:self.n]
         return results
-    
