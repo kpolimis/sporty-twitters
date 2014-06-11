@@ -12,13 +12,17 @@ class Tweets(object):
     tweets are in a Python list or stored on disk in a file.
     """
     def __init__(self, tw_in=None, mode='a+'):
-        "Initializes an instance by loading file/list."
+        """
+        Initializes an instance by loading file/list.
+        """
         super(Tweets, self).__init__()
         self.index = 0
         self._load(tw_in, mode)
 
     def _load(self, tw_in=None, mode='a+'):
-        "Switches on the possible types of tw_in to correctly load the tweets."
+        """
+        Switches on the possible types of tw_in to correctly load the tweets.
+        """
         if not tw_in:  # if no tw_in, creates an empty list
             self.tweets = []
             self.lazy = False
