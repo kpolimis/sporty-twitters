@@ -14,6 +14,7 @@ from sklearn import cross_validation
 from sklearn import preprocessing
 from sklearn import svm
 from collections import defaultdict
+from utils import FeaturesBuilder
 
 
 class api(object):
@@ -51,29 +52,14 @@ class api(object):
         self.labels = []
 
         for tw in corpus:
-            # extract the text features
-            text = tw['text']
-            terms = re.split("\s+", text.strip())
-
             # filter on retweets
-            tw_rt = text.find("RT") != -1
+            tw_rt = tw['text'].find("RT") != -1
             if not keep_rt and tw_rt:
                 continue
 
-            # extract the other features (mentions, hashtags, etc)
-            entities = tw['entities']
-            if len(entities["user_mentions"]) != 0:
-                terms.append("USER_MENTIONS")
-            if len(entities["hashtags"]) != 0:
-                terms.append("HASHTAGS")
-            if len(text) < 50:
-                terms.append("TW_SMALL")
-            elif len(text) < 100:
-                terms.append("TW_MEDIUM")
-            else:
-                terms.append("TW_LARGE")
-
-            self.features.append(" ".join(terms))
+            fb = FeaturesBuilder(tw)
+            fb.run()
+            self.features.append(fb.toString())
 
             if labels:
                 d = {}

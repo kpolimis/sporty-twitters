@@ -16,6 +16,7 @@ class api():
         self.user = user.api(settings_file=settings_file)
 
     # Mood API #
+
     def expandVocabulary(self, vocabulary, corpus, n=20):
         return self.mood.expandVocabulary(vocabulary, corpus, n)
 
@@ -35,6 +36,7 @@ class api():
         return self.mood.benchmark(cv, scorings)
 
     # Tweets API #
+
     def load(self, input_file):
         return self.tweets.load(input_file)
 
@@ -52,6 +54,7 @@ class api():
         return self.tweets.label(labels, output_file, begin_line)
 
     # User API
+
     def getFriends(self):
         return self.user.getFriends()
 

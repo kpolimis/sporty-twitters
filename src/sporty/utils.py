@@ -9,6 +9,47 @@ import json
 from TwitterAPI import TwitterAPI
 
 
+class FeaturesBuilder(object):
+    def __init__(self, tweet, mini=50, maxi=100):
+        super(FeaturesBuilder, self).__init__()
+        self.tweet = tweet
+        self.extractors = []
+        self.mini = mini
+        self.maxi = maxi
+
+    def tokenize(self, regex="\s+"):
+        text = self.tweet['text']
+        self.features = re.split(regex, text.strip())
+        return self.features
+
+    def mentionsFeature(self):
+        entities = self.tweet['entities']
+        if len(entities["user_mentions"]) != 0:
+            self.features.append("USER_MENTIONS")
+
+    def hashtagsFeature(self):
+        entities = self.tweet['entities']
+        if len(entities["hashtags"]) != 0:
+                self.features.append("HASHTAGS")
+
+    def lengthFeature(self):
+        text = self.tweet['text']
+        if len(text) < self.mini:
+            self.features.append("TW_SMALL")
+        elif len(text) < self.maxi:
+            self.features.append("TW_MEDIUM")
+        else:
+            self.features.append("TW_LARGE")
+
+    def run(self, func=['tokenize', 'mentionsFeature', 'hashtagsFeature', 'lengthFeature']):
+        check_func = (f for f in func if f in dir(self) and callable(getattr(self, f)))
+        for f in check_func:
+            getattr(self, f)()
+
+    def toString(self):
+        return self.features.append(" ".join(self.features))
+
+
 class Cleaner():
     """
     Cleaner of corpus
