@@ -1,6 +1,6 @@
 """
 Usage: cli -h | --help
-       cli mood benchmark <labeled_tweets> [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA] [--min-df=M] 
+       cli mood benchmark <labeled_tweets> [-ump] [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA] [--min-df=M] 
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C] [--each] [--no-rt]
@@ -20,6 +20,9 @@ Options:
     -e E, --emoticons=E     Path to file containing the list of emoticons to keep
     -l, --begin-line=L      Line to start labeling the tweets [default: 0]
     -s SW, --stopwords=SW   Path to file containing the stopwords to remove from the corpus
+    -u                      Keep URLs when cleaning corpus
+    -m                      Keep mentions when cleaning corpus
+    -p                      Keep punctuation when cleaning corpus
 """
 import sporty.sporty as sporty
 import sporty.utils as utils
@@ -33,7 +36,6 @@ import os.path
 
 def main():
     args = docopt(__doc__)
-
     api = sporty.api()
     if args['tweets']:
         # Concatenate the words to track
@@ -90,8 +92,9 @@ def main():
             if len(keys) > 1:
                 api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
             tweets = Tweets(args['<labeled_tweets>'])
-            corpus = utils.Cleaner(stopwords=args['--stopwords'],
-                                   emoticons=args['--emoticons']).clean(tweets)
+            corpus = utils.Cleaner(args['--stopwords'], args['--emoticons'],
+                                   not args['-u'], not args['-m'],
+                                   not args['-p']).clean(tweets)
             tfidf_options = {'min_df': int(args['--min-df']),
                              'binary': args['--binary'],
                              'ngram_range': (1,2)}
