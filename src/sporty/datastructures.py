@@ -114,6 +114,8 @@ class TSV(object):
         """
         Loads the TSV file in the dictionaries.
         """
+	if not self.tsv_file:
+            return
         if type(self.tsv_file) == str:
             tsv_file = open(self.tsv_file)
         elif type(self.tsv_file) == file:

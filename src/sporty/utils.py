@@ -90,13 +90,12 @@ class Cleaner():
         if self.emoticons:
             for emo in self.emoticons:
                 for entry in self.emoticons[emo]:
-                    text = string.replace(text, entry, emo)
+                    text = string.replace(text, entry, " " + emo + " ")
 
         if self.rm_punctuation:
             text = ''.join(c for c in text if c not in self.exclude)
 
         text = re.sub(self.stem_regex, r'\1\1', text)
-
         return text
 
     def tokenize(self, text):
