@@ -47,7 +47,7 @@ class FeaturesBuilder(object):
             getattr(self, f)()
 
     def toString(self):
-        return self.features.append(" ".join(self.features))
+        return " ".join(self.features)
 
 
 class Cleaner():
