@@ -78,7 +78,7 @@ class FeaturesBuilder(object):
         # apply features extractors
         for f in check_func:
             getattr(self, f)()
-            self.features.append(" ".join(self.tw_features))
+        self.features.append(" ".join(self.tw_features))
         return True
 
     def extractLabels(self, tw):
@@ -90,6 +90,7 @@ class FeaturesBuilder(object):
 
     def run(self):
         for tw in self.corpus:
+            self.tw_features = []
             if self.extractFeatures(tw):
                 self.extractLabels(tw)
         return self.features, self.labels
