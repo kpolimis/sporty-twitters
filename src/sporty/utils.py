@@ -10,44 +10,88 @@ from TwitterAPI import TwitterAPI
 
 
 class FeaturesBuilder(object):
-    def __init__(self, tweet, mini=50, maxi=100):
+    def __init__(self, corpus, cleaner=None, labels=False, keep_rt=True, mini=50, maxi=100):
         super(FeaturesBuilder, self).__init__()
-        self.tweet = tweet
+        if cleaner:
+            self.cleaner = cleaner
+        else:
+            self.cleaner = Cleaner()
+        self.extract_labels = labels
+        self.keep_rt = keep_rt
         self.extractors = []
         self.mini = mini
         self.maxi = maxi
+        self.features = []
+        self.labels = []
+        self.tw_features = []
+        self.tweet = {}
+        self.default = ['caseFeature',
+                        'clean',
+                        'tokenize',
+                        'mentionsFeature',
+                        'hashtagsFeature',
+                        'lengthFeature']
+
+    def clean(self):
+        self.tweet = self.cleaner.clean_tw(self.tweet)
 
     def tokenize(self, regex="\s+"):
         text = self.tweet['text']
-        self.features = re.split(regex, text.strip())
-        return self.features
+        self.tw_features += re.split(regex, text.strip())
 
     def mentionsFeature(self):
         entities = self.tweet['entities']
         if len(entities["user_mentions"]) != 0:
-            self.features.append("USER_MENTIONS")
+            self.tw_features.append("USER_MENTIONS")
 
     def hashtagsFeature(self):
         entities = self.tweet['entities']
         if len(entities["hashtags"]) != 0:
-                self.features.append("HASHTAGS")
+                self.tw_features.append("_HASHTAGS_")
 
     def lengthFeature(self):
         text = self.tweet['text']
         if len(text) < self.mini:
-            self.features.append("TW_SMALL")
+            self.tw_features.append("TW_SMALL")
         elif len(text) < self.maxi:
-            self.features.append("TW_MEDIUM")
+            self.tw_features.append("TW_MEDIUM")
         else:
-            self.features.append("TW_LARGE")
+            self.tw_features.append("TW_LARGE")
 
-    def run(self, func=['tokenize', 'mentionsFeature', 'hashtagsFeature', 'lengthFeature']):
-        check_func = (f for f in func if f in dir(self) and callable(getattr(self, f)))
+    def caseFeature(self):
+        text = self.tweet['text']
+        caps = float(sum(1 for c in text if c.isupper()))
+        length = float(len(text))
+        if caps/length > 0.8:
+            self.tw_features.append("ALL_CAPS")
+
+    def extractFeatures(self, tw):
+        check_func = (f for f in default if f in dir(self) and callable(getattr(self, f)))
+
+        # filter on retweets
+        self.tweet = tw
+        tw_rt = self.tweet['text'].find("RT") != -1
+        if not self.keep_rt and tw_rt:
+            return False
+
+        # apply features extractors
         for f in check_func:
             getattr(self, f)()
+            self.features.append(" ".join(self.tw_features))
+        return True
 
-    def toString(self):
-        return " ".join(self.features)
+    def extractLabels(self, tw):
+        if self.extract_labels:
+            d = {}
+            for l in self.extract_labels:
+                d[l] = int(tw[l])
+            self.labels.append(d)
+
+    def run(self):
+        for tw in self.corpus:
+            if self.extractFeatures(tw):
+                self.extractLabels(tw)
+        return self.features, self.labels
 
 
 class Cleaner():
@@ -67,6 +111,7 @@ class Cleaner():
         self.rm_mentions = rm_mentions
         self.rm_punctuation = rm_punctuation
         self.rm_unicode = rm_unicode
+        self.original_corpus = []
         self.cleaned_corpus = []
 
     def preprocess(self, text):
@@ -102,14 +147,17 @@ class Cleaner():
         """
         Tokenize a string and remove given stopwords from the final list of words.
         """
-        words = re.split("[\s]+", text)
-        words = [x for x in words if x]  # remove starting space
+        words = re.split("\s+", text)
+        words = [x for x in words if x]  # remove empty words
         if self.stopwords:
             # remove stopwords
             words = [x for x in words if x not in self.stopwords]
         return words
 
-    def _clean(self, tw):
+    def clean_tw(self, tw):
+        """
+        Clean one tweet by removing stopwords, URLs, mentions, and punctuation.
+        """
         text = tw['text']
         text = self.preprocess(text)
         words = self.tokenize(text)
@@ -123,7 +171,8 @@ class Cleaner():
         """
         Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation.
         """
-        self.cleaned_corpus = (self._clean(tw) for tw in corpus)
+        self.original_corpus = corpus
+        self.cleaned_corpus = (self.clean_tw(tw) for tw in corpus)
         return self.cleaned_corpus
 
 

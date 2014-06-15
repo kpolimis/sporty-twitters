@@ -25,7 +25,6 @@ Options:
     -p                      Keep punctuation when cleaning corpus
 """
 import sporty.sporty as sporty
-import sporty.utils as utils
 from sporty.datastructures import *
 from sporty.tweets import Tweets
 from docopt import docopt
@@ -33,6 +32,7 @@ import sys
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 import os.path
+
 
 def main():
     args = docopt(__doc__)
@@ -82,7 +82,7 @@ def main():
         if args['--no-TA']:
             keys.remove('TA')
 
-        labels = {x: [0,1] for x in keys}
+        labels = {x: [0, 1] for x in keys}
 
         if args['label']:
             api.load(args['<input_tweets>'])
@@ -92,16 +92,18 @@ def main():
             if len(keys) > 1:
                 api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
             tweets = Tweets(args['<labeled_tweets>'])
-            corpus = utils.Cleaner(args['--stopwords'], args['--emoticons'],
-                                   not args['-u'], not args['-m'],
-                                   not args['-p']).clean(tweets)
+            cleaner_options = {'stopwords': args['--stopwords'],
+                               'emoticons': args['--emoticons'],
+                               'rm_mentions': not args['-m'],
+                               'rm_punctuation': not args['-p'],
+                               'rm_unicode': not args['-u']}
             tfidf_options = {'min_df': int(args['--min-df']),
                              'binary': args['--binary'],
-                             'ngram_range': (1,2)}
-            api.buildFeatures(corpus, labels=keys)
+                             'ngram_range': (1, 2)}
+            api.buildFeatures(tweets, cleaner_options=cleaner_options, labels=keys)
             api.buildVectorizer(options=tfidf_options)
             api.train()
-            api.benchmark(cv=2)
+            api.benchmark(cv=3)
 
 if __name__ == "__main__":
     main()

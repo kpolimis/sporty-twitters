@@ -14,7 +14,7 @@ from sklearn import cross_validation
 from sklearn import preprocessing
 from sklearn import svm
 from collections import defaultdict
-from utils import FeaturesBuilder
+import utils as utils
 
 
 class api(object):
@@ -43,31 +43,14 @@ class api(object):
         """
         return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
-    def buildFeatures(self, corpus, keep_rt=True, labels=False):
+    def buildFeatures(self, corpus, cleaner_options={}, labels=False, keep_rt=True):
         """
         Builds and returns a list of features and a list of labels that can then be passed to a
         sklearn vectorizer.
         """
-        self.features = []
-        self.labels = []
-
-        for tw in corpus:
-            # filter on retweets
-            tw_rt = tw['text'].find("RT") != -1
-            if not keep_rt and tw_rt:
-                continue
-
-            fb = FeaturesBuilder(tw)
-            fb.run()
-            self.features.append(fb.toString())
-
-            if labels:
-                d = {}
-                for l in labels:
-                    d[l] = int(tw[l])
-                self.labels.append(d)
-
-        return self.features, self.labels
+        cl = utils.Cleaner(**cleaner_options)
+        fb = utils.FeaturesBuilder(corpus, cleaner=cl, labels=labels, keep_rt=keep_rt)
+        return fb.run()
 
     def buildVectorizer(self, vec_type='tfidf', options={}):
         """
