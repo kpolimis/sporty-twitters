@@ -50,7 +50,9 @@ class api(object):
         """
         cl = utils.Cleaner(**cleaner_options)
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, labels=labels, keep_rt=keep_rt)
-        return fb.run()
+        self.features, self.labels = fb.run()
+
+        return self.features, self.labels
 
     def buildVectorizer(self, vec_type='tfidf', options={}):
         """
