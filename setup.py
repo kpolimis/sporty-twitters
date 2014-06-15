@@ -12,7 +12,7 @@ setup(name='Sporty Twitters',
       packages=['sporty', 'cli'],
       package_dir={'sporty': 'src/sporty', 'cli': 'src/cli'},
       py_modules=['sporty.mood', 'sporty.sporty', 'sporty.tweets', 'sporty.user', 'sporty.utils'],
-      install_requires=['nltk', 'TwitterAPI', 'docopt', 'scipy', 'numpy', 'scikit-learn'],
+      install_requires=['TwitterAPI', 'docopt', 'scipy', 'numpy', 'scikit-learn'],
       entry_points={'console_scripts': [
                     'sporty = cli.cli:main'
                     ]}
