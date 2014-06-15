@@ -12,6 +12,7 @@ from TwitterAPI import TwitterAPI
 class FeaturesBuilder(object):
     def __init__(self, corpus, cleaner=None, labels=False, keep_rt=True, mini=50, maxi=100):
         super(FeaturesBuilder, self).__init__()
+        self.corpus = corpus
         if cleaner:
             self.cleaner = cleaner
         else:
