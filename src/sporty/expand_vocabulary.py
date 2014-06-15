@@ -5,7 +5,6 @@ from math import sqrt
 from collections import defaultdict
 from collections import OrderedDict
 from collections import Counter
-from nltk.corpus import wordnet as wn
 
 
 class ContextSimilar(object):
@@ -118,25 +117,6 @@ class ContextSimilar(object):
         self.buildMostSimilar()
         return self.sortedSimilarWords[:self.n]
 
-class WordNet(object):
-    """
-    Class that allows the user to expand a vocabulary using WordNet by finding the synonyms of the
-    words in the vocabulary.
-    """
-    def __init__(self, vocabulary):
-        """
-        Initializes the WordNet instance by setting the vocabulary.
-        """
-        super(WordNet, self).__init__()
-        self.vocabulary = vocabulary
-        self.synonyms = set()
-
-    def expandVocabulary(self):
-        for w in self.vocabulary:
-            synset = wn.synsets(w, pos=wn.ADJ)
-            for s in synset:
-                self.synonyms = self.synonyms.union(set([l.name for l in s.lemmas]))
-        return self.synonyms
 
 class Cooccurrences(object):
     """
