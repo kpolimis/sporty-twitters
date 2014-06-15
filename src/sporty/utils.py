@@ -67,7 +67,7 @@ class FeaturesBuilder(object):
             self.tw_features.append("ALL_CAPS")
 
     def extractFeatures(self, tw):
-        check_func = (f for f in default if f in dir(self) and callable(getattr(self, f)))
+        check_func = (f for f in self.default if f in dir(self) and callable(getattr(self, f)))
 
         # filter on retweets
         self.tweet = tw
