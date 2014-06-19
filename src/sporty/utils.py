@@ -7,6 +7,7 @@ import string
 import codecs
 import json
 from TwitterAPI import TwitterAPI
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 class FeaturesBuilder(object):
@@ -29,6 +30,7 @@ class FeaturesBuilder(object):
         self.default = ['caseFeature',
                         'clean',
                         'tokenize',
+                        'ngrams',
                         'mentionsFeature',
                         'hashtagsFeature',
                         'lengthFeature']
@@ -39,6 +41,12 @@ class FeaturesBuilder(object):
     def tokenize(self, regex="\s+"):
         text = self.tweet['text']
         self.tw_features += re.split(regex, text.strip())
+
+    def ngrams(self, ngram_range=(2, 2)):
+        text = self.tweet['text']
+        ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
+        ngrams.fit_transform(text)
+        self.tw_features += map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
 
     def mentionsFeature(self):
         entities = self.tweet['entities']

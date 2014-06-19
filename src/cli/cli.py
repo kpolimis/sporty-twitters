@@ -89,8 +89,11 @@ def main():
             api.label(labels, args['<labeled_tweets>'], int(args['--begin-line']))
 
         elif args['benchmark']:
+            clf = SVC(kernel='linear', C=1, class_weight='auto')
             if len(keys) > 1:
-                api.mood.clf = OneVsRestClassifier(SVC(kernel='linear'))
+                api.mood.clf = OneVsRestClassifier(clf)
+            else:
+                api.mood.clf = clf
             tweets = Tweets(args['<labeled_tweets>'])
             cleaner_options = {'stopwords': args['--stopwords'],
                                'emoticons': args['--emoticons'],
@@ -99,7 +102,7 @@ def main():
                                'rm_unicode': not args['-u']}
             tfidf_options = {'min_df': int(args['--min-df']),
                              'binary': args['--binary'],
-                             'ngram_range': (1, 2)}
+                             'ngram_range': (1, 1)}
             api.buildFeatures(tweets, cleaner_options=cleaner_options, labels=keys)
             api.buildVectorizer(options=tfidf_options)
             api.train()
