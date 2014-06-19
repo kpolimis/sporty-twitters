@@ -101,9 +101,9 @@ class api(object):
                 print method_name.ljust(25) + score_str.ljust(20)
 
             if hasattr(self.clf, 'coef_'):
-                print("Top 25 keywords:")
+                print("Top 100 keywords:")
                 feature_names = np.asarray(self.vectorizer.get_feature_names())
-                top25 = np.argsort(self.clf.coef_[i])[-25:]
-                for idx in top25:
+                top100 = np.argsort(self.clf.coef_[i])[-100:]
+                for idx in top100:
                     print "\t" + feature_names[idx].ljust(15) \
                     + str(self.clf.coef_[i][idx]).ljust(10)
