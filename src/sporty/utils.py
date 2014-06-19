@@ -43,10 +43,17 @@ class FeaturesBuilder(object):
         self.tw_features += re.split(regex, text.strip())
 
     def ngrams(self, ngram_range=(2, 2)):
+	tw_save = self.tweet
+	if not self.cleaner.rm_punctuation:
+	    self.cleaner.rm_punctuation = True
+	    self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
-        ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
-        ngrams.fit_transform(text)
-        self.tw_features += map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
+	if -1 != text.find(' '):
+            ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
+	    ngrams.fit_transform([text])
+            self.tw_features += map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
+	self.tweet = tw_save
+
 
     def mentionsFeature(self):
         entities = self.tweet['entities']
