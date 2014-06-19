@@ -68,9 +68,12 @@ class api(TwitterAPIUser):
                     if 'message' in item.keys():
                         remaining = r.get_rest_quota()['remaining']
                         if not remaining:
-                            sys.stderr.write("Limit rate reached. Wait for 2 minutes.\n")
-                            sleep_sec = 120
+                            sleep_min = 5
+                            sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
+                                             " minutes.\n")
+                            sleep_sec = sleep_min*60
                             time.sleep(sleep_sec)
+                            break
                         else:
                             sys.stderr.write(str(item) + "\n")
                     else:
