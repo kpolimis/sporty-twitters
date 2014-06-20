@@ -10,7 +10,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import metrics
-from sklearn import cross_validation
+from sklearn.cross_validation import StratifiedKFold
 from sklearn import preprocessing
 from sklearn import svm
 from collections import defaultdict
@@ -24,8 +24,7 @@ class api(object):
 
     def __init__(self, expandVocabularyClass=expand_vocabulary.ContextSimilar, clf=None):
         """
-        Initializes the api class using ContextSimilar to expand vocabulary and SVC as a classifier
-        by default.
+        Initializes the api class using ContextSimilar to expand vocabulary by default.
         """
         super(api, self).__init__()
         self.expandVocabularyClass = expandVocabularyClass
@@ -34,6 +33,7 @@ class api(object):
         self.vectorizer = None
         self.X = None
         self.tfidf = None
+        self.corpus = []
         if not clf:
             self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
 
@@ -48,6 +48,7 @@ class api(object):
         Builds and returns a list of features and a list of labels that can then be passed to a
         sklearn vectorizer.
         """
+        self.corpus = corpus
         cl = utils.Cleaner(**cleaner_options)
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, labels=labels, keep_rt=keep_rt)
         self.features, self.labels = fb.run()
@@ -82,28 +83,65 @@ class api(object):
         """
         Predicts the label of entries.
         """
-        self.clf.predict(X_pred)
+        return self.clf.predict(X_pred)
 
-    def benchmark(self, cv=5, scorings=['accuracy', 'f1', 'precision', 'recall', 'roc_auc']):
+    def benchmark(self, n_folds=3, n_examples=0, top_features=False):
         """
         Computes and displays several scores to evaluate the classifier.
         """
-        for i, label in enumerate(self.labels[0]):
-            print "-"*80
-            print "- label: " + label
-            print "-"*80
-            labels = np.array([d[label] for d in self.labels])
-            for method in scorings:
-                score = cross_validation.cross_val_score(self.clf, self.X, labels,
-                                                         cv=cv, scoring=method)
-                method_name = 'Average ' + method + ': '
-                score_str = str(score.mean()) + " (+/- " + str(score.std()) + ")"
-                print method_name.ljust(25) + score_str.ljust(20)
+        label_names = self.labels[0].keys()
 
-            if hasattr(self.clf, 'coef_'):
-                print("Top 100 keywords:")
-                feature_names = np.asarray(self.vectorizer.get_feature_names())
-                top100 = np.argsort(self.clf.coef_[i])[-100:]
-                for idx in top100:
-                    print "\t" + feature_names[idx].ljust(15) \
-                    + str(self.clf.coef_[i][idx]).ljust(10)
+        for label in label_names:
+            print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
+            X = self.X
+            y = np.array([d[label] for d in self.labels])
+
+            skf = StratifiedKFold(y, n_folds=n_folds)
+            i = 0
+            for train_index, test_index in skf:
+                i += 1
+                print
+                print "= Fold " + str(i) + " ="
+                X_train, X_test = X[train_index], X[test_index]
+                y_train, y_test = y[train_index], y[test_index]
+                self.clf.fit(X_train, y_train)
+                y_pred = self.clf.predict(X_test)
+                nb_pos = str(sum([1 for x in y_test if x == 1]))
+                nb_neg = str(sum([1 for x in y_test if x == 0]))
+                posneg = nb_pos + "/" + nb_neg
+                acc = metrics.accuracy_score(y_test, y_pred)
+                f1 = metrics.f1_score(y_test, y_pred, average=None)
+                prec = metrics.precision_score(y_test, y_pred, average=None)
+                rec = metrics.recall_score(y_test, y_pred, average=None)
+                rocauc = metrics.roc_auc_score(y_test, y_pred)
+                left = 12
+                right = 15
+                print "Pos/Neg:".ljust(left) + str(posneg).ljust(right)
+                print "Accuracy:".ljust(left) + str(acc).ljust(right)
+                print "F1:".ljust(left) + str(f1).ljust(right)
+                print "Precision:".ljust(left) + str(prec).ljust(right)
+                print "Recall:".ljust(left) + str(rec).ljust(right)
+                print "ROC_AUC:".ljust(left) + str(rocauc).ljust(right)
+
+                if n_examples > 0:
+                    print "--- Diff: ---"
+                    count = n_examples
+                    for j in range(0, len(y_test)):
+                        if count < 1:
+                            break
+                        if y_test[j] != y_pred[j]:
+                            idx = test_index[j]
+                            print "True: " + str(y_test[j]) + " / Pred: " + str(y_pred[j])
+                            print self.features[idx]
+                            count -= 1
+
+            if top_features:
+                print
+                if hasattr(self.clf, 'coef_'):
+                    print("Top 50 keywords:")
+                    feature_names = np.asarray(self.vectorizer.get_feature_names())
+                    top50 = np.argsort(self.clf.coef_[0])[-50:]
+                    for idx in top50:
+                        print "\t" + feature_names[idx].ljust(15) \
+                              + str(self.clf.coef_[0][idx]).ljust(10)
+            print

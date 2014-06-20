@@ -32,8 +32,8 @@ class api():
     def predict(self, X_pred):
         return self.mood.predict(X_pred)
 
-    def benchmark(self, cv=5, scorings=['accuracy', 'f1', 'precision', 'recall', 'roc_auc']):
-        return self.mood.benchmark(cv, scorings)
+    def benchmark(self, n_folds=3, n_examples=0, top_features=False):
+        return self.mood.benchmark(n_folds, n_examples, top_features)
 
     # Tweets API #
 

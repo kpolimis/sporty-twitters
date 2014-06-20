@@ -32,6 +32,7 @@ class FeaturesBuilder(object):
                         'tokenize',
                         'ngrams',
                         'mentionsFeature',
+                        'urlsFeature'
                         'hashtagsFeature',
                         'lengthFeature']
 
@@ -43,43 +44,47 @@ class FeaturesBuilder(object):
         self.tw_features += re.split(regex, text.strip())
 
     def ngrams(self, ngram_range=(2, 2)):
-	tw_save = self.tweet
-	if not self.cleaner.rm_punctuation:
-	    self.cleaner.rm_punctuation = True
-	    self.tweet = self.cleaner.clean_tw(self.tweet)
+        tw_save = self.tweet
+        if not self.cleaner.rm_punctuation:
+            self.cleaner.rm_punctuation = True
+            self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
-	if -1 != text.find(' '):
-            ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
-	    ngrams.fit_transform([text])
-            self.tw_features += map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
-	self.tweet = tw_save
-
+        if -1 != text.find(' '):
+                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
+                ngrams.fit_transform([text])
+                self.tw_features += map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
+        self.tweet = tw_save
 
     def mentionsFeature(self):
         entities = self.tweet['entities']
         if len(entities["user_mentions"]) != 0:
-            self.tw_features.append("USER_MENTIONS")
+            self.tw_features.append("_USER_MENTIONS_")
 
     def hashtagsFeature(self):
         entities = self.tweet['entities']
         if len(entities["hashtags"]) != 0:
                 self.tw_features.append("_HASHTAGS_")
 
+    def urlsFeature(self):
+        entities = self.tweet['entities']
+        if len(entities["urls"]) != 0:
+                self.tw_features.append("_URLS_")
+
     def lengthFeature(self):
         text = self.tweet['text']
         if len(text) < self.mini:
-            self.tw_features.append("TW_SMALL")
+            self.tw_features.append("_TW_SMALL_")
         elif len(text) < self.maxi:
-            self.tw_features.append("TW_MEDIUM")
+            self.tw_features.append("_TW_MEDIUM_")
         else:
-            self.tw_features.append("TW_LARGE")
+            self.tw_features.append("_TW_LARGE_")
 
     def caseFeature(self):
         text = self.tweet['text']
         caps = float(sum(1 for c in text if c.isupper()))
         length = float(len(text))
         if caps/length > 0.8:
-            self.tw_features.append("ALL_CAPS")
+            self.tw_features.append("_ALL_CAPS_")
 
     def extractFeatures(self, tw):
         check_func = (f for f in self.default if f in dir(self) and callable(getattr(self, f)))
