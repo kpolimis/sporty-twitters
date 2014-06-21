@@ -96,7 +96,7 @@ class api(object):
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
         print "Pos/Neg:   number of positive labels/number of negative labels"
-        print "Accuracy:  average accuracy over " + str(n_folds) + "folds"
+        print "Accuracy:  average accuracy over " + str(n_folds) + " folds"
         print "F1:        F1 score for the positive label"
         print "Precision: Precision for the positive label"
         print "Recall:    Recall for the positive label"
@@ -154,16 +154,17 @@ class api(object):
                 true_class = np.abs(pred_class-1)  # y_test[idx]
                 print "True: " + str(true_class) + " / Pred: " + str(pred_class)
                 print self.features[idx]
-            print
+
+            if n_examples:
+                print
 
             if top_features:
-                print
                 if hasattr(self.clf, 'coef_'):
+                    print
                     print("--- Top 50 keywords: ---")
                     feature_names = np.asarray(self.vectorizer.get_feature_names())
                     top50 = np.argsort(self.clf.coef_[0])[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
                               + str(self.clf.coef_[0][idx]).ljust(10)
-
-            print
+                    print
