@@ -90,7 +90,18 @@ class api(object):
         Computes and displays several scores to evaluate the classifier.
         """
         label_names = self.labels[0].keys()
+        corpus = self.corpus.tolist()
 
+        print "#### Mood Benchmark ####"
+        print "Classifier: " + str(self.clf)
+        print "Labels: " + str(label_names)
+        print "Pos/Neg:   number of positive labels/number of negative labels"
+        print "Accuracy:  average accuracy over " + str(n_folds) + "folds"
+        print "F1:        F1 score for the positive label"
+        print "Precision: Precision for the positive label"
+        print "Recall:    Recall for the positive label"
+        print "ROC AUC:   Area Under the ROC-Curve"
+        print
         for label in label_names:
             print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
             X = self.X
@@ -98,50 +109,61 @@ class api(object):
 
             skf = StratifiedKFold(y, n_folds=n_folds)
             i = 0
+            scores = defaultdict(list)
+            wrong_class = set()
             for train_index, test_index in skf:
                 i += 1
-                print
-                print "= Fold " + str(i) + " ="
                 X_train, X_test = X[train_index], X[test_index]
                 y_train, y_test = y[train_index], y[test_index]
+
                 self.clf.fit(X_train, y_train)
                 y_pred = self.clf.predict(X_test)
-                nb_pos = str(sum([1 for x in y_test if x == 1]))
-                nb_neg = str(sum([1 for x in y_test if x == 0]))
-                posneg = nb_pos + "/" + nb_neg
-                acc = metrics.accuracy_score(y_test, y_pred)
-                f1 = metrics.f1_score(y_test, y_pred, average=None)
-                prec = metrics.precision_score(y_test, y_pred, average=None)
-                rec = metrics.recall_score(y_test, y_pred, average=None)
-                rocauc = metrics.roc_auc_score(y_test, y_pred)
-                left = 12
-                right = 15
-                print "Pos/Neg:".ljust(left) + str(posneg).ljust(right)
-                print "Accuracy:".ljust(left) + str(acc).ljust(right)
-                print "F1:".ljust(left) + str(f1).ljust(right)
-                print "Precision:".ljust(left) + str(prec).ljust(right)
-                print "Recall:".ljust(left) + str(rec).ljust(right)
-                print "ROC_AUC:".ljust(left) + str(rocauc).ljust(right)
+
+                scores['nb_pos'].append(sum([1 for x in y_test if x == 1]))
+                scores['nb_neg'].append(sum([1 for x in y_test if x == 0]))
+                scores['acc'].append(metrics.accuracy_score(y_test, y_pred))
+                scores['f1'].append(metrics.f1_score(y_test, y_pred))
+                scores['prec'].append(metrics.precision_score(y_test, y_pred))
+                scores['rec'].append(metrics.recall_score(y_test, y_pred))
+                scores['rocauc'].append(metrics.roc_auc_score(y_test, y_pred))
 
                 if n_examples > 0:
-                    print "--- Diff: ---"
-                    count = n_examples
                     for j in range(0, len(y_test)):
-                        if count < 1:
-                            break
                         if y_test[j] != y_pred[j]:
-                            idx = test_index[j]
-                            print "True: " + str(y_test[j]) + " / Pred: " + str(y_pred[j])
-                            print self.features[idx]
-                            count -= 1
+                            wrong_class.add(test_index[j])
+
+            self.scores = scores
+            left = 12
+            right = 15
+
+            posneg = str(np.mean(scores['nb_pos'])) + "/" + str(np.mean(scores['nb_neg']))
+            print "Pos/Neg:".ljust(left) + posneg.ljust(right)
+            print "Accuracy:".ljust(left) + str(np.mean(scores['acc'])).ljust(right)
+            print "F1:".ljust(left) + str(np.mean(scores['f1'])).ljust(right)
+            print "Precision:".ljust(left) + str(np.mean(scores['prec'])).ljust(right)
+            print "Recall:".ljust(left) + str(np.mean(scores['rec'])).ljust(right)
+            print "ROC AUC:".ljust(left) + str(np.mean(scores['rocauc'])).ljust(right)
+
+            if n_examples:
+                print
+                print "--- " + str(n_examples) + " Misclassified Tweets ---"
+
+            for j in range(min(n_examples, len(wrong_class))):
+                idx = wrong_class.pop()
+                pred_class = corpus[idx][label]  # y_pred[idx]
+                true_class = np.abs(pred_class-1)  # y_test[idx]
+                print "True: " + str(true_class) + " / Pred: " + str(pred_class)
+                print self.features[idx]
+            print
 
             if top_features:
                 print
                 if hasattr(self.clf, 'coef_'):
-                    print("Top 50 keywords:")
+                    print("--- Top 50 keywords: ---")
                     feature_names = np.asarray(self.vectorizer.get_feature_names())
                     top50 = np.argsort(self.clf.coef_[0])[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
                               + str(self.clf.coef_[0][idx]).ljust(10)
+
             print

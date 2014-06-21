@@ -33,6 +33,8 @@ from sporty.tweets import Tweets
 from docopt import docopt
 import sys
 from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.multiclass import OneVsRestClassifier
 import os.path
 
@@ -92,7 +94,9 @@ def main():
             api.label(labels, args['<labeled_tweets>'], int(args['--begin-line']))
 
         elif args['benchmark']:
-            clf = SVC(kernel='linear', C=1, class_weight='auto')
+            # clf = SVC(kernel='linear', C=1, class_weight='auto')
+            clf = LogisticRegression(class_weight='auto')
+            # clf = SVC(gamma=2., class_weight='auto')
             if len(keys) > 1:
                 api.mood.clf = OneVsRestClassifier(clf)
             else:
