@@ -3,6 +3,7 @@ from tweets import Tweets
 from utils import TwitterAPIUser
 import time
 import sys
+import requests
 
 
 class api(TwitterAPIUser):
@@ -84,3 +85,31 @@ class api(TwitterAPIUser):
                             return self.tweets
             except Exception, e:
                 raise e
+
+    def genderFromCensus(self):
+        males, females = get_census_names()
+        for tw in tweets:
+            names = tw['user']['name'].lower().split()
+            if len(names) == 0:
+                names = ['']
+            name = names[0]
+            if name in males:
+                tw['user']['gender'] = 'm'
+            elif name in females:
+                tw['user']['gender'] = 'f'
+            else:
+                tw['user']['gender'] = 'n'
+        return tweets
+
+    def get_census_names():
+        males_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.male.first'
+        females_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.female.first'
+        males = requests.get(males_url).text.split('\n')
+        males = [m.split()[0].lower() for m in males if m]
+        females = requests.get(females_url).text.split('\n')
+        females = [f.split()[0].lower() for f in females if f]
+        # Remove ambiguous names (those that appear on both lists)
+        ambiguous = [f for f in females + males if f in males and f in females]
+        males = [m for m in males if m not in ambiguous]
+        females = [f for f in females if f not in ambiguous]
+        return set(males), set(females)
