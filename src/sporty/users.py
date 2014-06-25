@@ -79,7 +79,6 @@ class api(TwitterAPIUser):
             user_path = os.path.join(output_dir, user_id)
             if os.path.isfile(user_path):  # friends list already exists for this user
                 continue
-            sys.stderr.write(user_id)
             tweets = Tweets(user_path, 'a+')
             i = 0
             max_id = 0
@@ -88,7 +87,7 @@ class api(TwitterAPIUser):
                 try:
                     r = self.getUserStream(user_id, max_id=max_id)
                     if not r.get_iterator().results:
-                        return tweets
+                        keep_try = False
                     for item in r.get_iterator():
                         if 'message' in item.keys():
                             remaining = r.get_rest_quota()['remaining']
@@ -112,6 +111,7 @@ class api(TwitterAPIUser):
                     if item:
                         sys.stderr.write(str(item) + "\n")
                     raise e
+        print "here"
 
     def labelGender(self):
         males, females = getCensusNames()
