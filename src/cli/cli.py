@@ -66,16 +66,14 @@ def main():
                        output_file=args['<output_tweets>'], rt=not args['--no-rt'])
 
     elif args['users']:
-        print "users"
         # Authenticate to the Twitter API
-        api.users = sporty.users.api(settings_file=args['<settings_file>'])
-        uid_list = LSF(args['<user_ids_file>']).tolist()
-        print "users: " + str(uid_list)
+        api.users = sporty.users.api(args['<user_ids_file>'],
+                                     args['<settings_file>'])
         if args['collect_tweets']:
-            api.collectTweets(uid_list, args['<output_dir>'], int(args['--count']))
+            api.collectTweets(args['<output_dir>'], int(args['--count']))
 
         if args['list_friends']:
-            api.getFriends(uid_list, args['<output_dir>'])
+            api.getFriends(args['<output_dir>'])
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
