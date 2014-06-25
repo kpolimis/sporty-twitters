@@ -95,13 +95,15 @@ class api(object):
         print "#### Mood Benchmark ####"
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
-        print "Pos/Neg:   number of positive labels/number of negative labels"
-        print "Accuracy:  average accuracy over " + str(n_folds) + " folds"
-        print "F1:        F1 score for the positive label"
-        print "Precision: Precision for the positive label"
-        print "Recall:    Recall for the positive label"
-        print "ROC AUC:   Area Under the ROC-Curve"
-        print
+        
+        # print "Pos/Neg:   number of positive labels/number of negative labels"
+        # print "Accuracy:  average accuracy over " + str(n_folds) + " folds"
+        # print "F1:        F1 score for the positive label"
+        # print "Precision: Precision for the positive label"
+        # print "Recall:    Recall for the positive label"
+        # print "ROC AUC:   Area Under the ROC-Curve"
+        # print
+
         for label in label_names:
             print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
             X = self.X
@@ -136,7 +138,7 @@ class api(object):
             left = 12
             right = 15
 
-            posneg = str(np.mean(scores['nb_pos'])) + "/" + str(np.mean(scores['nb_neg']))
+            posneg = str(sum(scores['nb_pos'])) + "/" + str(sum(scores['nb_neg']))
             print "Pos/Neg:".ljust(left) + posneg.ljust(right)
             print "Accuracy:".ljust(left) + str(np.mean(scores['acc'])).ljust(right)
             print "F1:".ljust(left) + str(np.mean(scores['f1'])).ljust(right)

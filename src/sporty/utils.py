@@ -25,11 +25,12 @@ class FeaturesBuilder(object):
         self.maxi = maxi
         self.features = []
         self.labels = []
-        self.tw_features = []
+        self.tw_features = set()
         self.tweet = {}
         self.default = ['caseFeature',
                         'clean',
-                        'tokenize',
+                        'word_tokenize',
+                        'char_tokenize',
                         'ngrams',
                         'mentionsFeature',
                         'urlsFeature'
@@ -39,9 +40,17 @@ class FeaturesBuilder(object):
     def clean(self):
         self.tweet = self.cleaner.clean_tw(self.tweet)
 
-    def tokenize(self, regex="\s+"):
+    def tokenize(self, analyzer='word', ngram_range=(1, 1)):
         text = self.tweet['text']
-        self.tw_features += re.split(regex, text.strip())
+        vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range)
+        vec.fit_transform([text])
+        self.tw_features = self.tw_features.union(set(vec.get_feature_names()))
+
+    def word_tokenize(self):
+        self.tokenize()
+
+    def char_tokenize(self):
+        self.tokenize(analyzer='char_wb', ngram_range=(3, 3))
 
     def ngrams(self, ngram_range=(2, 2)):
         tw_save = self.tweet
@@ -52,43 +61,43 @@ class FeaturesBuilder(object):
         if -1 != text.find(' '):
                 ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
                 ngrams.fit_transform([text])
-                self.tw_features += map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
+                ngrams_undersc = map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
+                self.tw_features = self.tw_features.union(set(ngrams_undersc))
         self.tweet = tw_save
 
     def mentionsFeature(self):
         entities = self.tweet['entities']
         if len(entities["user_mentions"]) != 0:
-            self.tw_features.append("_USER_MENTIONS_")
+            self.tw_features.add("_USER_MENTIONS_")
 
     def hashtagsFeature(self):
         entities = self.tweet['entities']
         if len(entities["hashtags"]) != 0:
-                self.tw_features.append("_HASHTAGS_")
+                self.tw_features.add("_HASHTAGS_")
 
     def urlsFeature(self):
         entities = self.tweet['entities']
         if len(entities["urls"]) != 0:
-                self.tw_features.append("_URLS_")
+                self.tw_features.add("_URLS_")
 
     def lengthFeature(self):
         text = self.tweet['text']
         if len(text) < self.mini:
-            self.tw_features.append("_TW_SMALL_")
+            self.tw_features.add("_TW_SMALL_")
         elif len(text) < self.maxi:
-            self.tw_features.append("_TW_MEDIUM_")
+            self.tw_features.add("_TW_MEDIUM_")
         else:
-            self.tw_features.append("_TW_LARGE_")
+            self.tw_features.add("_TW_LARGE_")
 
     def caseFeature(self):
         text = self.tweet['text']
         caps = float(sum(1 for c in text if c.isupper()))
         length = float(len(text))
         if caps/length > 0.8:
-            self.tw_features.append("_ALL_CAPS_")
+            self.tw_features.add("_ALL_CAPS_")
 
     def extractFeatures(self, tw):
         check_func = (f for f in self.default if f in dir(self) and callable(getattr(self, f)))
-
         # filter on retweets
         self.tweet = tw
         tw_rt = self.tweet['text'].find("RT") != -1
@@ -110,7 +119,7 @@ class FeaturesBuilder(object):
 
     def run(self):
         for tw in self.corpus:
-            self.tw_features = []
+            self.tw_features = set()
             if self.extractFeatures(tw):
                 self.extractLabels(tw)
         return self.features, self.labels
