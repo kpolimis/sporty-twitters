@@ -76,14 +76,15 @@ class api(TwitterAPIUser):
         Returns the 3200 last tweets of a user.
         """
         for user_id in self.user_ids:
-            sys.stderr.write(str(type(user_id)) + " " + str(user_id) + "\n")
             user_path = os.path.join(output_dir, user_id)
             if os.path.isfile(user_path):  # friends list already exists for this user
                 continue
+            sys.stderr.write(user_id)
             tweets = Tweets(user_path, 'a+')
             i = 0
             max_id = 0
-            while True:
+            keep_try = True
+            while keep_try:
                 try:
                     r = self.getUserStream(user_id, max_id=max_id)
                     if not r.get_iterator().results:
@@ -105,7 +106,8 @@ class api(TwitterAPIUser):
                             tweets.append(item)
                             i += 1
                             if count and i >= count:
-                                return tweets
+                                keep_try = False
+                                break
                 except Exception, e:
                     if item:
                         sys.stderr.write(str(item) + "\n")
