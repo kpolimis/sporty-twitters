@@ -4,28 +4,36 @@ from utils import TwitterAPIUser
 import time
 import sys
 import requests
+import os.path
 
 
 class api(TwitterAPIUser):
-    def __init__(self, user_id=0, settings_file=None):
+    def __init__(self, settings_file=None):
         super(api, self).__init__(settings_file)
-        self.user_id = user_id
-        self.tweets = Tweets()
-        self.friends = set()
 
-    def getFriends(self):
+    def getFriends(self, user_id, output_dir="./"):
         """
         Returns the list of friends (intersection between followees and followers) for a user.
         """
+        # case where user_id is a list of user_id, recursive call to the function
+        if type(user_id) == list:
+            uid_iter = user_id
+            for user_id in uid_iter:
+                self.getFriends(user_id, output_dir)
+            return
+
+        # basic case: user_id is not a list
+        friends = set()
         cursor = -1
         followees = set()
         followers = set()
         # Get the followees
         while cursor != 0:
             try:
-                response = json.loads(self.getFolloweesStream(self.user_id, cursor).text)
+                response = json.loads(self.getFolloweesStream(user_id, cursor).text)
                 if 'errors' in response.keys():
                     sleep_min = 5
+                    sys.stderr.write(json.dumps(response))
                     sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                      " minutes.\n")
                     sleep_sec = sleep_min*60
@@ -39,7 +47,7 @@ class api(TwitterAPIUser):
         # Get the followers
         while cursor != 0:
             try:
-                response = json.loads(self.getFollowersStream(self.user_id, cursor).text)
+                response = json.loads(self.getFollowersStream(user_id, cursor).text)
                 if 'errors' in response.keys():
                     sleep_min = 5
                     sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
@@ -51,22 +59,43 @@ class api(TwitterAPIUser):
                 followers = followers.union(set(response['ids']))
             except Exception, e:
                 raise e
-        # Return the intersection between followers and followees
-        self.friends = followees.intersection(followers)
-        return self.friends
 
-    def collectTweets(self, count=3200, output_file=None, mode='a+'):
+        # Get the intersection between followers and followees
+        friends = followees.intersection(followers)
+
+        # Output the result
+        user_path = os.path.join(output_dir, user_id)
+        if os.path.isfile(user_path):  # friends list already exists for this user
+            return
+        with open(user_path, 'w') as f:
+            for friend_id in friends:
+                f.write(str(friend_id) + "\n")
+
+        return friends
+
+    def collectTweets(self, user_id, output_dir="./", count=3200):
         """
         Returns the 3200 last tweets of a user.
         """
-        self.tweets = Tweets(output_file, mode)
+        # case where user_id is a list of user_id, recursive call to the function
+        if type(user_id) == list:
+            uid_iter = user_id
+            for user_id in uid_iter:
+                self.collectTweets(user_id, output_dir, count)
+            return
+
+        # basic case: user_id is not a list
+        user_path = os.path.join(output_dir, user_id)
+        if os.path.isfile(user_path):  # friends list already exists for this user
+            return
+        tweets = Tweets(user_path, 'a+')
         i = 0
         max_id = 0
         while True:
             try:
-                r = self.getUserStream(self.user_id, max_id=max_id)
+                r = self.getUserStream(user_id, max_id=max_id)
                 if not r.get_iterator().results:
-                    return self.tweets
+                    return tweets
                 for item in r.get_iterator():
                     if 'message' in item.keys():
                         remaining = r.get_rest_quota()['remaining']
@@ -81,15 +110,15 @@ class api(TwitterAPIUser):
                             sys.stderr.write(str(item) + "\n")
                     else:
                         max_id = item['id'] - 1
-                        self.tweets.append(item)
+                        tweets.append(item)
                         i += 1
                         if count and i >= count:
-                            return self.tweets
+                            return tweets
             except Exception, e:
                 raise e
 
     def genderFromCensus(self):
-        males, females = get_census_names()
+        males, females = getCensusNames()
         for tw in tweets:
             names = tw['user']['name'].lower().split()
             if len(names) == 0:
@@ -103,7 +132,7 @@ class api(TwitterAPIUser):
                 tw['user']['gender'] = 'n'
         return tweets
 
-    def get_census_names():
+    def getCensusNames():
         males_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.male.first'
         females_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.female.first'
         males = requests.get(males_url).text.split('\n')

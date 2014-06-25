@@ -66,25 +66,16 @@ def main():
                        output_file=args['<output_tweets>'], rt=not args['--no-rt'])
 
     elif args['users']:
+        print "users"
         # Authenticate to the Twitter API
-        api.user = sporty.user.api(settings_file=args['<settings_file>'])
+        api.users = sporty.users.api(settings_file=args['<settings_file>'])
+        uid_list = LSF(args['<user_ids_file>']).tolist()
+        print "users: " + str(uid_list)
         if args['collect_tweets']:
-            for uid in LSF(args['<user_ids_file>']).tolist():
-                user_path = os.path.join(args['<output_dir>'], uid)
-                if os.path.isfile(user_path):
-                    continue
-                api.user.user_id = int(uid)
-                api.collectTweets(int(args['--count']), user_path)
+            api.collectTweets(uid_list, args['<output_dir>'], int(args['--count']))
 
         if args['list_friends']:
-            for uid in LSF(args['<user_ids_file>']).tolist():
-                user_path = os.path.join(args['<output_dir>'], uid)
-                if os.path.isfile(user_path):
-                    continue
-                api.user.user_id = int(uid)
-                with open(user_path, 'w') as f:
-                    for friend_id in api.getFriends():
-                        f.write(str(friend_id) + "\n")
+            api.getFriends(uid_list, args['<output_dir>'])
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
