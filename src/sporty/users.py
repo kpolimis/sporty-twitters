@@ -66,7 +66,7 @@ class api(TwitterAPIUser):
             # Output the result
             user_path = os.path.join(output_dir, user_id)
             if os.path.isfile(user_path):  # friends list already exists for this user
-                return
+                continue
             with open(user_path, 'w') as f:
                 for friend_id in friends:
                     f.write(str(friend_id) + "\n")
@@ -75,10 +75,11 @@ class api(TwitterAPIUser):
         """
         Returns the 3200 last tweets of a user.
         """
-        for user_id in user_ids:
+        for user_id in self.user_ids:
+            sys.stderr.write(str(type(user_id)) + " " + str(user_id) + "\n")
             user_path = os.path.join(output_dir, user_id)
             if os.path.isfile(user_path):  # friends list already exists for this user
-                return
+                continue
             tweets = Tweets(user_path, 'a+')
             i = 0
             max_id = 0
@@ -106,6 +107,8 @@ class api(TwitterAPIUser):
                             if count and i >= count:
                                 return tweets
                 except Exception, e:
+                    if item:
+                        sys.stderr.write(str(item) + "\n")
                     raise e
 
     def labelGender(self):
