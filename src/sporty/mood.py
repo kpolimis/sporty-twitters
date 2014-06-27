@@ -66,7 +66,6 @@ class api(object):
             self.vectorizer = TfidfVectorizer(**options)
             self.tfidf = self.vectorizer.fit_transform(self.features)
             self.X = preprocessing.scale(self.tfidf.toarray())
-            print self.vectorizer.get_feature_names()
             return self.X
         else:
             raise Exception("Vectorizer type (" + str(vec_type) + ")not supported yet.")
