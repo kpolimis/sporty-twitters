@@ -160,19 +160,25 @@ class api(object):
                 pred_class = np.abs(true_class-1)  # y_test[idx]
                 print "True: " + str(true_class) + " / Pred: " + str(pred_class)
                 print corpus[idx]['text'].encode('ascii', 'ignore')
+                ft_idx = []
+                ft_w = []
+                i = 0
                 for ft in self.features[idx].split():
                     if ft.lower() in self.vectorizer.get_feature_names():
-                        ft_idx = self.vectorizer.get_feature_names().index(ft.lower())
+                        real_idx = self.vectorizer.get_feature_names().index(ft.lower())
+                        ft_idx.append(real_idx)
                         if hascoef:
-                            ft_w = self.clf.coef_[0][ft_idx]
+                            ft_w.append(self.clf.coef_[0][real_idx])
                         else:
-                            ft_w = 0
-                    else:
-                        ft_w = 0
+                            ft_w.append(0)
+                    i += 1
+                sorted_w_idx = np.argsort(ft_w)
+                for k in sorted_w_idx:
                     left = 30
                     right = 20
-                    ft = ft.encode('ascii', 'ignore')
-                    print ("\t" + ft + ": ").ljust(left) + str(ft_w).ljust(right)
+                    ft = self.vectorizer.get_feature_names()[ft_idx[k]].encode('ascii', 'ignore')
+                    w = ft_w[k]
+                    print ("\t" + ft + ": ").ljust(left) + str(w).ljust(right)
             if n_examples:
                 print
 
