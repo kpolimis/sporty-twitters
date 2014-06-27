@@ -43,14 +43,14 @@ class api(object):
         """
         return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
-    def buildFeatures(self, corpus, cleaner_options={}, labels=False, keep_rt=True):
+    def buildFeatures(self, corpus, cleaner_options={}, fb_options={}):
         """
         Builds and returns a list of features and a list of labels that can then be passed to a
         sklearn vectorizer.
         """
         self.corpus = corpus
         cl = utils.Cleaner(**cleaner_options)
-        fb = utils.FeaturesBuilder(corpus, cleaner=cl, labels=labels, keep_rt=keep_rt)
+        fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
         self.features, self.labels = fb.run()
 
         return self.features, self.labels
@@ -95,7 +95,7 @@ class api(object):
         print "#### Mood Benchmark ####"
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
-        
+
         # print "Pos/Neg:   number of positive labels/number of negative labels"
         # print "Accuracy:  average accuracy over " + str(n_folds) + " folds"
         # print "F1:        F1 score for the positive label"
@@ -124,10 +124,11 @@ class api(object):
                 scores['nb_pos'].append(sum([1 for x in y_test if x == 1]))
                 scores['nb_neg'].append(sum([1 for x in y_test if x == 0]))
                 scores['acc'].append(metrics.accuracy_score(y_test, y_pred))
-                scores['f1'].append(metrics.f1_score(y_test, y_pred))
-                scores['prec'].append(metrics.precision_score(y_test, y_pred))
-                scores['rec'].append(metrics.recall_score(y_test, y_pred))
+                scores['f1'].append(metrics.f1_score(y_test, y_pred, average='macro'))
+                scores['prec'].append(metrics.precision_score(y_test, y_pred, average='macro'))
+                scores['rec'].append(metrics.recall_score(y_test, y_pred, average='macro'))
                 scores['rocauc'].append(metrics.roc_auc_score(y_test, y_pred))
+                scores['confusion'].append(metrics.confusion_matrix(y_test, y_pred))
 
                 if n_examples > 0:
                     for j in range(0, len(y_test)):
@@ -145,6 +146,12 @@ class api(object):
             print "Precision:".ljust(left) + str(np.mean(scores['prec'])).ljust(right)
             print "Recall:".ljust(left) + str(np.mean(scores['rec'])).ljust(right)
             print "ROC AUC:".ljust(left) + str(np.mean(scores['rocauc'])).ljust(right)
+            print "Confusion Matrix:".ljust(left)
+            print str(reduce(np.add, scores['confusion'])).ljust(left)
+
+            hascoef = False
+            if hasattr(self.clf, 'coef_'):
+                hascoef = True
 
             if n_examples:
                 print
@@ -152,21 +159,42 @@ class api(object):
 
             for j in range(min(n_examples, len(wrong_class))):
                 idx = wrong_class.pop()
-                pred_class = corpus[idx][label]  # y_pred[idx]
-                true_class = np.abs(pred_class-1)  # y_test[idx]
+                true_class = self.labels[idx][label]  # y_pred[idx]
+                pred_class = np.abs(true_class-1)  # y_test[idx]
                 print "True: " + str(true_class) + " / Pred: " + str(pred_class)
-                print self.features[idx]
-
+                print corpus[idx]['text'].encode('ascii', 'ignore')
+                ft_idx = []
+                ft_w = []
+                i = 0
+                for ft in self.features[idx].split():
+                    if ft in self.vectorizer.get_feature_names():
+                        real_idx = self.vectorizer.get_feature_names().index(ft)
+                        ft_idx.append(real_idx)
+                        if hascoef:
+                            ft_w.append(self.clf.coef_[0][real_idx])
+                        else:
+                            ft_w.append(0)
+                    i += 1
+                sorted_w_idx = np.argsort(ft_w)
+                for k in sorted_w_idx:
+                    left = 30
+                    right = 20
+                    ft = self.vectorizer.get_feature_names()[ft_idx[k]].encode('ascii', 'ignore')
+                    w = ft_w[k]
+                    print ("\t" + ft + ": ").ljust(left) + str(w).ljust(right)
             if n_examples:
                 print
 
             if top_features:
-                if hasattr(self.clf, 'coef_'):
-                    print
-                    print("--- Top 50 keywords: ---")
+                print
+                if hascoef:
+                    print("--- Top 50 features [over " + str(len(self.clf.coef_[0])) + "]: ---")
                     feature_names = np.asarray(self.vectorizer.get_feature_names())
                     top50 = np.argsort(self.clf.coef_[0])[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
                               + str(self.clf.coef_[0][idx]).ljust(10)
-                    print
+                else:
+                    print("Error while printing the top features: the classifier does not have a "
+                          + "coef_ attribute.")
+                print
