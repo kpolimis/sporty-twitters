@@ -128,6 +128,7 @@ class api(object):
                 scores['prec'].append(metrics.precision_score(y_test, y_pred, average='macro'))
                 scores['rec'].append(metrics.recall_score(y_test, y_pred, average='macro'))
                 scores['rocauc'].append(metrics.roc_auc_score(y_test, y_pred))
+                scores['confusion'].append(metrics.confusion_matrix(y_test, y_pred))
 
                 if n_examples > 0:
                     for j in range(0, len(y_test)):
@@ -145,6 +146,8 @@ class api(object):
             print "Precision:".ljust(left) + str(np.mean(scores['prec'])).ljust(right)
             print "Recall:".ljust(left) + str(np.mean(scores['rec'])).ljust(right)
             print "ROC AUC:".ljust(left) + str(np.mean(scores['rocauc'])).ljust(right)
+            print "Confusion Matrix:".ljust(left)
+            print str(reduce(np.add, scores['confusion'])).ljust(left)
 
             hascoef = False
             if hasattr(self.clf, 'coef_'):
