@@ -66,6 +66,7 @@ class api(object):
             self.vectorizer = TfidfVectorizer(**options)
             self.tfidf = self.vectorizer.fit_transform(self.features)
             self.X = preprocessing.scale(self.tfidf.toarray())
+            print self.vectorizer.get_feature_names()
             return self.X
         else:
             raise Exception("Vectorizer type (" + str(vec_type) + ")not supported yet.")
@@ -167,8 +168,8 @@ class api(object):
                 ft_w = []
                 i = 0
                 for ft in self.features[idx].split():
-                    if ft.lower() in self.vectorizer.get_feature_names():
-                        real_idx = self.vectorizer.get_feature_names().index(ft.lower())
+                    if ft in self.vectorizer.get_feature_names():
+                        real_idx = self.vectorizer.get_feature_names().index(ft)
                         ft_idx.append(real_idx)
                         if hascoef:
                             ft_w.append(self.clf.coef_[0][real_idx])

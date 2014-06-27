@@ -8,6 +8,7 @@ import codecs
 import json
 from TwitterAPI import TwitterAPI
 from sklearn.feature_extraction.text import CountVectorizer
+from lexicon import Lexicon
 
 
 class FeaturesBuilder(object):
@@ -18,7 +19,8 @@ class FeaturesBuilder(object):
                  labels_reduce_f=None,
                  keep_rt=True,
                  mini=50,
-                 maxi=100):
+                 maxi=100,
+                 liwc_path=None):
         super(FeaturesBuilder, self).__init__()
         self.corpus = corpus
         if cleaner:
@@ -35,12 +37,16 @@ class FeaturesBuilder(object):
         self.labels_reduce_f = labels_reduce_f
         self.tw_features = set()
         self.tweet = {}
+        self.lexicon = None
+        if liwc_path:
+            self.lexicon = Lexicon(liwc_path)
         if not func_list:
             self.func_list = ['caseFeature',
                               'lengthFeature',
+                              'liwcFeature',
                               'clean',
-                              'word_tokenize',
-                              #'char_tokenize',
+                              'wordTokenize',
+                              #'charTokenize',
                               'ngrams',
                               'mentionsFeature',
                               'urlsFeature'
@@ -53,14 +59,14 @@ class FeaturesBuilder(object):
 
     def tokenize(self, analyzer='word', ngram_range=(1, 1)):
         text = self.tweet['text']
-        vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range)
+        vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range, lowercase=False)
         vec.fit_transform([text])
         self.tw_features = self.tw_features.union(set(vec.get_feature_names()))
 
-    def word_tokenize(self):
+    def wordTokenize(self):
         self.tokenize()
 
-    def char_tokenize(self):
+    def charTokenize(self):
         self.tokenize(analyzer='char_wb', ngram_range=(3, 3))
 
     def ngrams(self, ngram_range=(2, 2)):
@@ -70,7 +76,7 @@ class FeaturesBuilder(object):
             self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
         if -1 != text.find(' '):
-                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1)
+                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1, lowercase=False)
                 ngrams.fit_transform([text])
                 ngrams_undersc = map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
                 self.tw_features = self.tw_features.union(set(ngrams_undersc))
@@ -107,6 +113,13 @@ class FeaturesBuilder(object):
         if caps/length > 0.8:
             self.tw_features.add("_ALL_CAPS_")
 
+    def liwcFeature(self):
+        if self.lexicon:
+            words = self.tweet['text'].split()
+            categories = self.lexicon.categories_for_tokens(words)
+            features = reduce(lambda x, y: set(x).union(set(y)), categories)
+            self.tw_features = self.tw_features.union(features)
+
     def extractFeatures(self, tw):
         check_func = (f for f in self.func_list if f in dir(self) and callable(getattr(self, f)))
         # filter on retweets
@@ -118,6 +131,7 @@ class FeaturesBuilder(object):
         # apply features extractors
         for f in check_func:
             getattr(self, f)()
+            #print self.tw_features
         self.features.append(" ".join(self.tw_features))
         return True
 

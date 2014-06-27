@@ -2,7 +2,7 @@
 Usage: cli -h | --help
        cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [--no-AH --no-DD --no-TA]
                           [--min-df=M] [--n-folds=K] [--n-examples=N] [--clf=C [--clf-options=O]]
-                          [--reduce-func=R] [--features-func=F]
+                          [--reduce-func=R] [--features-func=F] [--liwc=L]
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C]
@@ -16,6 +16,7 @@ Options:
                             'decision-tree', 'naive-bayes', 'kneighbors'
     --clf-options=O         Options for the classifier in JSON
     --each                  Filter C tweets for each of the tracked words
+    --liwc=L                Path to the LIWC dictionary
     --min-df=M              See min_df from sklearn vectorizers [default: 1]
     --n-examples=N          Number of wrong classified examples to display [default: 0]
     --n-folds=K             Number of folds [default: 3]
@@ -128,7 +129,8 @@ def main():
                                'rm_unicode': not args['-u']}
             tfidf_options = {'min_df': int(args['--min-df']),
                              'binary': args['--binary'],
-                             'ngram_range': (1, 1)}
+                             'ngram_range': (1, 1),
+                             'lowercase': False}
             # get the list of functions to run from the FeaturesBuilder
             if args['--features-func']:
                 func_list = eval(args['--features-func'])
@@ -144,7 +146,8 @@ def main():
                 reduce_func = None
             fb_options = {"labels": keys,
                           "labels_reduce_f": reduce_func,
-                          "func_list": func_list}
+                          "func_list": func_list,
+                          "liwc_path": args['--liwc']}
 
             # Load the tweets
             tweets = Tweets(args['<labeled_tweets>'])
