@@ -45,6 +45,8 @@ class FeaturesBuilder(object):
                               'mentionsFeature',
                               'urlsFeature'
                               'hashtagsFeature']
+        else:
+            self.func_list = func_list
 
     def clean(self):
         self.tweet = self.cleaner.clean_tw(self.tweet)

@@ -171,6 +171,7 @@ class api(object):
                         ft_w = 0
                     left = 30
                     right = 20
+                    ft = ft.encode('ascii', 'ignore')
                     print ("\t" + ft + ": ").ljust(left) + str(ft_w).ljust(right)
             if n_examples:
                 print

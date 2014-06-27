@@ -2,7 +2,7 @@
 Usage: cli -h | --help
        cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [--no-AH --no-DD --no-TA]
                           [--min-df=M] [--n-folds=K] [--n-examples=N] [--clf=C [--clf-options=O]]
-                          [--reduce-func=R]
+                          [--reduce-func=R] [--features-func=F]
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C]
@@ -26,6 +26,9 @@ Options:
     -b, --binary            No count of features, only using binary features.
     -c C, --count=C         Number of tweets to collect/filter [default: 3200]
     -e E, --emoticons=E     Path to file containing the list of emoticons to keep
+    -f F, --features-func=F List of functions to execute amongst the functions of the
+                            FeatureBuilder class. The functions of this list will begin
+                            executed in order.
     -l, --begin-line=L      Line to start labeling the tweets [default: 0]
     -m                      Keep mentions when cleaning corpus
     -p                      Keep punctuation when cleaning corpus
@@ -38,6 +41,7 @@ Options:
 import sporty.sporty as sporty
 from sporty.datastructures import *
 from sporty.tweets import Tweets
+from sporty.utils import FeaturesBuilder
 from docopt import docopt
 import sys
 from sklearn.svm import SVC
@@ -115,7 +119,8 @@ def main():
                                 + str(classifier_choices.keys()))
             api.mood.clf = clf
 
-            # Build the cleaner options and the TF-IDF vectorizer options
+            # Build the cleaner options, the TF-IDF vectorizer options,
+            # and the FeaturesBuilder options.
             cleaner_options = {'stopwords': args['--stopwords'],
                                'emoticons': args['--emoticons'],
                                'rm_mentions': not args['-m'],
@@ -124,8 +129,22 @@ def main():
             tfidf_options = {'min_df': int(args['--min-df']),
                              'binary': args['--binary'],
                              'ngram_range': (1, 1)}
+            # get the list of functions to run from the FeaturesBuilder
+            if args['--features-func']:
+                func_list = eval(args['--features-func'])
+                for f in func_list:
+                    if f not in dir(FeaturesBuilder):
+                        raise Exception(f + " is not a function of FeaturesBuilder.")
+            else:
+                func_list = None
+            # get the reducing function
+            if args['--reduce-func']:
+                reduce_func = eval(args['--reduce-func'])
+            else:
+                reduce_func = None
             fb_options = {"labels": keys,
-                          "labels_reduce_f": eval(args['--reduce-func'])}
+                          "labels_reduce_f": reduce_func,
+                          "func_list": func_list}
 
             # Load the tweets
             tweets = Tweets(args['<labeled_tweets>'])
