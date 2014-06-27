@@ -11,7 +11,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 class FeaturesBuilder(object):
-    def __init__(self, corpus, cleaner=None, labels=False, keep_rt=True, mini=50, maxi=100):
+    def __init__(self, corpus,
+                 cleaner=None,
+                 func_list=None,
+                 labels=False,
+                 labels_reduce_f=None,
+                 keep_rt=True,
+                 mini=50,
+                 maxi=100):
         super(FeaturesBuilder, self).__init__()
         self.corpus = corpus
         if cleaner:
@@ -25,17 +32,19 @@ class FeaturesBuilder(object):
         self.maxi = maxi
         self.features = []
         self.labels = []
+        self.labels_reduce_f = labels_reduce_f
         self.tw_features = set()
         self.tweet = {}
-        self.default = ['caseFeature',
-                        'clean',
-                        'word_tokenize',
-                        #'char_tokenize',
-                        'ngrams',
-                        'mentionsFeature',
-                        'urlsFeature'
-                        'hashtagsFeature',
-                        'lengthFeature']
+        if not func_list:
+            self.func_list = ['caseFeature',
+                              'lengthFeature',
+                              'clean',
+                              'word_tokenize',
+                              #'char_tokenize',
+                              'ngrams',
+                              'mentionsFeature',
+                              'urlsFeature'
+                              'hashtagsFeature']
 
     def clean(self):
         self.tweet = self.cleaner.clean_tw(self.tweet)
@@ -97,7 +106,7 @@ class FeaturesBuilder(object):
             self.tw_features.add("_ALL_CAPS_")
 
     def extractFeatures(self, tw):
-        check_func = (f for f in self.default if f in dir(self) and callable(getattr(self, f)))
+        check_func = (f for f in self.func_list if f in dir(self) and callable(getattr(self, f)))
         # filter on retweets
         self.tweet = tw
         tw_rt = self.tweet['text'].find("RT") != -1
@@ -115,6 +124,10 @@ class FeaturesBuilder(object):
             d = {}
             for l in self.extract_labels:
                 d[l] = int(tw[l])
+            if self.labels_reduce_f:
+                labels = d.values()
+                d = {}
+                d['reduced'] = reduce(self.labels_reduce_f, labels)
             self.labels.append(d)
 
     def run(self):

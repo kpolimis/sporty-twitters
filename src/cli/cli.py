@@ -1,7 +1,8 @@
 """
 Usage: cli -h | --help
-       cli mood benchmark <labeled_tweets> [-umpt] [-s SW] [-e E] [-b] [--no-AH --no-DD --no-TA]
+       cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [--no-AH --no-DD --no-TA]
                           [--min-df=M] [--n-folds=K] [--n-examples=N] [--clf=C [--clf-options=O]]
+                          [--reduce-func=R]
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C]
@@ -28,6 +29,8 @@ Options:
     -l, --begin-line=L      Line to start labeling the tweets [default: 0]
     -m                      Keep mentions when cleaning corpus
     -p                      Keep punctuation when cleaning corpus
+    -r R, --reduce-func=R   Function that will be used to reduced the labels into one general
+                            label (e.g. 'lambda x, y: x or y')
     -s SW, --stopwords=SW   Path to file containing the stopwords to remove from the corpus
     -t, --top-features      Display the top features during the benchmark
     -u                      Keep URLs when cleaning corpus
@@ -121,12 +124,14 @@ def main():
             tfidf_options = {'min_df': int(args['--min-df']),
                              'binary': args['--binary'],
                              'ngram_range': (1, 1)}
+            fb_options = {"labels": keys,
+                          "labels_reduce_f": eval(args['--reduce-func'])}
 
             # Load the tweets
             tweets = Tweets(args['<labeled_tweets>'])
 
             # Build features and the vectorizer
-            api.buildFeatures(tweets, cleaner_options=cleaner_options, labels=keys)
+            api.buildFeatures(tweets, cleaner_options, fb_options)
             api.buildVectorizer(options=tfidf_options)
 
             # Run the benchmark

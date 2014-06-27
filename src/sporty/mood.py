@@ -43,14 +43,14 @@ class api(object):
         """
         return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
-    def buildFeatures(self, corpus, cleaner_options={}, labels=False, keep_rt=True):
+    def buildFeatures(self, corpus, cleaner_options={}, fb_options={}):
         """
         Builds and returns a list of features and a list of labels that can then be passed to a
         sklearn vectorizer.
         """
         self.corpus = corpus
         cl = utils.Cleaner(**cleaner_options)
-        fb = utils.FeaturesBuilder(corpus, cleaner=cl, labels=labels, keep_rt=keep_rt)
+        fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
         self.features, self.labels = fb.run()
 
         return self.features, self.labels
@@ -156,7 +156,7 @@ class api(object):
 
             for j in range(min(n_examples, len(wrong_class))):
                 idx = wrong_class.pop()
-                true_class = corpus[idx][label]  # y_pred[idx]
+                true_class = self.labels[idx][label]  # y_pred[idx]
                 pred_class = np.abs(true_class-1)  # y_test[idx]
                 print "True: " + str(true_class) + " / Pred: " + str(pred_class)
                 print corpus[idx]['text'].encode('ascii', 'ignore')
