@@ -30,7 +30,7 @@ class FeaturesBuilder(object):
         self.default = ['caseFeature',
                         'clean',
                         'word_tokenize',
-                        'char_tokenize',
+                        #'char_tokenize',
                         'ngrams',
                         'mentionsFeature',
                         'urlsFeature'
