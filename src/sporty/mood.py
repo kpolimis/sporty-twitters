@@ -43,7 +43,7 @@ class api(object):
         """
         return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
-    def buildX(self, corpus, cleaner_options={}, fb_options={}, tfidf_options={}):
+    def buildX(self, corpus, k=100, cleaner_options={}, fb_options={}, tfidf_options={}):
         """
         """
         self.corpus = corpus
@@ -61,7 +61,7 @@ class api(object):
         self.vect_labels = array_labels
 
         self.vectorizer = TfidfVectorizer(**tfidf_options)
-        self.features_selection = SelectKBest(chi2, k=150)
+        self.features_selection = SelectKBest(chi2, k)
         self.pipeline = Pipeline([('tfidf', self.vectorizer),
                                   ('chi2', self.features_selection)])
         self.X = self.pipeline.fit_transform(self.features, self.vect_labels)

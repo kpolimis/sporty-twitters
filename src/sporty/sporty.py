@@ -20,8 +20,8 @@ class api():
     def expandVocabulary(self, vocabulary, corpus, n=20):
         return self.mood.expandVocabulary(vocabulary, corpus, n)
 
-    def buildX(self, corpus, cleaner_options={}, fb_options={}, tfidf_options={}):
-        return self.mood.buildX(corpus, cleaner_options, fb_options, tfidf_options)
+    def buildX(self, corpus, k=100, cleaner_options={}, fb_options={}, tfidf_options={}):
+        return self.mood.buildX(corpus, k, cleaner_options, fb_options, tfidf_options)
 
     def train(self):
         return self.mood.train()
