@@ -55,8 +55,8 @@ from sklearn.multiclass import OneVsRestClassifier
 import os.path
 
 
-def main():
-    args = docopt(__doc__)
+def main(argv=None):
+    args = docopt(__doc__, argv)
     api = sporty.api()
     if args['tweets']:
         # Concatenate the words to track
