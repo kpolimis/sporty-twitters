@@ -13,13 +13,15 @@ from sklearn import metrics
 from sklearn.cross_validation import StratifiedKFold
 from sklearn import preprocessing
 from sklearn import svm
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.pipeline import Pipeline
 from collections import defaultdict
 import utils as utils
 
 
 class api(object):
     """
-    Programming Interface dedicated to the study of the users' mood.
+    Programming interface dedicated to the study of the users' mood.
     """
 
     def __init__(self, expandVocabularyClass=expand_vocabulary.ContextSimilar, clf=None):
@@ -43,41 +45,36 @@ class api(object):
         """
         return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
-    def buildFeatures(self, corpus, cleaner_options={}, fb_options={}):
+    def buildX(self, corpus, cleaner_options={}, fb_options={}, tfidf_options={}):
         """
-        Builds and returns a list of features and a list of labels that can then be passed to a
-        sklearn vectorizer.
         """
         self.corpus = corpus
+
+        # clean the corpus
         cl = utils.Cleaner(**cleaner_options)
+        # build the features
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
         self.features, self.labels = fb.run()
 
-        return self.features, self.labels
+        # process labels so they are in the right format
+        array_labels = DictVectorizer().fit_transform(self.labels).toarray()
+        if array_labels.shape[1] == 1:
+            array_labels = [x[0] for x in array_labels]
+        self.vect_labels = array_labels
 
-    def buildVectorizer(self, vec_type='tfidf', options={}):
-        """
-        Builds the wanted vectorizer once the features have been built using buildFeatures.
-        """
-        if not self.features:
-            raise Exception("No features defined yet. Call buildFeatures method first.")
+        self.vectorizer = TfidfVectorizer(**tfidf_options)
 
-        if vec_type == 'tfidf':
-            self.vectorizer = TfidfVectorizer(**options)
-            self.tfidf = self.vectorizer.fit_transform(self.features)
-            self.X = preprocessing.scale(self.tfidf.toarray())
-            return self.X
-        else:
-            raise Exception("Vectorizer type (" + str(vec_type) + ")not supported yet.")
+        self.pipeline = Pipeline([('vectorizer', self.vectorizer),
+                                  ('feature_selection', SelectKBest(chi2)),
+                                  ('scaler', preprocessing.StandardScaler(with_mean=False))])
+        self.X = self.pipeline.fit_transform(self.features, self.vect_labels)
+        return self.X
 
     def train(self):
         """
         Trains the classifier.
         """
-        array_labels = DictVectorizer().fit_transform(self.labels).toarray()
-        if array_labels.shape[1] == 1:
-            array_labels = [x[0] for x in array_labels]
-        self.clf.fit(self.X, array_labels)
+        self.clf.fit(self.X, self.labels)
 
     def predict(self, X_pred):
         """
@@ -95,14 +92,6 @@ class api(object):
         print "#### Mood Benchmark ####"
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
-
-        # print "Pos/Neg:   number of positive labels/number of negative labels"
-        # print "Accuracy:  average accuracy over " + str(n_folds) + " folds"
-        # print "F1:        F1 score for the positive label"
-        # print "Precision: Precision for the positive label"
-        # print "Recall:    Recall for the positive label"
-        # print "ROC AUC:   Area Under the ROC-Curve"
-        # print
 
         for label in label_names:
             print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
@@ -147,8 +136,9 @@ class api(object):
             print "Recall:".ljust(left) + str(np.mean(scores['rec'])).ljust(right)
             print "ROC AUC:".ljust(left) + str(np.mean(scores['rocauc'])).ljust(right)
             print "Confusion Matrix:".ljust(left)
-            print str(reduce(np.add, scores['confusion'])).ljust(left)
-
+            reduced_cm = reduce(np.add, scores['confusion'])
+            print str(reduced_cm)
+            
             hascoef = False
             if hasattr(self.clf, 'coef_'):
                 hascoef = True

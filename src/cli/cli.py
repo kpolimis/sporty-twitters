@@ -153,8 +153,7 @@ def main():
             tweets = Tweets(args['<labeled_tweets>'])
 
             # Build features and the vectorizer
-            api.buildFeatures(tweets, cleaner_options, fb_options)
-            api.buildVectorizer(options=tfidf_options)
+            api.buildX(tweets, cleaner_options, fb_options, tfidf_options)
 
             # Run the benchmark
             api.benchmark(int(args['--n-folds']),
