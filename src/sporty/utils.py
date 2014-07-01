@@ -78,9 +78,6 @@ class FeaturesBuilder(object):
         if -1 != text.find(' '):
                 ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1, lowercase=False,
                                          stop_words=None)
-                print "text " + text
-                ngrams.fit_transform([text])
-                print ngrams.get_feature_names()
                 ngrams_undersc = map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
                 self.tw_features = self.tw_features.union(set(ngrams_undersc))
         self.tweet = tw_save
