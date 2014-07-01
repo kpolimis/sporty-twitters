@@ -2,7 +2,7 @@
 Usage: cli -h | --help
        cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [--no-AH --no-DD --no-TA]
                           [--min-df=M] [--n-folds=K] [--n-examples=N] [--clf=C [--clf-options=O]]
-                          [--reduce-func=R] [--features-func=F] [--liwc=L]
+                          [--reduce-func=R] [--features-func=F] [--liwc=L] [-k K]
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C]
@@ -30,6 +30,7 @@ Options:
     -f F, --features-func=F List of functions to execute amongst the functions of the
                             FeatureBuilder class. The functions of this list will begin
                             executed in order.
+    -k K, --k-features=K    Number of features to keep during the features selection [default: 100]
     -l, --begin-line=L      Line to start labeling the tweets [default: 0]
     -m                      Keep mentions when cleaning corpus
     -p                      Keep punctuation when cleaning corpus
@@ -54,8 +55,8 @@ from sklearn.multiclass import OneVsRestClassifier
 import os.path
 
 
-def main():
-    args = docopt(__doc__)
+def main(argv=None):
+    args = docopt(__doc__, argv)
     api = sporty.api()
     if args['tweets']:
         # Concatenate the words to track
@@ -106,8 +107,9 @@ def main():
                                   'naive-bayes': GaussianNB,
                                   'kneighbors': KNeighborsClassifier}
 
-            clf = SVC(kernel='linear', C=1, class_weight='auto')  # default classifier
-            if args['--clf'] in classifier_choices.keys():
+            if not args['--clf']:
+                clf = SVC(kernel='linear', C=1, class_weight='auto')  # default classifier
+            elif args['--clf'] in classifier_choices.keys():
                 clfoptions = {}
                 if args['--clf-options']:
                     clfoptions = json.loads(args['--clf-options'])
@@ -153,8 +155,8 @@ def main():
             tweets = Tweets(args['<labeled_tweets>'])
 
             # Build features and the vectorizer
-            api.buildFeatures(tweets, cleaner_options, fb_options)
-            api.buildVectorizer(options=tfidf_options)
+            api.buildX(tweets, int(args['--k-features']), cleaner_options, fb_options,
+                       tfidf_options)
 
             # Run the benchmark
             api.benchmark(int(args['--n-folds']),

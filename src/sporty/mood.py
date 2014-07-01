@@ -13,13 +13,15 @@ from sklearn import metrics
 from sklearn.cross_validation import StratifiedKFold
 from sklearn import preprocessing
 from sklearn import svm
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.pipeline import Pipeline
 from collections import defaultdict
 import utils as utils
 
 
 class api(object):
     """
-    Programming Interface dedicated to the study of the users' mood.
+    Programming interface dedicated to the study of the users' mood.
     """
 
     def __init__(self, expandVocabularyClass=expand_vocabulary.ContextSimilar, clf=None):
@@ -30,9 +32,7 @@ class api(object):
         self.expandVocabularyClass = expandVocabularyClass
         self.features = []
         self.labels = []
-        self.vectorizer = None
         self.X = None
-        self.tfidf = None
         self.corpus = []
         if not clf:
             self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
@@ -43,41 +43,36 @@ class api(object):
         """
         return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
 
-    def buildFeatures(self, corpus, cleaner_options={}, fb_options={}):
+    def buildX(self, corpus, k=100, cleaner_options={}, fb_options={}, tfidf_options={}):
         """
-        Builds and returns a list of features and a list of labels that can then be passed to a
-        sklearn vectorizer.
         """
         self.corpus = corpus
+
+        # clean the corpus
         cl = utils.Cleaner(**cleaner_options)
+        # build the features
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
         self.features, self.labels = fb.run()
 
-        return self.features, self.labels
+        # process labels so they are in the right format
+        array_labels = DictVectorizer().fit_transform(self.labels).toarray()
+        if array_labels.shape[1] == 1:
+            array_labels = [x[0] for x in array_labels]
+        self.vect_labels = array_labels
 
-    def buildVectorizer(self, vec_type='tfidf', options={}):
-        """
-        Builds the wanted vectorizer once the features have been built using buildFeatures.
-        """
-        if not self.features:
-            raise Exception("No features defined yet. Call buildFeatures method first.")
-
-        if vec_type == 'tfidf':
-            self.vectorizer = TfidfVectorizer(**options)
-            self.tfidf = self.vectorizer.fit_transform(self.features)
-            self.X = preprocessing.scale(self.tfidf.toarray())
-            return self.X
-        else:
-            raise Exception("Vectorizer type (" + str(vec_type) + ")not supported yet.")
+        self.vectorizer = TfidfVectorizer(**tfidf_options)
+        self.features_selection = SelectKBest(chi2, k)
+        self.pipeline = Pipeline([('tfidf', self.vectorizer),
+                                  ('chi2', self.features_selection)])
+        self.X = self.pipeline.fit_transform(self.features, self.vect_labels)
+        self.X = preprocessing.scale(self.X.toarray())
+        return self.X
 
     def train(self):
         """
         Trains the classifier.
         """
-        array_labels = DictVectorizer().fit_transform(self.labels).toarray()
-        if array_labels.shape[1] == 1:
-            array_labels = [x[0] for x in array_labels]
-        self.clf.fit(self.X, array_labels)
+        self.clf.fit(self.X, self.labels)
 
     def predict(self, X_pred):
         """
@@ -95,14 +90,6 @@ class api(object):
         print "#### Mood Benchmark ####"
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
-
-        # print "Pos/Neg:   number of positive labels/number of negative labels"
-        # print "Accuracy:  average accuracy over " + str(n_folds) + " folds"
-        # print "F1:        F1 score for the positive label"
-        # print "Precision: Precision for the positive label"
-        # print "Recall:    Recall for the positive label"
-        # print "ROC AUC:   Area Under the ROC-Curve"
-        # print
 
         for label in label_names:
             print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
@@ -147,7 +134,8 @@ class api(object):
             print "Recall:".ljust(left) + str(np.mean(scores['rec'])).ljust(right)
             print "ROC AUC:".ljust(left) + str(np.mean(scores['rocauc'])).ljust(right)
             print "Confusion Matrix:".ljust(left)
-            print str(reduce(np.add, scores['confusion'])).ljust(left)
+            reduced_cm = reduce(np.add, scores['confusion'])
+            print str(reduced_cm)
 
             hascoef = False
             if hasattr(self.clf, 'coef_'):
@@ -157,6 +145,20 @@ class api(object):
                 print
                 print "--- " + str(n_examples) + " Misclassified Tweets ---"
 
+            def get_ft_attr(ft):
+                vect_idx = self.vectorizer.get_feature_names().index(ft)
+                coef_array = self.features_selection.get_support(True)
+                coef_indexes = np.where(coef_array == vect_idx)
+                if coef_indexes[0].size:
+                    coef_idx = coef_indexes[0][0]
+                else:
+                    coef_idx = -1
+                if hascoef and coef_idx != -1:
+                    w = self.clf.coef_[0][coef_idx]
+                else:
+                    w = 0
+                return vect_idx, w
+
             for j in range(min(n_examples, len(wrong_class))):
                 idx = wrong_class.pop()
                 true_class = self.labels[idx][label]  # y_pred[idx]
@@ -165,16 +167,12 @@ class api(object):
                 print corpus[idx]['text'].encode('ascii', 'ignore')
                 ft_idx = []
                 ft_w = []
-                i = 0
                 for ft in self.features[idx].split():
                     if ft in self.vectorizer.get_feature_names():
-                        real_idx = self.vectorizer.get_feature_names().index(ft)
-                        ft_idx.append(real_idx)
-                        if hascoef:
-                            ft_w.append(self.clf.coef_[0][real_idx])
-                        else:
-                            ft_w.append(0)
-                    i += 1
+                        vect_idx, w = get_ft_attr(ft)
+                        if w != 0:
+                            ft_idx.append(vect_idx)
+                            ft_w.append(w)
                 sorted_w_idx = np.argsort(ft_w)
                 for k in sorted_w_idx:
                     left = 30
@@ -189,7 +187,8 @@ class api(object):
                 print
                 if hascoef:
                     print("--- Top 50 features [over " + str(len(self.clf.coef_[0])) + "]: ---")
-                    feature_names = np.asarray(self.vectorizer.get_feature_names())
+                    feature_names = [self.vectorizer.get_feature_names()[x]
+                                     for x in self.features_selection.get_support(True)]
                     top50 = np.argsort(self.clf.coef_[0])[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
