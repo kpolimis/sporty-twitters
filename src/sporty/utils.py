@@ -76,8 +76,11 @@ class FeaturesBuilder(object):
             self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
         if -1 != text.find(' '):
-                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1, lowercase=False)
+                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1, lowercase=False,
+                                         stop_words=None)
+                print "text " + text
                 ngrams.fit_transform([text])
+                print ngrams.get_feature_names()
                 ngrams_undersc = map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
                 self.tw_features = self.tw_features.union(set(ngrams_undersc))
         self.tweet = tw_save
@@ -162,7 +165,7 @@ class Cleaner():
         self.stopwords = LSF(stopwords).tolist()
         self.emoticons = TSV(emoticons).keys
         self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'"<>?]))''')
-        self.mentions_regex = re.compile(r'''(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)''')
+        self.mentions_regex = re.compile(r'''(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9_]+)''')
         self.unicode_regex = re.compile(r'''[^\x00-\x7F]''')
         self.stem_regex = re.compile(r'''([a-zA-Z])\1{2,}''', re.DOTALL)
         self.exclude = set(string.punctuation)
