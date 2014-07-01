@@ -32,9 +32,7 @@ class api(object):
         self.expandVocabularyClass = expandVocabularyClass
         self.features = []
         self.labels = []
-        self.vectorizer = None
         self.X = None
-        self.tfidf = None
         self.corpus = []
         if not clf:
             self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
@@ -63,11 +61,11 @@ class api(object):
         self.vect_labels = array_labels
 
         self.vectorizer = TfidfVectorizer(**tfidf_options)
-
-        self.pipeline = Pipeline([('vectorizer', self.vectorizer),
-                                  ('feature_selection', SelectKBest(chi2)),
-                                  ('scaler', preprocessing.StandardScaler(with_mean=False))])
+        self.features_selection = SelectKBest(chi2, k=150)
+        self.pipeline = Pipeline([('tfidf', self.vectorizer),
+                                  ('chi2', self.features_selection)])
         self.X = self.pipeline.fit_transform(self.features, self.vect_labels)
+        self.X = preprocessing.scale(self.X.toarray())
         return self.X
 
     def train(self):
@@ -138,7 +136,7 @@ class api(object):
             print "Confusion Matrix:".ljust(left)
             reduced_cm = reduce(np.add, scores['confusion'])
             print str(reduced_cm)
-            
+
             hascoef = False
             if hasattr(self.clf, 'coef_'):
                 hascoef = True
@@ -146,6 +144,20 @@ class api(object):
             if n_examples:
                 print
                 print "--- " + str(n_examples) + " Misclassified Tweets ---"
+
+            def get_ft_attr(ft):
+                vect_idx = self.vectorizer.get_feature_names().index(ft)
+                coef_array = self.features_selection.get_support(True)
+                coef_indexes = np.where(coef_array == vect_idx)
+                if coef_indexes[0].size:
+                    coef_idx = coef_indexes[0][0]
+                else:
+                    coef_idx = -1
+                if hascoef and coef_idx != -1:
+                    w = self.clf.coef_[0][coef_idx]
+                else:
+                    w = 0
+                return vect_idx, w
 
             for j in range(min(n_examples, len(wrong_class))):
                 idx = wrong_class.pop()
@@ -155,16 +167,12 @@ class api(object):
                 print corpus[idx]['text'].encode('ascii', 'ignore')
                 ft_idx = []
                 ft_w = []
-                i = 0
                 for ft in self.features[idx].split():
                     if ft in self.vectorizer.get_feature_names():
-                        real_idx = self.vectorizer.get_feature_names().index(ft)
-                        ft_idx.append(real_idx)
-                        if hascoef:
-                            ft_w.append(self.clf.coef_[0][real_idx])
-                        else:
-                            ft_w.append(0)
-                    i += 1
+                        vect_idx, w = get_ft_attr(ft)
+                        if w != 0:
+                            ft_idx.append(vect_idx)
+                            ft_w.append(w)
                 sorted_w_idx = np.argsort(ft_w)
                 for k in sorted_w_idx:
                     left = 30
@@ -179,7 +187,8 @@ class api(object):
                 print
                 if hascoef:
                     print("--- Top 50 features [over " + str(len(self.clf.coef_[0])) + "]: ---")
-                    feature_names = np.asarray(self.vectorizer.get_feature_names())
+                    feature_names = [self.vectorizer.get_feature_names()[x]
+                                     for x in self.features_selection.get_support(True)]
                     top50 = np.argsort(self.clf.coef_[0])[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
