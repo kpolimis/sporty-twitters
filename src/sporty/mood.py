@@ -186,8 +186,7 @@ class api(object):
             if top_features:
                 print
                 if hascoef:
-                    #top_features_mean = reduce(np.add, scores['weight'])/n_folds
-                    top_features_mean = self.clf.coef_[0]
+                    top_features_mean = reduce(np.add, scores['weight'])/n_folds
                     print("--- Top 50 features [over " + str(len(top_features_mean)) + "]: ---")
                     feature_names = [self.vectorizer.get_feature_names()[x]
                                      for x in self.features_selection.get_support(True)]
