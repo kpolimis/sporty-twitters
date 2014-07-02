@@ -116,7 +116,7 @@ class api(object):
                 scores['rec'].append(metrics.recall_score(y_test, y_pred, average='macro'))
                 scores['rocauc'].append(metrics.roc_auc_score(y_test, y_pred))
                 scores['confusion'].append(metrics.confusion_matrix(y_test, y_pred))
-
+                scores['weight'].append(self.clf.coef_[0])
                 if n_examples > 0:
                     for j in range(0, len(y_test)):
                         if y_test[j] != y_pred[j]:
@@ -186,14 +186,17 @@ class api(object):
             if top_features:
                 print
                 if hascoef:
-                    print("--- Top 50 features [over " + str(len(self.clf.coef_[0])) + "]: ---")
+                    top_features_mean = reduce(np.add, scores['weight'])/n_folds
+                    print("--- Top 50 features [over " + str(len(top_features_mean)) + "]: ---")
                     feature_names = [self.vectorizer.get_feature_names()[x]
                                      for x in self.features_selection.get_support(True)]
-                    top50 = np.argsort(self.clf.coef_[0])[-50:]
+                    top50 = np.argsort(top_features_mean)[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
-                              + str(self.clf.coef_[0][idx]).ljust(10)
+                              + str(top_features_mean[idx]).ljust(10)
                 else:
                     print("Error while printing the top features: the classifier does not have a "
                           + "coef_ attribute.")
                 print
+
+            return np.mean(scores['rocauc'])
