@@ -95,6 +95,7 @@ class api(object):
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
 
+        total_rocauc = []
         for label in label_names:
             print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
             X = self.X
@@ -203,4 +204,5 @@ class api(object):
                           + "coef_ attribute.")
                 print
 
-            return np.mean(scores['rocauc'])
+            total_rocauc.append(np.mean(scores['rocauc']))
+            return np.mean(total_rocauc)
