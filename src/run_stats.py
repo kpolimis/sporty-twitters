@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import csv
 import os
+from collections import OrderedDict
 
 clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
 k_range = np.arange(300, 0, -30)
@@ -21,13 +22,14 @@ logreg_options = ['--clf-options={"class_weight":"auto"}']
 fstats = open("../stats/cumulated_stats", "w")
 first_write = True
 cumulated_stats = []
+cmd = []
 
 for emo_cond in binary_choice:
     # empty command at the beginning of each iteration
     cmd = []
     cmd += begin
     # empty stats dictionary
-    stats = {}
+    stats = OrderedDict()
 
     stats['emoticons'] = emo_cond
     if emo_cond:
@@ -57,14 +59,12 @@ for emo_cond in binary_choice:
                     cmd += static_params
                     for k in k_range:
                         stats['k'] = k
-                        name = '../stats/' + clf + "k" + str(k)
+                        name = '../stats/' + '_'.join([v[0] + str(stats[v]) for v in stats.keys() if v != 'rocauc'])
                         sys.stderr.write("Writing benchmark to " + name + "\n")
-                        sys.stderr.write(str(stats) + "\n")
                         k_opt = ['-k', str(k)]
                         try:
                             with open(name, 'w') as f:
                                 sys.stdout = f
-                                sys.stderr.write(str(cmd + k_opt) + "\n")
                                 stats['rocauc'] = cli.main(cmd + k_opt)
                                 w = csv.DictWriter(fstats, stats.keys())
                                 if first_write:
@@ -76,4 +76,13 @@ for emo_cond in binary_choice:
                             sys.stderr.write(str(e) + "\n")
                             os.remove(name)
                             continue
+                    [cmd.pop(-1) for x in clf_str + options + static_params]
+                if reduce_cond:
+                    [cmd.pop(-1) for x in reduce_func]
+            if liwc_cond:
+                [cmd.pop(-1) for x in liwc]
+        if sw_cond:
+            [cmd.pop(-1) for x in stopwords]
+    if emo_cond:
+        [cmd.pop(-1) for x in emoticons]
     sys.stderr.write(str(cumulated_stats))

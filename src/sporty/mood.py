@@ -87,6 +87,10 @@ class api(object):
         label_names = self.labels[0].keys()
         corpus = self.corpus.tolist()
 
+        hascoef = False
+        if hasattr(self.clf, 'coef_'):
+            hascoef = True
+
         print "#### Mood Benchmark ####"
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
@@ -116,7 +120,8 @@ class api(object):
                 scores['rec'].append(metrics.recall_score(y_test, y_pred, average='macro'))
                 scores['rocauc'].append(metrics.roc_auc_score(y_test, y_pred))
                 scores['confusion'].append(metrics.confusion_matrix(y_test, y_pred))
-                scores['weight'].append(self.clf.coef_[0])
+                if hascoef:
+                    scores['weight'].append(self.clf.coef_[0])
                 if n_examples > 0:
                     for j in range(0, len(y_test)):
                         if y_test[j] != y_pred[j]:
@@ -137,9 +142,7 @@ class api(object):
             reduced_cm = reduce(np.add, scores['confusion'])
             print str(reduced_cm)
 
-            hascoef = False
-            if hasattr(self.clf, 'coef_'):
-                hascoef = True
+
 
             if n_examples:
                 print
@@ -165,21 +168,22 @@ class api(object):
                 pred_class = np.abs(true_class-1)  # y_test[idx]
                 print "True: " + str(true_class) + " / Pred: " + str(pred_class)
                 print corpus[idx]['text'].encode('ascii', 'ignore')
-                ft_idx = []
-                ft_w = []
-                for ft in self.features[idx].split():
-                    if ft in self.vectorizer.get_feature_names():
-                        vect_idx, w = get_ft_attr(ft)
-                        if w != 0:
-                            ft_idx.append(vect_idx)
-                            ft_w.append(w)
-                sorted_w_idx = np.argsort(ft_w)
-                for k in sorted_w_idx:
-                    left = 30
-                    right = 20
-                    ft = self.vectorizer.get_feature_names()[ft_idx[k]].encode('ascii', 'ignore')
-                    w = ft_w[k]
-                    print ("\t" + ft + ": ").ljust(left) + str(w).ljust(right)
+                if hascoef:
+                    ft_idx = []
+                    ft_w = []
+                    for ft in self.features[idx].split():
+                        if ft in self.vectorizer.get_feature_names():
+                            vect_idx, w = get_ft_attr(ft)
+                            if w != 0:
+                                ft_idx.append(vect_idx)
+                                ft_w.append(w)
+                    sorted_w_idx = np.argsort(ft_w)
+                    for k in sorted_w_idx:
+                        left = 30
+                        right = 20
+                        ft = self.vectorizer.get_feature_names()[ft_idx[k]].encode('ascii', 'ignore')
+                        w = ft_w[k]
+                        print ("\t" + ft + ": ").ljust(left) + str(w).ljust(right)
             if n_examples:
                 print
 
