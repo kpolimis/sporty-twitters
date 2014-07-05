@@ -23,17 +23,25 @@ class api(TwitterAPIUser):
         Returns the list of friends (intersection between followees and followers) for a user.
         """
         for user_id in self.user_ids:
+            user_path = os.path.join(output_dir, user_id)
+            if os.path.isfile(user_path):  # friends list already exists for this user
+                continue
             friends = set()
             cursor = -1
             followees = set()
             followers = set()
             # Get the followees
+            
             while cursor != 0:
                 try:
                     response = json.loads(self.getFolloweesStream(user_id, cursor).text)
-                    if 'errors' in response.keys():
+                    if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                        break
+		    if 'errors' in response.keys():
                         sleep_min = 5
-                        sys.stderr.write(json.dumps(response))
+                        sys.stderr.write(json.dumps(response) + "\n")
+                        #for rs in self.twitterapi.request('application/rate_limit_status'):
+                        #     print rs['resources']['friends']
                         sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                          " minutes.\n")
                         sleep_sec = sleep_min*60
@@ -42,14 +50,20 @@ class api(TwitterAPIUser):
                     cursor = response['next_cursor']
                     followees = followees.union(set(response['ids']))
                 except Exception, e:
+                    print response
                     raise e
             cursor = -1
             # Get the followers
             while cursor != 0:
                 try:
                     response = json.loads(self.getFollowersStream(user_id, cursor).text)
+                    if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                        break
                     if 'errors' in response.keys():
                         sleep_min = 5
+                        sys.stderr.write(json.dumps(response) + "\n")
+                        #for rs in self.twitterapi.request('application/rate_limit_status'):
+                        #     print rs['resources']['followers']
                         sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                          " minutes.\n")
                         sleep_sec = sleep_min*60
@@ -64,9 +78,6 @@ class api(TwitterAPIUser):
             friends = followees.intersection(followers)
 
             # Output the result
-            user_path = os.path.join(output_dir, user_id)
-            if os.path.isfile(user_path):  # friends list already exists for this user
-                continue
             with open(user_path, 'w') as f:
                 for friend_id in friends:
                     f.write(str(friend_id) + "\n")
@@ -79,7 +90,6 @@ class api(TwitterAPIUser):
             user_path = os.path.join(output_dir, user_id)
             if os.path.isfile(user_path):  # friends list already exists for this user
                 continue
-            sys.stderr.write(user_id)
             tweets = Tweets(user_path, 'a+')
             i = 0
             max_id = 0
@@ -88,7 +98,7 @@ class api(TwitterAPIUser):
                 try:
                     r = self.getUserStream(user_id, max_id=max_id)
                     if not r.get_iterator().results:
-                        return tweets
+                        keep_try = False
                     for item in r.get_iterator():
                         if 'message' in item.keys():
                             remaining = r.get_rest_quota()['remaining']
@@ -101,6 +111,8 @@ class api(TwitterAPIUser):
                                 break
                             else:
                                 sys.stderr.write(str(item) + "\n")
+                        elif 'errors' in item.keys():
+                            continue
                         else:
                             max_id = item['id'] - 1
                             tweets.append(item)
@@ -112,6 +124,7 @@ class api(TwitterAPIUser):
                     if item:
                         sys.stderr.write(str(item) + "\n")
                     raise e
+        print "here"
 
     def labelGender(self):
         males, females = getCensusNames()
