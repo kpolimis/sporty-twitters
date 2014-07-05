@@ -59,7 +59,8 @@ for emo_cond in binary_choice:
                     cmd += static_params
                     for k in k_range:
                         stats['k'] = k
-                        name = '../stats/' + '_'.join([v[0] + str(stats[v]) for v in stats.keys() if v != 'rocauc'])
+                        name = '../stats/' +
+                        '_'.join([v[0] + str(stats[v]) for v in stats.keys() if v != 'rocauc'])
                         sys.stderr.write("Writing benchmark to " + name + "\n")
                         k_opt = ['-k', str(k)]
                         try:
