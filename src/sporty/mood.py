@@ -205,4 +205,6 @@ class api(object):
                 print
 
             total_rocauc.append(np.mean(scores['rocauc']))
-            return np.mean(total_rocauc)
+        print total_rocauc
+        print np.mean(total_rocauc)
+        return np.mean(total_rocauc)
