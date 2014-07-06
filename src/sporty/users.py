@@ -11,6 +11,9 @@ import os.path
 class api(TwitterAPIUser):
     def __init__(self, user_ids=[], settings_file=None):
         super(api, self).__init__(settings_file)
+        self.loadUsers(user_ids)
+
+    def loadUsers(self, user_ids=[]):
         if type(user_ids) == list:
             self.user_ids = user_ids
         elif type(user_ids) == int:
@@ -31,17 +34,15 @@ class api(TwitterAPIUser):
             followees = set()
             followers = set()
             # Get the followees
-            
+
             while cursor != 0:
                 try:
                     response = json.loads(self.getFolloweesStream(user_id, cursor).text)
                     if 'error' in response.keys() and response['error'] == 'Not authorized.':
                         break
-		    if 'errors' in response.keys():
+                    if 'errors' in response.keys():
                         sleep_min = 5
                         sys.stderr.write(json.dumps(response) + "\n")
-                        #for rs in self.twitterapi.request('application/rate_limit_status'):
-                        #     print rs['resources']['friends']
                         sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                          " minutes.\n")
                         sleep_sec = sleep_min*60
@@ -62,8 +63,6 @@ class api(TwitterAPIUser):
                     if 'errors' in response.keys():
                         sleep_min = 5
                         sys.stderr.write(json.dumps(response) + "\n")
-                        #for rs in self.twitterapi.request('application/rate_limit_status'):
-                        #     print rs['resources']['followers']
                         sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                          " minutes.\n")
                         sleep_sec = sleep_min*60
@@ -84,7 +83,7 @@ class api(TwitterAPIUser):
 
     def collectTweets(self, output_dir="./", count=3200):
         """
-        Returns the 3200 last tweets of a user.
+        Returns the 3200 last tweets of every user in user_ids.
         """
         for user_id in self.user_ids:
             user_path = os.path.join(output_dir, user_id)
@@ -124,7 +123,38 @@ class api(TwitterAPIUser):
                     if item:
                         sys.stderr.write(str(item) + "\n")
                     raise e
-        print "here"
+
+    def show(self):
+        """
+        Returns the user objects using the Twitter API on a list of user ids.
+        """
+        extended = []
+        for uid in self.user_ids:
+            try:
+                r = self.getUserShow(uid)
+                if not r.get_iterator().results:
+                    keep_try = False
+                for item in r.get_iterator():
+                    if 'message' in item.keys():
+                        remaining = r.get_rest_quota()['remaining']
+                        if not remaining:
+                            sleep_min = 5
+                            sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
+                                             " minutes.\n")
+                            sleep_sec = sleep_min*60
+                            time.sleep(sleep_sec)
+                            break
+                        else:
+                            sys.stderr.write(str(item) + "\n")
+                    elif 'errors' in item.keys():
+                        continue
+                    else:
+                        extended.append(item)
+            except Exception, e:
+                if item:
+                    sys.stderr.write(str(item) + "\n")
+                raise e
+        return extended
 
     def labelGender(self):
         males, females = getCensusNames()

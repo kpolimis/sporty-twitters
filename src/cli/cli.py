@@ -159,9 +159,9 @@ def main(argv=None):
                        tfidf_options)
 
             # Run the benchmark
-            return api.benchmark(int(args['--n-folds']),
-                                 int(args['--n-examples']),
-                                 args['--top-features'])
+            return args, api.benchmark(int(args['--n-folds']),
+                                       int(args['--n-examples']),
+                                       args['--top-features'])
 
 if __name__ == "__main__":
     main()

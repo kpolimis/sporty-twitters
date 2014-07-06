@@ -143,8 +143,6 @@ class api(object):
             reduced_cm = reduce(np.add, scores['confusion'])
             print str(reduced_cm)
 
-
-
             if n_examples:
                 print
                 print "--- " + str(n_examples) + " Misclassified Tweets ---"
@@ -205,6 +203,4 @@ class api(object):
                 print
 
             total_rocauc.append(np.mean(scores['rocauc']))
-        print total_rocauc
-        print np.mean(total_rocauc)
         return np.mean(total_rocauc)
