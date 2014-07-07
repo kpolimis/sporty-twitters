@@ -6,7 +6,6 @@ import os
 import string
 import re
 
-i=0
 class StatsNode(object):
     def __init__(self, name, choices, nextNode=[]):
         super(StatsNode, self).__init__()
@@ -36,12 +35,8 @@ class StatsTree(object):
         self.__traverseNode('head', func, cmd)
 
     def __traverseNode(self, nodeName, func, cmd):
-        global i
         n = None
         if not nodeName:
-            i += 1
-            if i > 100:
-                sys.exit()
             func(cmd)
             return
         elif nodeName in self.nodes:
@@ -69,7 +64,7 @@ if __name__ == '__main__':
     statsTree = StatsTree()
 
     head = StatsNode('head',
-                     {True: ['mood', 'benchmark', '-t', '../inputs/3K_labeled',
+		    {True: ['mood', 'benchmark', '-t', '/data/1/sporty/nort/3K_labeled',
                              '--min-df=3', '--n-folds=10', '--n-examples=30']},
                      'liwc_only')
 
@@ -114,11 +109,15 @@ if __name__ == '__main__':
                                     {True: []},
                                     'kfeatures')
 
-    kneighbors_range = np.arange(110, 0, -10)
+    kneighbors_range = np.arange(10, 0, -2)
     kneighbors_options = StatsNode('kneighbors-options',
                                    {k: ['--clf-options={"n_neighbors":"' + str(k) + '"}']
                                     for k in kneighbors_range},
                                    'kfeatures')
+
+    #kneighbors_options = StatsNode('kneighbors-options',
+    #                               {True: []},
+    #                               'kfeatures')
 
     kfeatures_range = np.arange(300, 0, -30)
     kfeatures = StatsNode('kfeatures',
@@ -143,6 +142,8 @@ if __name__ == '__main__':
     cumulated_out_name = '../stats/cumulated.csv'
     cumulated_out = open(cumulated_out_name, 'w')
 
+    def printcmd(cmd):
+        print cmd
     def save_benchmark(cmd):
         global dictwriter
         cmd2filename = lambda p: ''.join(c for c in p if c not in set(string.punctuation))
@@ -161,4 +162,5 @@ if __name__ == '__main__':
             dictwriter.writerow(args)
 
     statsTree.traverse(save_benchmark)
+    #statsTree.traverse(printcmd)
     cumulated_out.close()
