@@ -88,8 +88,12 @@ def main(argv=None):
 
         if args['show']:
             files = [os.path.join(args['<input_dir>'], f) for f in listdir(args['<input_dir>'])
-                     if os.path.isfile(os.path.join(args['<input_dir>'], f))]
+                     if os.path.isfile(os.path.join(args['<input_dir>'], f))
+                     and f.find('extended') == -1]
             for f in files:
+                if os.path.isfile(f + '.extended'):  # friends list already exists for this user
+                    continue
+                print files
                 with open(f + '.extended', 'w') as fout:
                     api.users.user_ids = LSF(f)
                     extended = api.show()
