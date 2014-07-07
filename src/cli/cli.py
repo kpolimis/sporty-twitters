@@ -93,7 +93,6 @@ def main(argv=None):
             for f in files:
                 if os.path.isfile(f + '.extended'):  # friends list already exists for this user
                     continue
-                print files
                 with open(f + '.extended', 'w') as fout:
                     api.users.user_ids = LSF(f)
                     extended = api.show()

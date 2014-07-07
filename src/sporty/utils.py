@@ -325,13 +325,13 @@ class TwitterAPIUser(object):
         r = self.twitterapi.request('statuses/user_timeline', req_options)
         return r
 
-    def getUserShow(self, user_id):
+    def getUserShow(self, uids):
         """
         Returns the extended description of a user.
         """
         if not self.settings_file:
             raise Exception("TwitterAPI not authenticated. Please call the constructor using a"
                             + " settings file if you want to collect tweets.")
-        req_options = {'user_id': user_id}
-        r = self.twitterapi.request('users/show', req_options)
+        req_options = {'user_id': ','.join(uids)}
+        r = self.twitterapi.request('users/lookup', req_options)
         return r

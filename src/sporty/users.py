@@ -131,10 +131,12 @@ class api(TwitterAPIUser):
         Returns the user objects using the Twitter API on a list of user ids.
         """
         extended = []
-        for uid in self.user_ids.tolist():
+        user_ids = self.user_ids.tolist()
+        chunks = [user_ids[x:x+100] for x in xrange(0, len(user_ids), 100)]
+        for uids in chunks:
             item = None
             try:
-                r = self.getUserShow(uid)
+                r = self.getUserShow(uids)
                 if not r.get_iterator().results:
                     keep_try = False
                 for item in r.get_iterator():
@@ -158,6 +160,17 @@ class api(TwitterAPIUser):
                     sys.stderr.write(str(item) + "\n")
                 raise e
         return extended
+
+    def getMostSimilarFriend(self, uid, input_dir):
+        friends_file = os.path.join(input_dir, str(uid) + '.extended')
+        if not os.path.isfile(friends_file):
+            return None
+        friends = []
+        with open(friends_file) as f:
+            for line in f:
+                friends.append(json.loads(line))
+
+        return friend_id
 
     def labelGender(self):
         males, females = getCensusNames()
