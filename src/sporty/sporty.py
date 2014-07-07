@@ -57,3 +57,6 @@ class api():
 
     def collectTweets(self, output_dir="./", count=3200):
         return self.users.collectTweets(output_dir, count)
+
+    def show(self):
+        return self.users.show()

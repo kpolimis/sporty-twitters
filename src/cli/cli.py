@@ -9,6 +9,7 @@ Usage: cli -h | --help
                          [--each] [--no-rt]
        cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [-c C]
        cli users list_friends <settings_file> <user_ids_file> <output_dir>
+       cli users show <settings_file> <input_dir>
 
 Options:
     -h, --help              Show this screen.
@@ -53,6 +54,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.multiclass import OneVsRestClassifier
 import os.path
+from os import listdir
 
 
 def main(argv=None):
@@ -83,6 +85,16 @@ def main(argv=None):
 
         if args['list_friends']:
             api.getFriends(args['<output_dir>'])
+
+        if args['show']:
+            files = [os.path.join(args['<input_dir>'], f) for f in listdir(args['<input_dir>'])
+                     if os.path.isfile(os.path.join(args['<input_dir>'], f))]
+            for f in files:
+                with open(f + '.extended', 'w') as fout:
+                    api.users.user_ids = LSF(f)
+                    extended = api.show()
+                    for user in extended:
+                        fout.write(json.dumps(user) + "\n")
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
