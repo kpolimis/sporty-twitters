@@ -333,5 +333,5 @@ class TwitterAPIUser(object):
             raise Exception("TwitterAPI not authenticated. Please call the constructor using a"
                             + " settings file if you want to collect tweets.")
         req_options = {'user_id': user_id}
-        r = self.twitterapi.request('users_show', req_options)
+        r = self.twitterapi.request('users/show', req_options)
         return r

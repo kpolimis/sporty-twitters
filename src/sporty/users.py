@@ -132,11 +132,11 @@ class api(TwitterAPIUser):
         """
         extended = []
         for uid in self.user_ids.tolist():
+            item = None
             try:
                 r = self.getUserShow(uid)
                 if not r.get_iterator().results:
                     keep_try = False
-                item = None
                 for item in r.get_iterator():
                     if 'message' in item.keys():
                         remaining = r.get_rest_quota()['remaining']
