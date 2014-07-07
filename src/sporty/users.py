@@ -129,11 +129,12 @@ class api(TwitterAPIUser):
         Returns the user objects using the Twitter API on a list of user ids.
         """
         extended = []
-        for uid in self.user_ids:
+        for uid in self.user_ids.tolist():
             try:
                 r = self.getUserShow(uid)
                 if not r.get_iterator().results:
                     keep_try = False
+                item = None
                 for item in r.get_iterator():
                     if 'message' in item.keys():
                         remaining = r.get_rest_quota()['remaining']
