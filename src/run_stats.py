@@ -109,15 +109,15 @@ if __name__ == '__main__':
                                     {True: []},
                                     'kfeatures')
 
-    kneighbors_range = np.arange(10, 0, -2)
-    kneighbors_options = StatsNode('kneighbors-options',
-                                   {k: ['--clf-options={"n_neighbors":"' + str(k) + '"}']
-                                    for k in kneighbors_range},
-                                   'kfeatures')
-
+    #kneighbors_range = np.arange(10, 0, -2)
     #kneighbors_options = StatsNode('kneighbors-options',
-    #                               {True: []},
+    #                               {k: ['--clf-options={"n_neighbors":"' + str(k) + '"}']
+    #                                for k in kneighbors_range},
     #                               'kfeatures')
+
+    kneighbors_options = StatsNode('kneighbors-options',
+                                   {True: []},
+                                   'kfeatures')
 
     kfeatures_range = np.arange(300, 0, -30)
     kfeatures = StatsNode('kfeatures',
