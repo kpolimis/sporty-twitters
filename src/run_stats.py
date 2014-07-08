@@ -6,6 +6,7 @@ import os
 import string
 import re
 
+
 class StatsNode(object):
     def __init__(self, name, choices, nextNode=[]):
         super(StatsNode, self).__init__()
@@ -64,13 +65,21 @@ if __name__ == '__main__':
     statsTree = StatsTree()
 
     head = StatsNode('head',
-		    {True: ['mood', 'benchmark', '-t', '/data/1/sporty/nort/3K_labeled',
+                     {True: ['mood', 'benchmark', '-t', '/data/1/sporty/nort/3K_labeled',
                              '--min-df=3', '--n-folds=10', '--n-examples=30']},
                      'liwc_only')
 
     liwc_only = StatsNode('liwc_only',
                           {True: ['-f', '["liwcFeature"]'], False: []},
-                          {True: None, False: 'emoticons'})
+                          {True: None, False: 'punctuation'})
+
+    punctuation = StatsNode('punctuation',
+                            {True: ['p'], False: []},
+                            'urls')
+
+    urls = StatsNode('urls',
+                     {True: ['-u'], False: []},
+                     'emoticons')
 
     emoticons = StatsNode('emoticons',
                           {True: ['-e', '../inputs/params/emoticons'], False: []},
@@ -88,7 +97,9 @@ if __name__ == '__main__':
                      {True: ['--liwc', '../inputs/liwc.dic'], False: []},
                      'clf')
 
-    clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
+    # clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
+    clf_list = ['logistic-reg', 'svm', 'naive-bayes']
+
     clf = StatsNode('clf',
                     {c: ['--clf=' + c] for c in clf_list},
                     {c: c + '-options' for c in clf_list})
@@ -126,6 +137,8 @@ if __name__ == '__main__':
 
     statsTree.addNodes([head,
                         liwc_only,
+                        punctuation,
+                        urls,
                         emoticons,
                         stopwords,
                         reducefunc,
@@ -142,13 +155,23 @@ if __name__ == '__main__':
     cumulated_out_name = '../stats/cumulated.csv'
     cumulated_out = open(cumulated_out_name, 'w')
 
-    def printcmd(cmd):
-        print cmd
+    i = 0
+
+    def count(cmd):
+        global i
+        i += 1
+
     def save_benchmark(cmd):
         global dictwriter
-        cmd2filename = lambda p: ''.join(c for c in p if c not in set(string.punctuation))
-        filename = '_'.join(map(cmd2filename, cmd[4:]))
-        filename = '../stats/' + filename
+        global i
+        i += 1
+        # create unique filename
+        cmdmap = lambda p: ''.join(c for c in p if c not in set(string.punctuation))
+        cmdmap2 = lambda p: p.replace(' ', '_')
+        cmdcpy = map(cmdmap, cmd[7:])
+        cmdcpy = map(cmdmap2, cmdcpy)
+        filename = '_'.join(cmdcpy)
+        filename = '../stats/' + str(i) + '_' + filename
 
         stdout = sys.stdout
         with open(filename, 'w') as statsout:
@@ -162,5 +185,6 @@ if __name__ == '__main__':
             dictwriter.writerow(args)
 
     statsTree.traverse(save_benchmark)
-    #statsTree.traverse(printcmd)
+    # statsTree.traverse(count)
+    # print i
     cumulated_out.close()
