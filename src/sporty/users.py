@@ -6,14 +6,15 @@ import time
 import sys
 import requests
 import os.path
+from collections import defaultdict
 
 
 class api(TwitterAPIUser):
     def __init__(self, user_ids=[], settings_file=None):
         super(api, self).__init__(settings_file)
-        self.loadUsers(user_ids)
+        self.loadIds(user_ids)
 
-    def loadUsers(self, user_ids=[]):
+    def loadIds(self, user_ids=[]):
         if type(user_ids) == list:
             self.user_ids = user_ids
         elif type(user_ids) == int:
@@ -21,7 +22,29 @@ class api(TwitterAPIUser):
         else:
             self.user_ids = LSF(user_ids).tolist()
 
-    def getFriends(self, output_dir="./"):
+    def load(self, user_dir):
+        self.users = []
+        for uid in self.user_ids:
+            user_file = os.path.join(user_dir, str(uid))
+            if os.path.isfile(user_file):
+                with open(user_file) as uf:
+                    tw = json.loads(uf.readline())
+                    user = tw['user']
+                    self.users.append(user)
+        return self.users
+
+    def loadFriends(self, friends_dir):
+        self.friends = defaultdict(list)
+        for uid in self.user_ids:
+            friends_file = os.path.join(friends_dir, str(uid) + '.extended')
+            if os.path.isfile(friends_file):
+                friends = self.friends[uid]
+                with open(friends_file) as ff:
+                    for line in ff:
+                        friends.append(json.loads(line))
+        return self.friends
+
+    def outputFriendsIds(self, output_dir="./"):
         """
         Returns the list of friends (intersection between followees and followers) for a user.
         """
@@ -161,41 +184,63 @@ class api(TwitterAPIUser):
                 raise e
         return extended
 
-    def getMostSimilarFriend(self, uid, input_dir):
-        friends_file = os.path.join(input_dir, str(uid) + '.extended')
-        if not os.path.isfile(friends_file):
-            return None
-        friends = []
-        with open(friends_file) as f:
-            for line in f:
-                friends.append(json.loads(line))
+    def getMostSimilarFriend(self, user_dir, friends_dir):
+        self.load(user_dir)
+        self.loadFriends(friends_dir)
+        males, females = self.getCensusNames()
+        for u in self.users:
+            self.labelGender(u, males, females)
+            print "- name: %s, gender: %s" % (u['name'].encode('ascii', 'ignore'), u['gender'])
+            for f in self.friends[u['id']]:
+                self.labelGender(f, males, females)
+                print "\t- name: %s, gender: %s" % (f['name'].encode('ascii', 'ignore'), f['gender'])
+        return None
 
-        return friend_id
+    def labelGender(self, user, males, females):
+        name = user['name'].lower().split()
+        if len(name) == 0:
+            name = ['']
+        name = name[0]
+        if name in males:
+            user['gender'] = 'm'
+        elif name in females:
+            user['gender'] = 'f'
+        else:
+            user['gender'] = 'n'
+        return user
 
-    def labelGender(self):
-        males, females = getCensusNames()
-        for tw in tweets:
-            names = tw['user']['name'].lower().split()
-            if len(names) == 0:
-                names = ['']
-            name = names[0]
-            if name in males:
-                tw['user']['gender'] = 'm'
-            elif name in females:
-                tw['user']['gender'] = 'f'
-            else:
-                tw['user']['gender'] = 'n'
-        return tweets
-
-    def getCensusNames():
+    def getCensusNames(self):
         males_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.male.first'
         females_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.female.first'
         males = requests.get(males_url).text.split('\n')
-        males = [m.split()[0].lower() for m in males if m]
         females = requests.get(females_url).text.split('\n')
-        females = [f.split()[0].lower() for f in females if f]
+        males_dict = {}
+        females_dict = {}
+        for m in males:
+            if m:
+                entry = m.split()
+                males_dict[entry[0].lower()] = float(entry[1])
+        for f in females:
+            if f:
+                entry = f.split()
+                females_dict[entry[0].lower()] = float(entry[1])
         # Remove ambiguous names (those that appear on both lists)
-        ambiguous = [f for f in females + males if f in males and f in females]
+        males = males_dict
+        females = females_dict
+        ambiguous = {n: (males[n], females[n]) for n in females.keys() + males.keys()
+                     if n in males and n in females}
         males = [m for m in males if m not in ambiguous]
         females = [f for f in females if f not in ambiguous]
+        eps = 0.1
+        todel = []
+        for n in ambiguous:
+            scores = ambiguous[n]
+            if scores[0] > scores[1]+eps:
+                males.append(n)
+                todel.append(n)
+            elif scores[0]+eps < scores[1]:
+                females.append(n)
+                todel.append(n)
+        for n in todel:
+            del ambiguous[n]
         return set(males), set(females)
