@@ -6,6 +6,7 @@ import time
 import sys
 import requests
 import os.path
+import re
 from collections import defaultdict
 
 
@@ -14,6 +15,8 @@ class api(TwitterAPIUser):
         super(api, self).__init__(settings_file)
         self.loadIds(user_ids)
         self.users = []
+        self.friends = defaultdict(list)
+        self.similarFriend = {}
 
     def loadIds(self, user_ids=[]):
         """
@@ -197,38 +200,45 @@ class api(TwitterAPIUser):
                 raise e
         return extended
 
+    def __displayUser(self, u, indent=0):
+        udisplay = ""
+        udisplay += indent*"\t"
+        udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
+        udisplay += ", gender: " + u['gender']
+        udisplay += ", location: " + u['location'].encode('ascii', 'ignore')
+        udisplay += "\n"
+        udisplay += indent*"\t"
+        udisplay += "  statuses: " + str(u['statuses_count'])
+        udisplay += ", followees: " + str(u['friends_count'])
+        udisplay += ", followers: " + str(u['followers_count'])
+        print udisplay
+
     def getMostSimilarFriend(self, user_dir, friends_dir):
         self.load(user_dir)
         self.loadFriends(friends_dir)
         males, females = self.getCensusNames()
 
-        # filter on gender
+        # only keep users that have a non empty location
+        self.users = filter(lambda u: u['location'], self.users)
+
         for u in self.users:
+            # label user and friends on gender
             self.labelGender(u, males, females)
             for f in self.friends[u['id']]:
                 self.labelGender(f, males, females)
+
+            # filter friends on gender
             self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
                                            self.friends[u['id']])
+
+            # only keep friends that have a non empty location
             self.friends[u['id']] = filter(lambda f: f['location'],
                                            self.friends[u['id']])
 
-        def displayUser(u, indent=0):
-            udisplay = ""
-            udisplay += indent*"\t"
-            udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
-            udisplay += ", gender: " + u['gender']
-            udisplay += ", location: " + u['location'].encode('ascii', 'ignore')
-            udisplay += "\n"
-            udisplay += indent*"\t"
-            udisplay += "  statuses: " + str(u['statuses_count'])
-            udisplay += ", followees: " + str(u['friends_count'])
-            udisplay += ", followers: " + str(u['followers_count'])
-            print udisplay
-
         for u in self.users:
-            displayUser(u)
+            self.__displayUser(u)
             for f in self.friends[u['id']]:
-                displayUser(f, 1)
+                self.__displayUser(f, 1)
         return None
 
     def labelGender(self, user, males, females):
