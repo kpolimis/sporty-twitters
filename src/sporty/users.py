@@ -13,8 +13,13 @@ class api(TwitterAPIUser):
     def __init__(self, user_ids=[], settings_file=None):
         super(api, self).__init__(settings_file)
         self.loadIds(user_ids)
+        self.users = []
 
     def loadIds(self, user_ids=[]):
+        """
+        Store a list of user IDs in the instance. This list will be used to load users and
+        users' friends.
+        """
         if type(user_ids) == list:
             self.user_ids = user_ids
         elif type(user_ids) == int:
@@ -23,6 +28,10 @@ class api(TwitterAPIUser):
             self.user_ids = LSF(user_ids).tolist()
 
     def load(self, user_dir):
+        """
+        For every user id, this function loads the user from a file which name matches with the
+        user id in the given user_dir directory.
+        """
         self.users = []
         for uid in self.user_ids:
             user_file = os.path.join(user_dir, str(uid))
@@ -34,6 +43,10 @@ class api(TwitterAPIUser):
         return self.users
 
     def loadFriends(self, friends_dir):
+        """
+        For every user id, this function loads its friends from a file which name match with the 
+        user id in the given friends_dir directory.
+        """
         self.friends = defaultdict(list)
         for uid in self.user_ids:
             friends_file = os.path.join(friends_dir, str(uid) + '.extended')
@@ -46,7 +59,7 @@ class api(TwitterAPIUser):
 
     def outputFriendsIds(self, output_dir="./"):
         """
-        Returns the list of friends (intersection between followees and followers) for a user.
+        Outputs the list of friends (intersection between followees and followers) for a user.
         """
         for user_id in self.user_ids:
             user_path = os.path.join(output_dir, user_id)
@@ -151,10 +164,10 @@ class api(TwitterAPIUser):
 
     def show(self):
         """
-        Returns the user objects using the Twitter API on a list of user ids.
+        Returns the user objects using the Twitter API for every user id.
         """
         extended = []
-        user_ids = self.user_ids.tolist()
+        user_ids = self.user_ids
         chunks = [user_ids[x:x+100] for x in xrange(0, len(user_ids), 100)]
         for uids in chunks:
             item = None
@@ -198,10 +211,24 @@ class api(TwitterAPIUser):
                                            self.friends[u['id']])
             self.friends[u['id']] = filter(lambda f: f['location'],
                                            self.friends[u['id']])
+
+        def displayUser(u, indent=0):
+            udisplay = ""
+            udisplay += indent*"\t"
+            udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
+            udisplay += ", gender: " + u['gender']
+            udisplay += ", location: " + u['location'].encode('ascii', 'ignore')
+            udisplay += "\n"
+            udisplay += indent*"\t"
+            udisplay += "  statuses: " + str(u['statuses_count'])
+            udisplay += ", followees: " + str(u['friends_count'])
+            udisplay += ", followers: " + str(u['followers_count'])
+            print udisplay
+
         for u in self.users:
-            print "- name: %s, gender: %s location: %s" % (u['name'].encode('ascii', 'ignore'), u['gender'], u['location'].encode('ascii', 'ignore'))
+            displayUser(u)
             for f in self.friends[u['id']]:
-                print "\t- name: %s, gender: %s location: %s" % (f['name'].encode('ascii', 'ignore'), f['gender'], f['location'].encode('ascii', 'ignore'))
+                displayUser(f, 1)
         return None
 
     def labelGender(self, user, males, females):

@@ -94,7 +94,7 @@ def main(argv=None):
                 if os.path.isfile(f + '.extended'):  # friends list already exists for this user
                     continue
                 with open(f + '.extended', 'w') as fout:
-                    api.users.user_ids = LSF(f)
+                    api.loadIds(f)
                     extended = api.show()
                     for user in extended:
                         fout.write(json.dumps(user) + "\n")

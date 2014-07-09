@@ -52,6 +52,15 @@ class api():
 
     # Users API
 
+    def loadIds(self, user_ids=[]):
+        return self.users.loadIds(self, user_ids)
+
+    def load(self, user_dir):
+        return self.users.load(user_dir)
+
+    def loadFriends(self, friends_dir):
+        return self.loadFriends(friends_dir)
+
     def outputFriendsIds(self, output_dir="./"):
         return self.users.outputFriendsIds(output_dir)
 
@@ -60,3 +69,6 @@ class api():
 
     def show(self):
         return self.users.show()
+
+    def getMostSimilarFriend(self, user_dir, friends_dir):
+        return self.users.getMostSimilarFriend(user_dir, friends_dir)
