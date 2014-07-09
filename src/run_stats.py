@@ -75,11 +75,11 @@ if __name__ == '__main__':
 
     punctuation = StatsNode('punctuation',
                             {True: ['p'], False: []},
-                            'urls')
+                            'emoticons')
 
-    urls = StatsNode('urls',
-                     {True: ['-u'], False: []},
-                     'emoticons')
+    # urls = StatsNode('urls',
+    #                  {True: ['-u'], False: []},
+    #                  'emoticons')
 
     emoticons = StatsNode('emoticons',
                           {True: ['-e', '../inputs/params/emoticons'], False: []},
@@ -138,7 +138,6 @@ if __name__ == '__main__':
     statsTree.addNodes([head,
                         liwc_only,
                         punctuation,
-                        urls,
                         emoticons,
                         stopwords,
                         reducefunc,
