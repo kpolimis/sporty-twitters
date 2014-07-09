@@ -71,15 +71,7 @@ if __name__ == '__main__':
 
     liwc_only = StatsNode('liwc_only',
                           {True: ['-f', '["liwcFeature"]'], False: []},
-                          {True: None, False: 'punctuation'})
-
-    punctuation = StatsNode('punctuation',
-                            {True: ['p'], False: []},
-                            'emoticons')
-
-    # urls = StatsNode('urls',
-    #                  {True: ['-u'], False: []},
-    #                  'emoticons')
+                          {True: None, False: 'emoticons'})
 
     emoticons = StatsNode('emoticons',
                           {True: ['-e', '../inputs/params/emoticons'], False: []},
@@ -97,8 +89,8 @@ if __name__ == '__main__':
                      {True: ['--liwc', '../inputs/liwc.dic'], False: []},
                      'clf')
 
-    # clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
-    clf_list = ['logistic-reg', 'svm', 'naive-bayes']
+    clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
+    # clf_list = ['logistic-reg', 'svm', 'naive-bayes']
 
     clf = StatsNode('clf',
                     {c: ['--clf=' + c] for c in clf_list},
@@ -137,7 +129,6 @@ if __name__ == '__main__':
 
     statsTree.addNodes([head,
                         liwc_only,
-                        punctuation,
                         emoticons,
                         stopwords,
                         reducefunc,
