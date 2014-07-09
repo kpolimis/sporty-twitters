@@ -84,7 +84,7 @@ def main(argv=None):
             api.collectTweets(args['<output_dir>'], int(args['--count']))
 
         if args['list_friends']:
-            api.getFriends(args['<output_dir>'])
+            api.outputFriendsIds(args['<output_dir>'])
 
         if args['show']:
             files = [os.path.join(args['<input_dir>'], f) for f in listdir(args['<input_dir>'])

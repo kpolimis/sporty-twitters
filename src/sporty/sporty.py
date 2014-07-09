@@ -52,8 +52,8 @@ class api():
 
     # Users API
 
-    def getFriends(self, output_dir="./"):
-        return self.users.getFriends(output_dir)
+    def outputFriendsIds(self, output_dir="./"):
+        return self.users.outputFriendsIds(output_dir)
 
     def collectTweets(self, output_dir="./", count=3200):
         return self.users.collectTweets(output_dir, count)

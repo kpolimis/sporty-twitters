@@ -188,12 +188,20 @@ class api(TwitterAPIUser):
         self.load(user_dir)
         self.loadFriends(friends_dir)
         males, females = self.getCensusNames()
+
+        # filter on gender
         for u in self.users:
             self.labelGender(u, males, females)
-            print "- name: %s, gender: %s" % (u['name'].encode('ascii', 'ignore'), u['gender'])
             for f in self.friends[u['id']]:
                 self.labelGender(f, males, females)
-                print "\t- name: %s, gender: %s" % (f['name'].encode('ascii', 'ignore'), f['gender'])
+            self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
+                                           self.friends[u['id']])
+            self.friends[u['id']] = filter(lambda f: f['location'],
+                                           self.friends[u['id']])
+        for u in self.users:
+            print "- name: %s, gender: %s location: %s" % (u['name'].encode('ascii', 'ignore'), u['gender'], u['location'].encode('ascii', 'ignore'))
+            for f in self.friends[u['id']]:
+                print "\t- name: %s, gender: %s location: %s" % (f['name'].encode('ascii', 'ignore'), f['gender'], f['location'].encode('ascii', 'ignore'))
         return None
 
     def labelGender(self, user, males, females):
