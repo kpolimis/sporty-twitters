@@ -87,10 +87,6 @@ class api(object):
         label_names = self.labels[0].keys()
         corpus = self.corpus.tolist()
 
-        hascoef = False
-        if hasattr(self.clf, 'coef_'):
-            hascoef = True
-
         print "#### Mood Benchmark ####"
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
@@ -112,6 +108,10 @@ class api(object):
 
                 self.clf.fit(X_train, y_train)
                 y_pred = self.clf.predict(X_test)
+
+                hascoef = False
+                if hasattr(self.clf, 'coef_'):
+                    hascoef = True
 
                 scores['nb_pos'].append(sum([1 for x in y_test if x == 1]))
                 scores['nb_neg'].append(sum([1 for x in y_test if x == 0]))
