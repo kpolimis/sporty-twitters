@@ -122,7 +122,7 @@ if __name__ == '__main__':
                                    {True: []},
                                    'kfeatures')
 
-    kfeatures_range = np.arange(300, 0, -30)
+    kfeatures_range = np.arange(800, 0, -80)
     kfeatures = StatsNode('kfeatures',
                           {k: ['-k', str(k)] for k in kfeatures_range},
                           None)
