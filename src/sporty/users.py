@@ -1,4 +1,5 @@
 import json
+import math
 from tweets import Tweets
 from utils import TwitterAPIUser
 from datastructures import LSF
@@ -8,7 +9,7 @@ import requests
 import os.path
 import re
 from collections import defaultdict
-
+from scipy.spatial.distance import cosine
 
 class api(TwitterAPIUser):
     def __init__(self, user_ids=[], settings_file=None):
@@ -40,9 +41,11 @@ class api(TwitterAPIUser):
             user_file = os.path.join(user_dir, str(uid))
             if os.path.isfile(user_file):
                 with open(user_file) as uf:
-                    tw = json.loads(uf.readline())
-                    user = tw['user']
-                    self.users.append(user)
+                    line = uf.readline()
+                    if line:
+                        tw = json.loads(line)
+                        user = tw['user']
+                        self.users.append(user)
         return self.users
 
     def loadFriends(self, friends_dir):
@@ -54,10 +57,12 @@ class api(TwitterAPIUser):
         for uid in self.user_ids:
             friends_file = os.path.join(friends_dir, str(uid) + '.extended')
             if os.path.isfile(friends_file):
-                friends = self.friends[uid]
+                friends = self.friends[int(uid)]
                 with open(friends_file) as ff:
                     for line in ff:
                         friends.append(json.loads(line))
+            # else:
+            #     print "no " + str(uid) + ".extended in " + friends_dir
         return self.friends
 
     def outputFriendsIds(self, output_dir="./"):
@@ -211,34 +216,60 @@ class api(TwitterAPIUser):
         udisplay += "  statuses: " + str(u['statuses_count'])
         udisplay += ", followees: " + str(u['friends_count'])
         udisplay += ", followers: " + str(u['followers_count'])
-        print udisplay
+        return udisplay
+
+    def __displayFriend(self, user, parent, indent=0):
+        udisplay = self.__displayUser(user, indent)
+        udisplay += "\n"
+        udisplay += indent*"\t"
+        log = lambda x: 0 if not x else math.log(x)
+        udisplay += "  similarity: " + str(self.cosineSimilarity(user, parent, log))
+        return udisplay
+
+    def cosineSimilarity(self, u1, u2, f=lambda x: x):
+        """
+        Compute the cosine similarity between two users considering their
+        statuses count, followees count, and friends count.
+        """
+        U1, U2 = [[f(u['statuses_count']),
+                   f(u['friends_count']),
+                   f(u['followers_count'])]
+                  for u in (u1, u2)]
+        return 1 - cosine(U1, U2)
 
     def getMostSimilarFriend(self, user_dir, friends_dir):
         self.load(user_dir)
         self.loadFriends(friends_dir)
         males, females = self.getCensusNames()
 
+        print len(self.users)
         # only keep users that have a non empty location
         self.users = filter(lambda u: u['location'], self.users)
-
+        print len(self.users)
+        # label users on gender
+        map(lambda u: self.labelGender(u, males, females), self.users)
+        # only keep users that have a non ambiguous gender
+        self.users = filter(lambda u: u['gender'] != 'n', self.users)
+        print len(self.users)
+        # only keep users that have at least one friend
+        self.users = filter(lambda u: self.friends[u['id']], self.users)
+        print len(self.users)
         for u in self.users:
-            # label user and friends on gender
-            self.labelGender(u, males, females)
-            for f in self.friends[u['id']]:
-                self.labelGender(f, males, females)
+            # label the friends of this user on gender
+            map(lambda f: self.labelGender(f, males, females), self.friends[u['id']])
 
             # filter friends on gender
             self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
                                            self.friends[u['id']])
 
             # only keep friends that have a non empty location
-            self.friends[u['id']] = filter(lambda f: f['location'],
-                                           self.friends[u['id']])
+            # self.friends[u['id']] = filter(lambda f: f['location'],
+            #                                self.friends[u['id']])
 
         for u in self.users:
-            self.__displayUser(u)
+            print self.__displayUser(u)
             for f in self.friends[u['id']]:
-                self.__displayUser(f, 1)
+                print self.__displayFriend(f, u, 1)
         return None
 
     def labelGender(self, user, males, females):
