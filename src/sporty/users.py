@@ -18,6 +18,66 @@ class api(TwitterAPIUser):
         self.users = []
         self.friends = defaultdict(list)
         self.similarFriend = {}
+        self.states = {
+            'AK': 'Alaska',
+            'AL': 'Alabama',
+            'AR': 'Arkansas',
+            'AS': 'American Samoa',
+            'AZ': 'Arizona',
+            'CA': 'California',
+            'CO': 'Colorado',
+            'CT': 'Connecticut',
+            'DC': 'District of Columbia',
+            'DE': 'Delaware',
+            'FL': 'Florida',
+            'GA': 'Georgia',
+            'GU': 'Guam',
+            'HI': 'Hawaii',
+            'IA': 'Iowa',
+            'ID': 'Idaho',
+            'IL': 'Illinois',
+            'IN': 'Indiana',
+            'KS': 'Kansas',
+            'KY': 'Kentucky',
+            'LA': 'Louisiana',
+            'MA': 'Massachusetts',
+            'MD': 'Maryland',
+            'ME': 'Maine',
+            'MI': 'Michigan',
+            'MN': 'Minnesota',
+            'MO': 'Missouri',
+            'MP': 'Northern Mariana Islands',
+            'MS': 'Mississippi',
+            'MT': 'Montana',
+            'NA': 'National',
+            'NC': 'North Carolina',
+            'ND': 'North Dakota',
+            'NE': 'Nebraska',
+            'NH': 'New Hampshire',
+            'NJ': 'New Jersey',
+            'NM': 'New Mexico',
+            'NV': 'Nevada',
+            'NY': 'New York',
+            'OH': 'Ohio',
+            'OK': 'Oklahoma',
+            'OR': 'Oregon',
+            'PA': 'Pennsylvania',
+            'PR': 'Puerto Rico',
+            'RI': 'Rhode Island',
+            'SC': 'South Carolina',
+            'SD': 'South Dakota',
+            'TN': 'Tennessee',
+            'TX': 'Texas',
+            'UT': 'Utah',
+            'VA': 'Virginia',
+            'VI': 'Virgin Islands',
+            'VT': 'Vermont',
+            'WA': 'Washington',
+            'WI': 'Wisconsin',
+            'WV': 'West Virginia',
+            'WY': 'Wyoming'
+            }
+
 
     def loadIds(self, user_ids=[]):
         """
@@ -87,7 +147,6 @@ class api(TwitterAPIUser):
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
                             sleep_min = 5
-                            sys.stderr.write(json.dumps(response) + "\n")
                             sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                              " minutes.\n")
                             sleep_sec = sleep_min*60
@@ -108,7 +167,6 @@ class api(TwitterAPIUser):
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
                             sleep_min = 5
-                            sys.stderr.write(json.dumps(response) + "\n")
                             sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
                                              " minutes.\n")
                             sleep_sec = sleep_min*60
@@ -210,7 +268,7 @@ class api(TwitterAPIUser):
         udisplay += indent*"\t"
         udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
         udisplay += ", gender: " + u['gender']
-        udisplay += ", location: " + u['location'].encode('ascii', 'ignore')
+        udisplay += ", location: " + str(u['location'])#.encode('ascii', 'ignore')
         udisplay += "\n"
         udisplay += indent*"\t"
         udisplay += "  statuses: " + str(u['statuses_count'])
@@ -237,39 +295,61 @@ class api(TwitterAPIUser):
                   for u in (u1, u2)]
         return 1 - cosine(U1, U2)
 
+    def __filterUsers(self, users, friends=False):
+        cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
+        males, females = self.getCensusNames()
+
+        ## LOCATION
+        # only keep users that have a US formated location (e.g. 'Chicago, IL')
+        users = filter(lambda u: cityregex.match(u['location']), users)
+        
+        accr_set = set(map(lambda x: x.lower(), self.states.keys()))
+        states_set = set(map(lambda x: x.lower(), self.states.values()))
+        allowed_set = accr_set.union(states_set)
+
+        def group_location(user):
+            user['location'] = cityregex.match(user['location']).group(1,2)
+            if user['location'][1].lower() in accr_set:
+                user['location'] = (user['location'][0],
+                                    self.states[user['location'][1].upper()])
+            elif user['location'][1].lower() not in allowed_set:
+                user['location'] = None
+
+        map(group_location, users)
+
+        # only keep users that have a defined location
+        users = filter(lambda u: u['location'], users)
+
+        ## GENDER
+        # label users on gender
+        map(lambda u: self.labelGender(u, males, females), users)
+        # only keep users that have a non ambiguous gender
+        users = filter(lambda u: u['gender'] != 'n', users)
+
+        if not friends:
+            ## FRIENDS
+            # only keep users that have at least one friend
+            users = filter(lambda u: self.friends[u['id']], users)
+
+        return users
+        
     def getMostSimilarFriend(self, user_dir, friends_dir):
         self.load(user_dir)
         self.loadFriends(friends_dir)
-        males, females = self.getCensusNames()
 
-        print len(self.users)
-        # only keep users that have a non empty location
-        self.users = filter(lambda u: u['location'], self.users)
-        print len(self.users)
-        # label users on gender
-        map(lambda u: self.labelGender(u, males, females), self.users)
-        # only keep users that have a non ambiguous gender
-        self.users = filter(lambda u: u['gender'] != 'n', self.users)
-        print len(self.users)
-        # only keep users that have at least one friend
-        self.users = filter(lambda u: self.friends[u['id']], self.users)
-        print len(self.users)
+        # Clean the list of users to keep the relevant ones
+        self.users = self.__filterUsers(self.users)
+
         for u in self.users:
-            # label the friends of this user on gender
-            map(lambda f: self.labelGender(f, males, females), self.friends[u['id']])
-
+            self.friends[u['id']] = self.__filterUsers(self.friends[u['id']], friends=True)
             # filter friends on gender
             self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
                                            self.friends[u['id']])
 
-            # only keep friends that have a non empty location
-            # self.friends[u['id']] = filter(lambda f: f['location'],
-            #                                self.friends[u['id']])
-
         for u in self.users:
             print self.__displayUser(u)
-            for f in self.friends[u['id']]:
-                print self.__displayFriend(f, u, 1)
+            # for f in self.friends[u['id']]:
+            #     print self.__displayFriend(f, u, 1)
         return None
 
     def labelGender(self, user, males, females):
@@ -286,10 +366,20 @@ class api(TwitterAPIUser):
         return user
 
     def getCensusNames(self):
-        males_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.male.first'
-        females_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.female.first'
-        males = requests.get(males_url).text.split('\n')
-        females = requests.get(females_url).text.split('\n')
+        # males_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.male.first'
+        # females_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.female.first'
+        # males = requests.get(males_url).text.split('\n')
+        # females = requests.get(females_url).text.split('\n')
+
+        males = []
+        females = []
+        with open('/home/virgile/sporty-twitters/inputs/census/dist.male.first') as males_f:
+            for line in males_f:
+                males.append(line)
+        with open('/home/virgile/sporty-twitters/inputs/census/dist.female.first') as females_f:
+            for line in females_f:
+                females.append(line)
+                
         males_dict = {}
         females_dict = {}
         for m in males:
