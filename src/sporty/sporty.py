@@ -34,7 +34,7 @@ class api():
 
     # Tweets API #
 
-    def load(self, input_file):
+    def loadTweets(self, input_file):
         return self.tweets.load(input_file)
 
     def authenticate(self):
@@ -52,10 +52,10 @@ class api():
 
     # Users API
 
-    def loadIds(self, user_ids=[]):
-        return self.users.loadIds(self, user_ids)
+    def loadUserIds(self, user_ids=[]):
+        return self.users.loadIds(user_ids)
 
-    def load(self, user_dir):
+    def loadUsers(self, user_dir):
         return self.users.load(user_dir)
 
     def loadFriends(self, friends_dir):

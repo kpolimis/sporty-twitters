@@ -72,7 +72,7 @@ def main(argv=None):
             api.collect(totrack, args['<output_tweets>'], count=int(args['--count']))
 
         if args['filter']:
-            api.load(args['<input_tweets>'])
+            api.loadTweets(args['<input_tweets>'])
             api.filter(int(args['--count']), totrack, each_word=args['--each'],
                        output_file=args['<output_tweets>'], rt=not args['--no-rt'])
 
@@ -94,7 +94,7 @@ def main(argv=None):
                 if os.path.isfile(f + '.extended'):  # friends list already exists for this user
                     continue
                 with open(f + '.extended', 'w') as fout:
-                    api.loadIds(f)
+                    api.loadUserIds(f)
                     extended = api.show()
                     for user in extended:
                         fout.write(json.dumps(user) + "\n")
@@ -111,7 +111,7 @@ def main(argv=None):
         labels = {x: [0, 1] for x in keys}
 
         if args['label']:
-            api.load(args['<input_tweets>'])
+            api.loadTweets(args['<input_tweets>'])
             api.label(labels, args['<labeled_tweets>'], int(args['--begin-line']))
 
         elif args['benchmark']:
