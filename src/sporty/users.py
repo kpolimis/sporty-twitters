@@ -78,6 +78,7 @@ class api(TwitterAPIUser):
                 try:
                     response = json.loads(self.getFolloweesStream(user_id, cursor).text)
                     if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                        cursor = 0
                         break
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
@@ -91,7 +92,6 @@ class api(TwitterAPIUser):
                     cursor = response['next_cursor']
                     followees = followees.union(set(response['ids']))
                 except Exception, e:
-                    print response
                     raise e
             cursor = -1
             # Get the followers
@@ -99,6 +99,7 @@ class api(TwitterAPIUser):
                 try:
                     response = json.loads(self.getFollowersStream(user_id, cursor).text)
                     if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                        cursor = 0
                         break
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
@@ -116,7 +117,6 @@ class api(TwitterAPIUser):
 
             # Get the intersection between followers and followees
             friends = followees.intersection(followers)
-
             # Output the result
             with open(user_path, 'w') as f:
                 for friend_id in friends:
