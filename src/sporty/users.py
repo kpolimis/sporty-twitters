@@ -17,7 +17,8 @@ class api(TwitterAPIUser):
         self.loadIds(user_ids)
         self.users = []
         self.friends = defaultdict(list)
-        self.similarFriend = {}
+        self.similarityMatrix = defaultdict(dict)
+        self.sortedFriends = defaultdict(list)
         self.states = {
             'AK': 'Alaska',
             'AL': 'Alabama',
@@ -281,7 +282,7 @@ class api(TwitterAPIUser):
         udisplay += "\n"
         udisplay += indent*"\t"
         log = lambda x: 0 if not x else math.log(x)
-        udisplay += "  similarity: " + str(self.cosineSimilarity(user, parent, log))
+        udisplay += "  similarity: " + str(self.similarityMatrix[parent['id']][user['id']])
         return udisplay
 
     def cosineSimilarity(self, u1, u2, f=lambda x: x):
@@ -300,6 +301,7 @@ class api(TwitterAPIUser):
         males, females = self.getCensusNames()
 
         ## LOCATION
+
         # only keep users that have a US formated location (e.g. 'Chicago, IL')
         users = filter(lambda u: cityregex.match(u['location']), users)
         
@@ -321,36 +323,71 @@ class api(TwitterAPIUser):
         users = filter(lambda u: u['location'], users)
 
         ## GENDER
+
         # label users on gender
         map(lambda u: self.labelGender(u, males, females), users)
         # only keep users that have a non ambiguous gender
         users = filter(lambda u: u['gender'] != 'n', users)
 
+        ## FRIENDS
+        
         if not friends:
-            ## FRIENDS
             # only keep users that have at least one friend
             users = filter(lambda u: self.friends[u['id']], users)
 
         return users
         
-    def getMostSimilarFriend(self, user_dir, friends_dir):
+    def buildSimilarityMatrix(self, user_dir, friends_dir):
+        def find(f, seq):
+            for item in seq:
+                if f(item):
+                    return item
+            return None
+
+        log = lambda x: 0 if not x else math.log(x)
+
         self.load(user_dir)
         self.loadFriends(friends_dir)
 
-        # Clean the list of users to keep the relevant ones
+        # Clean the list of users
         self.users = self.__filterUsers(self.users)
 
+        # Filter the friends to keep the matching ones
         for u in self.users:
             self.friends[u['id']] = self.__filterUsers(self.friends[u['id']], friends=True)
-            # filter friends on gender
+            
+            ## GENDER
             self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
                                            self.friends[u['id']])
 
+            ## LOCATION
+            location_filtered = []
+            # match on exact location
+            location_filtered = filter(lambda f: f['location'] == u['location'],
+                                       self.friends[u['id']])
+            # match on same state
+            if not location_filtered:
+                location_filtered = filter(lambda f: f['location'][1] == u['location'][1],
+                                           self.friends[u['id']])
+
+            self.friends[u['id']] = location_filtered
+
+        # Compute the similarity value between every user and each of their friends
+        for u in self.users:
+            d = self.similarityMatrix[u['id']]
+            ufriends = self.friends[u['id']]
+            for f in ufriends:
+                d[f['id']] = self.cosineSimilarity(f, u)#, log)
+            # Sort the friends by descending similarity
+            sortedFriends = sorted(d, key=d.get, reverse=True)
+            self.sortedFriends[u['id']] = [find(lambda x: x['id'] == uid, ufriends)
+                                           for uid in sortedFriends]
+
         for u in self.users:
             print self.__displayUser(u)
-            # for f in self.friends[u['id']]:
-            #     print self.__displayFriend(f, u, 1)
-        return None
+            for f in self.sortedFriends[u['id']]:
+                print self.__displayFriend(f, u, 1)
+        return self.sortedFriends
 
     def labelGender(self, user, males, females):
         name = user['name'].lower().split()
