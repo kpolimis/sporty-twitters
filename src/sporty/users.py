@@ -11,6 +11,7 @@ import re
 from collections import defaultdict
 from scipy.spatial.distance import cosine
 
+
 class api(TwitterAPIUser):
     def __init__(self, user_ids=[], settings_file=None):
         super(api, self).__init__(settings_file)
@@ -78,7 +79,6 @@ class api(TwitterAPIUser):
             'WV': 'West Virginia',
             'WY': 'Wyoming'
             }
-
 
     def loadIds(self, user_ids=[]):
         """
@@ -269,7 +269,7 @@ class api(TwitterAPIUser):
         udisplay += indent*"\t"
         udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
         udisplay += ", gender: " + u['gender']
-        udisplay += ", location: " + str(u['location'])#.encode('ascii', 'ignore')
+        udisplay += ", location: " + str(u['location'])
         udisplay += "\n"
         udisplay += indent*"\t"
         udisplay += "  statuses: " + str(u['statuses_count'])
@@ -304,13 +304,13 @@ class api(TwitterAPIUser):
 
         # only keep users that have a US formated location (e.g. 'Chicago, IL')
         users = filter(lambda u: cityregex.match(u['location']), users)
-        
+
         accr_set = set(map(lambda x: x.lower(), self.states.keys()))
         states_set = set(map(lambda x: x.lower(), self.states.values()))
         allowed_set = accr_set.union(states_set)
 
         def group_location(user):
-            user['location'] = cityregex.match(user['location']).group(1,2)
+            user['location'] = cityregex.match(user['location']).group(1, 2)
             if user['location'][1].lower() in accr_set:
                 user['location'] = (user['location'][0],
                                     self.states[user['location'][1].upper()])
@@ -330,13 +330,13 @@ class api(TwitterAPIUser):
         users = filter(lambda u: u['gender'] != 'n', users)
 
         ## FRIENDS
-        
+
         if not friends:
             # only keep users that have at least one friend
             users = filter(lambda u: self.friends[u['id']], users)
 
         return users
-        
+
     def buildSimilarityMatrix(self, user_dir, friends_dir):
         def find(f, seq):
             for item in seq:
@@ -355,7 +355,7 @@ class api(TwitterAPIUser):
         # Filter the friends to keep the matching ones
         for u in self.users:
             self.friends[u['id']] = self.__filterUsers(self.friends[u['id']], friends=True)
-            
+
             ## GENDER
             self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
                                            self.friends[u['id']])
@@ -377,7 +377,7 @@ class api(TwitterAPIUser):
             d = self.similarityMatrix[u['id']]
             ufriends = self.friends[u['id']]
             for f in ufriends:
-                d[f['id']] = self.cosineSimilarity(f, u)#, log)
+                d[f['id']] = self.cosineSimilarity(f, u)  # , log)
             # Sort the friends by descending similarity
             sortedFriends = sorted(d, key=d.get, reverse=True)
             self.sortedFriends[u['id']] = [find(lambda x: x['id'] == uid, ufriends)
@@ -416,7 +416,7 @@ class api(TwitterAPIUser):
         with open('/home/virgile/sporty-twitters/inputs/census/dist.female.first') as females_f:
             for line in females_f:
                 females.append(line)
-                
+
         males_dict = {}
         females_dict = {}
         for m in males:
