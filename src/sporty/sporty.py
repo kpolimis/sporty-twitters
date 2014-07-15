@@ -29,8 +29,11 @@ class api():
     def predict(self, X_pred):
         return self.mood.predict(X_pred)
 
-    def benchmark(self, n_folds=3, n_examples=0, top_features=False):
-        return self.mood.benchmark(n_folds, n_examples, top_features)
+    def ROC_curve(self, c=0.1):
+        return self.mood.ROC_curve(c)
+
+    def benchmark(self, n_folds=3, n_examples=0, top_features=False, probability=False):
+        return self.mood.benchmark(n_folds, n_examples, top_features, probability)
 
     # Tweets API #
 
@@ -69,6 +72,3 @@ class api():
 
     def show(self):
         return self.users.show()
-
-    def getMostSimilarFriend(self, user_dir, friends_dir):
-        return self.users.getMostSimilarFriend(user_dir, friends_dir)

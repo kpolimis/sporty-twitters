@@ -1,22 +1,25 @@
+import argparse
 import expand_vocabulary
 import json
-import argparse
-import sys
-from time import time
-import StringIO
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import re
+import StringIO
+import sys
+import utils as utils
+from collections import defaultdict
+from sklearn import cross_validation
+from sklearn import metrics
+from sklearn import preprocessing
+from sklearn import svm
+from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn import metrics
-from sklearn.cross_validation import StratifiedKFold
-from sklearn import preprocessing
-from sklearn import svm
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.pipeline import Pipeline
-from collections import defaultdict
-import utils as utils
+from time import time
 
 
 class api(object):
@@ -80,7 +83,35 @@ class api(object):
         """
         return self.clf.predict(X_pred)
 
-    def benchmark(self, n_folds=3, n_examples=0, top_features=False):
+    def ROC_curve(self, c=0.1):
+        label_names = self.labels[0].keys()
+        for label in label_names:
+            X = self.X
+            y = np.array([d[label] for d in self.labels])
+
+            # build cross validation set
+            X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y,
+                                                                                 test_size=c)
+
+            self.clf.fit(X_train, y_train)
+            y_pred_proba = self.clf.predict_proba(X_test)[:, 1]
+
+            fpr, tpr, thresholds = metrics.roc_curve(y_test, y_pred_proba, pos_label=1)
+            fig = plt.figure()
+            # Create an Axes object
+            ax = fig.add_subplot(1, 1, 1)  # one row, one column, first plot
+            # Plot the data
+            sc = ax.scatter(fpr, tpr, marker='+', c=thresholds, linewidths=1)
+            # Add a title
+            ax.set_title("ROC Curve")
+            # Add some axis labels
+            ax.set_xlabel("False Positive Rate")
+            ax.set_ylabel("True Positive Rate")
+            # Produce an image
+            plt.colorbar(sc)
+            fig.savefig("plot_" + label + ".png")
+
+    def benchmark(self, n_folds=3, n_examples=0, top_features=False, probability=False):
         """
         Computes and displays several scores to evaluate the classifier.
         """
@@ -101,13 +132,19 @@ class api(object):
             i = 0
             scores = defaultdict(list)
             wrong_class = set()
+
             for train_index, test_index in skf:
                 i += 1
                 X_train, X_test = X[train_index], X[test_index]
                 y_train, y_test = y[train_index], y[test_index]
 
                 self.clf.fit(X_train, y_train)
-                y_pred = self.clf.predict(X_test)
+
+                if probability:
+                    y_pred_proba = self.clf.predict_proba(X_test)[:, 1]
+                    y_pred = map(lambda x: 0 if x < probability else 1, y_pred_proba)
+                else:
+                    y_pred = self.clf.predict(X_test)
 
                 hascoef = False
                 if hasattr(self.clf, 'coef_'):
