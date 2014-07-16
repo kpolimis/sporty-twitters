@@ -122,7 +122,7 @@ class api(object):
         print "Classifier: " + str(self.clf)
         print "Labels: " + str(label_names)
 
-        total_rocauc = []
+        total_stats = defaultdict(list)
         for label in label_names:
             print "==== Label: " + label + " [" + str(n_folds) + " folds] ===="
             X = self.X
@@ -239,5 +239,13 @@ class api(object):
                           + "coef_ attribute.")
                 print
 
-            total_rocauc.append(np.mean(scores['rocauc']))
-        return np.mean(total_rocauc)
+            total_stats['acc'].append(np.mean(scores['acc']))
+            total_stats['f1'].append(np.mean(scores['f1']))
+            total_stats['prec'].append(np.mean(scores['prec']))
+            total_stats['rec'].append(np.mean(scores['rec']))
+            total_stats['rocauc'].append(np.mean(scores['rocauc']))
+
+        returned_stats = {}
+        for s in total_stats:
+            returned_stats[s] = np.mean(total_stats[s])
+        return returned_stats
