@@ -185,10 +185,13 @@ def main(argv=None):
                 return
 
             # Run the benchmark
+            argproba = False
+            if args['--proba']:
+                argproba = float(args['--proba'])
             return args, api.benchmark(int(args['--n-folds']),
                                        int(args['--n-examples']),
                                        args['--top-features'],
-                                       float(args['--proba']))
+                                       argproba)
 
 if __name__ == "__main__":
     main()
