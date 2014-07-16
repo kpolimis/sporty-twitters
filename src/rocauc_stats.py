@@ -1,65 +1,4 @@
-from cli import cli
-import sys
-import numpy as np
-import csv
-import os
-import string
-import re
-
-
-class StatsNode(object):
-    def __init__(self, name, choices, nextNode=[]):
-        super(StatsNode, self).__init__()
-        self.name = name
-        self.choices = choices
-        self.nextNode = nextNode
-
-
-class StatsTree(object):
-    def __init__(self):
-        super(StatsTree, self).__init__()
-        self.head = None
-        self.nodes = {}
-
-    def addNode(self, statsNode):
-        self.nodes[statsNode.name] = statsNode
-        if not self.head:
-            self.head = statsNode
-        return statsNode
-
-    def addNodes(self, nodes):
-        for n in nodes:
-            self.addNode(n)
-
-    def traverse(self, func):
-        cmd = []
-        self.__traverseNode('head', func, cmd)
-
-    def __traverseNode(self, nodeName, func, cmd):
-        n = None
-        if not nodeName:
-            func(cmd)
-            return
-        elif nodeName in self.nodes:
-            n = self.nodes[nodeName]
-        else:
-            raise Exception('No node named ' + nodeName + ' in this tree.')
-
-        for choice in n.choices:
-            cmd += n.choices[choice]
-
-            nextNode = None
-            if type(n.nextNode) == str:
-                nextNode = n.nextNode
-            elif type(n.nextNode) == dict:
-                if choice in n.nextNode:
-                    nextNode = n.nextNode[choice]
-
-            self.__traverseNode(nextNode, func, cmd)
-
-            for args in n.choices[choice]:
-                cmd.pop(-1)
-
+from sporty.stats import *
 
 if __name__ == '__main__':
     statsTree = StatsTree()
@@ -104,25 +43,12 @@ if __name__ == '__main__':
                             {True: ['--clf-options={"kernel":"linear","class_weight":"auto"}']},
                             'kfeatures')
 
-    decision_tree_options = StatsNode('decision-tree-options',
-                                      {True: []},
-                                      'kfeatures')
+    decision_tree_options = statsTree.emptyNode('decision-tree-options', 'kfeatures')
+    naive_bayes_options = statsTree.emptyNode('naive-bayes-options', 'kfeatures')
+    kneighbors_options = statsTree.emptyNode('kneighbors-options', 'kfeatures')
 
-    naive_bayes_options = StatsNode('naive-bayes-options',
-                                    {True: []},
-                                    'kfeatures')
-
-    #kneighbors_range = np.arange(10, 0, -2)
-    #kneighbors_options = StatsNode('kneighbors-options',
-    #                               {k: ['--clf-options={"n_neighbors":"' + str(k) + '"}']
-    #                                for k in kneighbors_range},
-    #                               'kfeatures')
-
-    kneighbors_options = StatsNode('kneighbors-options',
-                                   {True: []},
-                                   'kfeatures')
-
-    kfeatures_range = np.arange(800, 0, -80)
+    # kfeatures_range = np.arange(800, 0, -80)
+    kfeatures_range = np.arange(200, 150, -20)
     kfeatures = StatsNode('kfeatures',
                           {k: ['-k', str(k)] for k in kfeatures_range},
                           None)
@@ -147,10 +73,6 @@ if __name__ == '__main__':
 
     i = 0
 
-    def count(cmd):
-        global i
-        i += 1
-
     def save_benchmark(cmd):
         global dictwriter
         global i
@@ -167,6 +89,7 @@ if __name__ == '__main__':
         with open(filename, 'w') as statsout:
             sys.stdout = statsout
             args, results = cli.main(cmd)
+            sys.stderr.write(str(cmd) + "\n" + str(results) + "\n")
             args['rocauc'] = results
             if not dictwriter:
                 dictwriter = csv.DictWriter(cumulated_out, args.keys())
@@ -175,6 +98,4 @@ if __name__ == '__main__':
             dictwriter.writerow(args)
 
     statsTree.traverse(save_benchmark)
-    # statsTree.traverse(count)
-    # print i
     cumulated_out.close()
