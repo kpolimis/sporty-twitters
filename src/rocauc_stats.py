@@ -16,10 +16,8 @@ if __name__ == '__main__':
     svm_opt_cmd = ['--clf-options={"kernel":"linear","class_weight":"auto"}']
 
     # Set options
-    # clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
-    clf_list = ['logistic-reg']
-    # kfeatures_range = np.arange(800, 0, -80)
-    kfeatures_range = np.arange(200, 179, -20)
+    clf_list = ['logistic-reg', 'svm', 'decision-tree', 'naive-bayes', 'kneighbors']
+    kfeatures_range = np.arange(800, 0, -80)
 
     statsTree.addNodes([
         ('head', {True: head_cmd}, 'liwc_only'),
