@@ -74,6 +74,14 @@ class StatsTree(object):
             for args in n.choices[choice]:
                 cmd.pop(-1)
 
+    def cmdlen(self):
+        self.count = 0
+        def addonetocount(cmd):
+            self.count += 1
+
+        self.traverse(addonetocount)
+        print self.count
+
     def tofile(self, cumulated_filename):
         cumulated_out = open(cumulated_filename, 'w')
         parent_dir = os.path.abspath(os.path.dirname(cumulated_filename))
