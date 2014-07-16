@@ -1,14 +1,15 @@
-import re
-import os.path
-from collections import defaultdict
-from datastructures import *
-import sys
-import string
 import codecs
 import json
+import os.path
+import re
+import string
+import sys
+import time
 from TwitterAPI import TwitterAPI
-from sklearn.feature_extraction.text import CountVectorizer
+from collections import defaultdict
+from datastructures import *
 from lexicon import Lexicon
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 class FeaturesBuilder(object):
@@ -265,6 +266,18 @@ class TwitterAPIUser(object):
             access_token_secret = self.settings['access_token_secret']
             self.twitterapi = TwitterAPI(consumer_key, consumer_secret,
                                          access_token, access_token_secret)
+
+    def getWaitTime(self, resource, entry):
+        req_options = dict()
+        req_options['resources'] = resource
+        r = self.twitterapi.request('application/rate_limit_status', req_options)
+        response = json.loads(r.text)
+        reset_time = response['resources'][resource][entry]['reset']
+        actual_time = int(time.time())
+        wait_time = reset_time - actual_time
+        if wait_time < 0:
+            wait_time = 0
+        return wait_time
 
     def getStatusStream(self, tracked_words, lang, locations):
         """

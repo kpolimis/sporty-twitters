@@ -142,17 +142,17 @@ class api(TwitterAPIUser):
 
             while cursor != 0:
                 try:
-                    response = json.loads(self.getFolloweesStream(user_id, cursor).text)
+                    stream = self.getFolloweesStream(user_id, cursor)
+                    response = json.loads(stream.text)
                     if 'error' in response.keys() and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
-                            sleep_min = 5
-                            sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
-                                             " minutes.\n")
-                            sleep_sec = sleep_min*60
-                            time.sleep(sleep_sec)
+                            wait_for = self.getWaitTime('friends', '/friends/ids')
+                            sys.stderr.write("Limit rate reached. Wait for " + str(wait_for) +
+                                             " seconds.\n")
+                            time.sleep(wait_for)
                         continue
                     cursor = response['next_cursor']
                     followees = followees.union(set(response['ids']))
@@ -168,11 +168,10 @@ class api(TwitterAPIUser):
                         break
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
-                            sleep_min = 5
-                            sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
-                                             " minutes.\n")
-                            sleep_sec = sleep_min*60
-                            time.sleep(sleep_sec)
+                            wait_for = self.getWaitTime('friends', '/followers/ids')
+                            sys.stderr.write("Limit rate reached. Wait for " + str(wait_for) +
+                                             " seconds.\n")
+                            time.sleep(wait_for)
                         continue
                     cursor = response['next_cursor']
                     followers = followers.union(set(response['ids']))
