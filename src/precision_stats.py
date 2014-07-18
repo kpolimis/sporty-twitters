@@ -17,15 +17,13 @@ if __name__ == '__main__':
 
     # Set options
     clf_list = ['logistic-reg']
-    kfeatures_range = [200, 400, 600, 800, 1000]
+    kfeatures_range = np.arange(160,250,10)
     probability_range = np.arange(0, 1, 0.01)
-    print probability_range
+
     statsTree.addNodes([
         ('head', {True: head_cmd}, 'emoticons'),
 
-        ('emoticons', {True: emo_cmd}, 'reducefunc'),
-
-        ('reducefunc', {True: reduce_cmd}, 'liwc'),
+        ('emoticons', {True: emo_cmd}, 'liwc'),
 
         ('liwc', {True: liwc_cmd}, 'clf'),
 
@@ -45,4 +43,4 @@ if __name__ == '__main__':
         ])
 
     # statsTree.cmdlen()
-    statsTree.tofile('../stats_probability/cumulated.csv')
+    statsTree.tofile('../outputs/stats_threshold_noreduce/cumulated.csv')
