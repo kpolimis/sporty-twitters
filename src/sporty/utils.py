@@ -272,6 +272,9 @@ class TwitterAPIUser(object):
         req_options['resources'] = resource
         r = self.twitterapi.request('application/rate_limit_status', req_options)
         response = json.loads(r.text)
+        remaining = response['resources'][resource][entry]['remaining']
+        if remaining != 0:
+            return 0
         reset_time = response['resources'][resource][entry]['reset']
         actual_time = int(time.time())
         wait_time = reset_time - actual_time
