@@ -9,6 +9,7 @@ Usage: cli -h | --help
                          [--each] [--no-rt]
        cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [-c C]
        cli users list_friends <settings_file> <user_ids_file> <output_dir>
+       cli users most_similar <users_dir> <friends_dir>
        cli users show <settings_file> <input_dir>
 
 Options:
@@ -73,7 +74,7 @@ def main(argv=None):
             api.tweets = sporty.tweets.api(settings_file=args['<settings_file>'])
             api.tweets.collect(totrack, args['<output_tweets>'], count=int(args['--count']))
 
-        if args['filter']:
+        elif args['filter']:
             api.tweets.load(args['<input_tweets>'])
             api.tweets.filter(int(args['--count']), totrack, each_word=args['--each'],
                               output_file=args['<output_tweets>'], rt=not args['--no-rt'])
@@ -85,10 +86,10 @@ def main(argv=None):
         if args['collect_tweets']:
             api.users.collectTweets(args['<output_dir>'], int(args['--count']))
 
-        if args['list_friends']:
+        elif args['list_friends']:
             api.users.outputFriendsIds(args['<output_dir>'])
 
-        if args['show']:
+        elif args['show']:
             files = [os.path.join(args['<input_dir>'], f) for f in listdir(args['<input_dir>'])
                      if os.path.isfile(os.path.join(args['<input_dir>'], f))
                      and f.find('extended') == -1]
@@ -97,9 +98,14 @@ def main(argv=None):
                     continue
                 with open(f + '.extended', 'w') as fout:
                     api.users.loadIds(f)
-                    extended = api.users.show()
+                    extended = api.users.extendFromIds()
                     for user in extended:
                         fout.write(json.dumps(user) + "\n")
+
+        elif args['most_similar']:
+            sortedfriends = api.users.buildSimilarityMatrix(args['users_dir', 'friends_dir'])
+            for u in sortedfriends:
+                print u['id'] + ";" + sortedfriends[u['id']][0]
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']

@@ -228,7 +228,7 @@ class api(TwitterAPIUser):
                         sys.stderr.write(str(item) + "\n")
                     raise e
 
-    def show(self):
+    def extendFromIds(self):
         """
         Returns the user objects using the Twitter API for every user id.
         """
