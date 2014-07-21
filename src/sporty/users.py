@@ -382,10 +382,11 @@ class api(TwitterAPIUser):
             self.sortedFriends[u['id']] = [find(lambda x: x['id'] == uid, ufriends)
                                            for uid in sortedFriends]
 
-        for u in self.users:
-            print self.__displayUser(u)
-            for f in self.sortedFriends[u['id']]:
-                print self.__displayFriend(f, u, 1)
+        # Display
+        # for u in self.users:
+        #     print self.__displayUser(u)
+        #     for f in self.sortedFriends[u['id']]:
+        #         print self.__displayFriend(f, u, 1)
         return self.sortedFriends
 
     def labelGender(self, user, males, females):

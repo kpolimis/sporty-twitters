@@ -1,8 +1,8 @@
 import json
 import os
-from collections import defaultdict
 import re
 import sys
+from collections import defaultdict
 
 
 class Tweets(object):
