@@ -1,9 +1,8 @@
 """
 Usage: cli -h | --help
-       cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [--no-AH --no-DD --no-TA]
-                          [--min-df=M] [--n-folds=K] [--n-examples=N] [--clf=C [--clf-options=O]]
-                          [--reduce-func=R] [--features-func=F] [--liwc=L] [-k K] [--roc=R]
-                          [--proba=P]
+       cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [--min-df=M] [--n-folds=K]
+                          [--n-examples=N] [--clf=C [--clf-options=O]] [--proba=P] [--roc=R]
+                          [--reduce-func=R] [--features-func=F] [--liwc=L] [-k K]
        cli mood label <input_tweets> <labeled_tweets> [-l L] [--no-AH --no-DD --no-TA]
        cli tweets collect <settings_file> <output_tweets> <track_file> [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file> [<track_file>...] [-c C]
@@ -22,9 +21,6 @@ Options:
     --min-df=M              See min_df from sklearn vectorizers [default: 1]
     --n-examples=N          Number of wrong classified examples to display [default: 0]
     --n-folds=K             Number of folds [default: 3]
-    --no-AH                 Do not label tweets on Anger/Hostility dimension
-    --no-DD                 Do not label tweets on Depression/Dejection dimension
-    --no-TA                 Do not label tweets on Tension/Anxiety dimension
     --no-rt                 Remove retweets when filtering
     --proba=P               Classify a tweet as positive only if the probability to be positive
                             is greater than P
@@ -75,22 +71,22 @@ def main(argv=None):
         if args['collect']:
             # Authenticate to the Twitter API
             api.tweets = sporty.tweets.api(settings_file=args['<settings_file>'])
-            api.collect(totrack, args['<output_tweets>'], count=int(args['--count']))
+            api.tweets.collect(totrack, args['<output_tweets>'], count=int(args['--count']))
 
         if args['filter']:
-            api.loadTweets(args['<input_tweets>'])
-            api.filter(int(args['--count']), totrack, each_word=args['--each'],
-                       output_file=args['<output_tweets>'], rt=not args['--no-rt'])
+            api.tweets.load(args['<input_tweets>'])
+            api.tweets.filter(int(args['--count']), totrack, each_word=args['--each'],
+                              output_file=args['<output_tweets>'], rt=not args['--no-rt'])
 
     elif args['users']:
         # Authenticate to the Twitter API
         api.users = sporty.users.api(args['<user_ids_file>'],
                                      args['<settings_file>'])
         if args['collect_tweets']:
-            api.collectTweets(args['<output_dir>'], int(args['--count']))
+            api.users.collectTweets(args['<output_dir>'], int(args['--count']))
 
         if args['list_friends']:
-            api.outputFriendsIds(args['<output_dir>'])
+            api.users.outputFriendsIds(args['<output_dir>'])
 
         if args['show']:
             files = [os.path.join(args['<input_dir>'], f) for f in listdir(args['<input_dir>'])
@@ -100,25 +96,17 @@ def main(argv=None):
                 if os.path.isfile(f + '.extended'):  # friends list already exists for this user
                     continue
                 with open(f + '.extended', 'w') as fout:
-                    api.loadUserIds(f)
-                    extended = api.show()
+                    api.users.loadIds(f)
+                    extended = api.users.show()
                     for user in extended:
                         fout.write(json.dumps(user) + "\n")
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
-        if args['--no-AH']:
-            keys.remove('AH')
-        if args['--no-DD']:
-            keys.remove('DD')
-        if args['--no-TA']:
-            keys.remove('TA')
-
         labels = {x: [0, 1] for x in keys}
-
         if args['label']:
-            api.loadTweets(args['<input_tweets>'])
-            api.label(labels, args['<labeled_tweets>'], int(args['--begin-line']))
+            api.tweets.load(args['<input_tweets>'])
+            api.tweets.label(labels, args['<labeled_tweets>'], int(args['--begin-line']))
 
         elif args['benchmark']:
             # Build the right classifier given the CLI options
@@ -176,22 +164,22 @@ def main(argv=None):
             tweets = Tweets(args['<labeled_tweets>'])
 
             # Build features and the vectorizer
-            api.buildX(tweets, int(args['--k-features']), cleaner_options, fb_options,
-                       tfidf_options)
+            api.mood.buildX(tweets, int(args['--k-features']), cleaner_options, fb_options,
+                            tfidf_options)
 
             # Plot the ROC curve if asked:
             if args['--roc']:
-                api.ROC_curve(float(args['--roc']))
+                api.mood.ROC_curve(float(args['--roc']))
                 return
 
             # Run the benchmark
             argproba = False
             if args['--proba']:
                 argproba = float(args['--proba'])
-            return args, api.benchmark(int(args['--n-folds']),
-                                       int(args['--n-examples']),
-                                       args['--top-features'],
-                                       argproba)
+            return args, api.mood.benchmark(int(args['--n-folds']),
+                                            int(args['--n-examples']),
+                                            args['--top-features'],
+                                            argproba)
 
 if __name__ == "__main__":
     main()
