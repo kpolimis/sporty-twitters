@@ -1,15 +1,15 @@
 import json
 import math
-from tweets import Tweets
-from utils import TwitterAPIUser
-from datastructures import LSF
-import time
-import sys
-import requests
 import os.path
 import re
+import requests
+import sys
+import time
 from collections import defaultdict
+from datastructures import LSF
 from scipy.spatial.distance import cosine
+from tweets import Tweets
+from utils import TwitterAPIUser
 
 
 class api(TwitterAPIUser):
@@ -111,7 +111,7 @@ class api(TwitterAPIUser):
 
     def loadFriends(self, friends_dir):
         """
-        For every user id, this function loads its friends from a file which name match with the 
+        For every user id, this function loads its friends from a file which name match with the
         user id in the given friends_dir directory.
         """
         self.friends = defaultdict(list)
