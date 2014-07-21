@@ -116,6 +116,7 @@ class api(TwitterAPIUser):
         """
         self.friends = defaultdict(list)
         for uid in self.user_ids:
+            # print "loading " + str(uid) + "'s friends."
             friends_file = os.path.join(friends_dir, str(uid) + '.extended')
             if os.path.isfile(friends_file):
                 friends = self.friends[int(uid)]

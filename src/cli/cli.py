@@ -9,7 +9,7 @@ Usage: cli -h | --help
                          [--each] [--no-rt]
        cli users collect_tweets <settings_file> <user_ids_file> <output_dir> [-c C]
        cli users list_friends <settings_file> <user_ids_file> <output_dir>
-       cli users most_similar <users_dir> <friends_dir>
+       cli users most_similar <user_ids_file> <users_dir> <friends_dir>
        cli users show <settings_file> <input_dir>
 
 Options:
@@ -103,9 +103,12 @@ def main(argv=None):
                         fout.write(json.dumps(user) + "\n")
 
         elif args['most_similar']:
-            sortedfriends = api.users.buildSimilarityMatrix(args['users_dir', 'friends_dir'])
+            api.users.loadIds(args['<user_ids_file>'])
+            sortedfriends = api.users.buildSimilarityMatrix(args['<users_dir>'], args['<friends_dir>'])
             for u in sortedfriends:
-                print u['id'] + ";" + sortedfriends[u['id']][0]
+                ufriends = sortedfriends[u]
+                if ufriends:
+                    print str(u) + ";" + str(ufriends[0]['id'])
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']
