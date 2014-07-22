@@ -60,7 +60,8 @@ class FeaturesBuilder(object):
 
     def tokenize(self, analyzer='word', ngram_range=(1, 1)):
         text = self.tweet['text']
-        vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range, lowercase=False)
+        vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range,
+                              lowercase=False)
         vec.fit_transform([text])
         self.tw_features = self.tw_features.union(set(vec.get_feature_names()))
 
@@ -77,10 +78,11 @@ class FeaturesBuilder(object):
             self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
         if -1 != text.find(' '):
-                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1, lowercase=False,
-                                         stop_words=None)
+                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1,
+                                         lowercase=False, stop_words=None)
                 ngrams.fit_transform([text])
-                ngrams_undersc = map(lambda x: x.replace(" ", "_"), ngrams.get_feature_names())
+                ngrams_undersc = map(lambda x: x.replace(" ", "_"),
+                                     ngrams.get_feature_names())
                 self.tw_features = self.tw_features.union(set(ngrams_undersc))
         self.tweet = tw_save
 
@@ -123,7 +125,8 @@ class FeaturesBuilder(object):
             self.tw_features = self.tw_features.union(features)
 
     def extractFeatures(self, tw):
-        check_func = (f for f in self.func_list if f in dir(self) and callable(getattr(self, f)))
+        check_func = (f for f in self.func_list
+                      if f in dir(self) and callable(getattr(self, f)))
         # filter on retweets
         self.tweet = tw
         tw_rt = self.tweet['text'].find("RT") != -1
@@ -159,8 +162,8 @@ class Cleaner():
     """
     Cleaner of corpus
     """
-    def __init__(self, stopwords=None, emoticons=None, rm_urls=True, rm_mentions=True,
-                 rm_punctuation=True, rm_unicode=True):
+    def __init__(self, stopwords=None, emoticons=None, rm_urls=True,
+                 rm_mentions=True, rm_punctuation=True, rm_unicode=True):
         self.stopwords = LSF(stopwords).tolist()
         self.emoticons = TSV(emoticons).keys
         self.url_regex = re.compile(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'"<>?]))''')
@@ -177,9 +180,10 @@ class Cleaner():
 
     def preprocess(self, text):
         """
-        Processes a string in order to remove urls, mentions, unicode characters,
-        and punctuation. It also replaces characters that are repeated more than
-        three times by two of the same character and replaces emoticons with tags.
+        Processes a string in order to remove urls, mentions, unicode
+        characters, and punctuation. It also replaces characters that are
+        repeated more than three times by two of the same character and
+        replaces emoticons with tags.
         """
         text = text.lower()
 
@@ -206,7 +210,8 @@ class Cleaner():
 
     def tokenize(self, text):
         """
-        Tokenize a string and remove given stopwords from the final list of words.
+        Tokenize a string and remove given stopwords from the final list of
+        words.
         """
         words = re.split("\s+", text)
         words = [x for x in words if x]  # remove empty words
@@ -230,7 +235,8 @@ class Cleaner():
 
     def clean(self, corpus):
         """
-        Clean a corpus given as an iterable by removing stopwords, URLs, mentions, and punctuation.
+        Clean a corpus given as an iterable by removing stopwords, URLs,
+        mentions, and punctuation.
         """
         self.original_corpus = corpus
         self.cleaned_corpus = (self.clean_tw(tw) for tw in corpus)
@@ -250,7 +256,8 @@ class TwitterAPIUser(object):
 
     def authenticate(self):
         """
-        Authenticate to the Twitter API using the settings file given on initialization.
+        Authenticate to the Twitter API using the settings file given on
+        initialization.
         """
         if self.settings_file:
             if type(self.settings_file) == str:
@@ -270,7 +277,8 @@ class TwitterAPIUser(object):
     def getWaitTime(self, resource, entry):
         req_options = dict()
         req_options['resources'] = resource
-        r = self.twitterapi.request('application/rate_limit_status', req_options)
+        r = self.twitterapi.request('application/rate_limit_status',
+                                    req_options)
         response = json.loads(r.text)
         remaining = response['resources'][resource][entry]['remaining']
         if remaining != 0:
@@ -284,12 +292,13 @@ class TwitterAPIUser(object):
 
     def getStatusStream(self, tracked_words, lang, locations):
         """
-        Returns the response sent by the Twitter API when requested the last statuses in the
-        Twitter timeline.
+        Returns the response sent by the Twitter API when requested the last
+        statuses in the Twitter timeline.
         """
         if not self.settings_file:
-            raise Exception("TwitterAPI not authenticated. Please call the constructor using a "
-                            + " settings file if you want to collect tweets.")
+            raise Exception("TwitterAPI not authenticated. Please call the "
+                            + "constructor using a settings file if you want "
+                            + "to collect tweets.")
 
         req_options = dict()
         req_options['track'] = ",".join(tracked_words)
@@ -302,7 +311,8 @@ class TwitterAPIUser(object):
 
     def getFolloweesStream(self, user_id, cursor=-1, count=5000):
         """
-        Returns the response sent by the Twitter API when requested the followees of a user.
+        Returns the response sent by the Twitter API when requested the
+        followees of a user.
         """
         req_options = dict()
         req_options['user_id'] = user_id
@@ -313,7 +323,8 @@ class TwitterAPIUser(object):
 
     def getFollowersStream(self, user_id, cursor=-1, count=5000):
         """
-        Returns the response sent by the Twitter API when requested the followers of a user.
+        Returns the response sent by the Twitter API when requested the
+        followers of a user.
         """
         req_options = dict()
         req_options['user_id'] = user_id
@@ -324,11 +335,13 @@ class TwitterAPIUser(object):
 
     def getUserStream(self, user_id, since_id=None, max_id=None):
         """
-        Returns the response sent by the Twitter API when requested the timeline of a user.
+        Returns the response sent by the Twitter API when requested the
+        timeline of a user.
         """
         if not self.settings_file:
-            raise Exception("TwitterAPI not authenticated. Please call the constructor using a"
-                            + " settings file if you want to collect tweets.")
+            raise Exception("TwitterAPI not authenticated. Please call the "
+                            + "constructor using a settings file if you want "
+                            + "to collect tweets.")
 
         req_options = dict()
         req_options['user_id'] = user_id
@@ -346,8 +359,9 @@ class TwitterAPIUser(object):
         Returns the extended description of a user.
         """
         if not self.settings_file:
-            raise Exception("TwitterAPI not authenticated. Please call the constructor using a"
-                            + " settings file if you want to collect tweets.")
+            raise Exception("TwitterAPI not authenticated. Please call the "
+                            + "constructor using a settings file if you want "
+                            + "to collect tweets.")
         req_options = {'user_id': ','.join(uids)}
         r = self.twitterapi.request('users/lookup', req_options)
         return r

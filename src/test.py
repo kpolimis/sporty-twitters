@@ -6,7 +6,7 @@ import re
 
 user_dir = '/data/1/sporty/users/'
 friends_dir = '/data/1/sporty/friends/'
-uids = [f for f in listdir(user_dir) if isfile(join(user_dir,f))]
+uids = [f for f in listdir(user_dir) if isfile(join(user_dir, f))]
 
 # print len(uids)
 # uids = [111397971,1115884644,111636637,1118674309,1120500210,112091139,112203950,1122204780]

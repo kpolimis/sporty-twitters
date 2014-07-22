@@ -6,6 +6,7 @@ from TwitterAPI import TwitterAPI
 from docopt import docopt
 import json
 
+
 def main():
     args = docopt(__doc__)
     if args['show']:

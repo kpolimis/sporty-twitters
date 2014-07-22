@@ -29,8 +29,8 @@ class api(TwitterAPIUser):
     def collect(self, tracked_words, output_file=None, mode='a+', count=0,
                 lang=["en-EN", "en", "en-CA", "en-GB"], locations=None):
         """
-        Given options, this function collects tweets using the Streaming API and stores them in
-        memory or on disk.
+        Given options, this function collects tweets using the Streaming API
+        and stores them in memory or on disk.
         """
         self.tweets = Tweets(output_file, mode)
         i = 0
@@ -48,10 +48,11 @@ class api(TwitterAPIUser):
                 # sys.stderr.write("ChunkedEncodingError\n")
                 continue
 
-    def filter(self, n, words, each_word=True, output_file=None, mode='a+', rt=True):
+    def filter(self, n, words, each_word=True, output_file=None, mode='a+',
+               rt=True):
         """
-        Filter tweets from the loaded corpus by getting, for each term T in the list 'words', n
-        tweets that contains T.
+        Filter tweets from the loaded corpus by getting, for each term T in
+        the list 'words', n tweets that contains T.
         """
         self.filtered_tweets = Tweets(output_file, mode)
         self.words_filtered = set(words)
@@ -74,8 +75,8 @@ class api(TwitterAPIUser):
             to_remove = set(w for w in inter if self.words_count[w] >= n)
             self.words_filtered -= to_remove
 
-            # case where we output the found tweet: words which count is < n were
-            # found in the tweet
+            # case where we output the found tweet: words which count is < n
+            # were found in the tweet
             if inter and not to_remove:
                 self.filtered_tweets.append(tw)
                 count += 1
@@ -88,7 +89,8 @@ class api(TwitterAPIUser):
 
     def __ask_label(self, label_name, choices):
         # Set instructions for user
-        first_input = "Choose " + label_name + " amongst " + str(choices) + " or (q)uit: "
+        first_input = "Choose " + label_name + " amongst " + str(choices)
+        first_input += " or (q)uit: "
         choices = set(choices)
         incorrect_input = "Incorrect input. " + first_input
         ask = first_input
