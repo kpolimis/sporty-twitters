@@ -127,11 +127,6 @@ class api(TwitterAPIUser):
             #     print "no " + str(uid) + ".extended in " + friends_dir
         return self.friends
 
-    def __msg_wait(self, wait_time):
-        sys.stderr.write("Limit rate reached. Wait for "
-                         + str(wait_time) + " seconds.\n")
-        time.sleep(wait_time)
-
     def outputFriendsIds(self, output_dir="./"):
         """
         Outputs the list of friends (intersection between followees and
@@ -269,28 +264,6 @@ class api(TwitterAPIUser):
                 raise e
         return extended
 
-    def __displayUser(self, u, indent=0):
-        udisplay = ""
-        udisplay += indent*"\t"
-        udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
-        udisplay += ", gender: " + u['gender']
-        udisplay += ", location: " + str(u['location'])
-        udisplay += "\n"
-        udisplay += indent*"\t"
-        udisplay += "  statuses: " + str(u['statuses_count'])
-        udisplay += ", followees: " + str(u['friends_count'])
-        udisplay += ", followers: " + str(u['followers_count'])
-        return udisplay
-
-    def __displayFriend(self, user, parent, indent=0):
-        udisplay = self.__displayUser(user, indent)
-        udisplay += "\n"
-        udisplay += indent*"\t"
-        log = lambda x: 0 if not x else math.log(x)
-        udisplay += "  similarity: "
-        udisplay += str(self.similarityMatrix[parent['id']][user['id']])
-        return udisplay
-
     def cosineSimilarity(self, u1, u2, f=lambda x: x):
         """
         Compute the cosine similarity between two users considering their
@@ -301,47 +274,6 @@ class api(TwitterAPIUser):
                    f(u['followers_count'])]
                   for u in (u1, u2)]
         return 1 - cosine(U1, U2)
-
-    def __filterUsers(self, users, friends=False):
-        cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
-        males, females = self.getCensusNames()
-
-        ## LOCATION
-
-        # only keep users that have a US formated location (e.g. 'Chicago, IL')
-        users = filter(lambda u: cityregex.match(u['location']), users)
-
-        accr_set = set(map(lambda x: x.lower(), self.states.keys()))
-        states_set = set(map(lambda x: x.lower(), self.states.values()))
-        allowed_set = accr_set.union(states_set)
-
-        def group_location(user):
-            user['location'] = cityregex.match(user['location']).group(1, 2)
-            if user['location'][1].lower() in accr_set:
-                user['location'] = (user['location'][0],
-                                    self.states[user['location'][1].upper()])
-            elif user['location'][1].lower() not in allowed_set:
-                user['location'] = None
-
-        map(group_location, users)
-
-        # only keep users that have a defined location
-        users = filter(lambda u: u['location'], users)
-
-        ## GENDER
-
-        # label users on gender
-        map(lambda u: self.labelGender(u, males, females), users)
-        # only keep users that have a non ambiguous gender
-        users = filter(lambda u: u['gender'] != 'n', users)
-
-        ## FRIENDS
-
-        if not friends:
-            # only keep users that have at least one friend
-            users = filter(lambda u: self.friends[u['id']], users)
-
-        return users
 
     def getSimilarFriends(self, user_dir, friends_dir):
         def find(f, seq):
@@ -466,3 +398,71 @@ class api(TwitterAPIUser):
         for n in todel:
             del ambiguous[n]
         return set(males), set(females)
+
+    def __displayUser(self, u, indent=0):
+        udisplay = ""
+        udisplay += indent*"\t"
+        udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
+        udisplay += ", gender: " + u['gender']
+        udisplay += ", location: " + str(u['location'])
+        udisplay += "\n"
+        udisplay += indent*"\t"
+        udisplay += "  statuses: " + str(u['statuses_count'])
+        udisplay += ", followees: " + str(u['friends_count'])
+        udisplay += ", followers: " + str(u['followers_count'])
+        return udisplay
+
+    def __displayFriend(self, user, parent, indent=0):
+        udisplay = self.__displayUser(user, indent)
+        udisplay += "\n"
+        udisplay += indent*"\t"
+        log = lambda x: 0 if not x else math.log(x)
+        udisplay += "  similarity: "
+        udisplay += str(self.similarityMatrix[parent['id']][user['id']])
+        return udisplay
+
+    def __filterUsers(self, users, friends=False):
+        cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
+        males, females = self.getCensusNames()
+
+        ## LOCATION
+
+        # only keep users that have a US formated location (e.g. 'Chicago, IL')
+        users = filter(lambda u: cityregex.match(u['location']), users)
+
+        accr_set = set(map(lambda x: x.lower(), self.states.keys()))
+        states_set = set(map(lambda x: x.lower(), self.states.values()))
+        allowed_set = accr_set.union(states_set)
+
+        def group_location(user):
+            user['location'] = cityregex.match(user['location']).group(1, 2)
+            if user['location'][1].lower() in accr_set:
+                user['location'] = (user['location'][0],
+                                    self.states[user['location'][1].upper()])
+            elif user['location'][1].lower() not in allowed_set:
+                user['location'] = None
+
+        map(group_location, users)
+
+        # only keep users that have a defined location
+        users = filter(lambda u: u['location'], users)
+
+        ## GENDER
+
+        # label users on gender
+        map(lambda u: self.labelGender(u, males, females), users)
+        # only keep users that have a non ambiguous gender
+        users = filter(lambda u: u['gender'] != 'n', users)
+
+        ## FRIENDS
+
+        if not friends:
+            # only keep users that have at least one friend
+            users = filter(lambda u: self.friends[u['id']], users)
+
+        return users
+
+    def __msg_wait(self, wait_time):
+        sys.stderr.write("Limit rate reached. Wait for "
+                         + str(wait_time) + " seconds.\n")
+        time.sleep(wait_time)
