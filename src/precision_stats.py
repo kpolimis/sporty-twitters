@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # Set options
     clf_list = ['logistic-reg']
-    kfeatures_range = np.arange(160,250,10)
+    kfeatures_range = np.arange(160, 250, 10)
     probability_range = np.arange(0, 1, 0.01)
 
     statsTree.addNodes([

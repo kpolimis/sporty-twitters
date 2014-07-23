@@ -9,13 +9,15 @@ from collections import Counter
 
 class ContextSimilar(object):
     """
-    Class that allows the user to expand a vocabulary by looking for the words in a corpus that
-    have the most similar contexts to the words in the vocabulary.
+    Class that allows the user to expand a vocabulary by looking for the words
+    in a corpus that have the most similar contexts to the words in the
+    vocabulary.
     """
 
     def __init__(self, vocabulary, corpus, n=100):
         """
-        Initializes the ContextSimilar instance by setting the vocabulary and the corpus.
+        Initializes the ContextSimilar instance by setting the vocabulary and
+        the corpus.
         """
         super(ContextSimilar, self).__init__()
         self.vocabulary = vocabulary
@@ -27,16 +29,16 @@ class ContextSimilar(object):
 
     def buildContexts(self):
         """
-        Builds the similarity contexts by looking at the 3-word neighbourhood of every word for
-        every tweet in the corpus.
+        Builds the similarity contexts by looking at the 3-word neighbourhood
+        of every word for every tweet in the corpus.
         """
         for tw in self.corpus:
             # split the tweet in a list of words
             words = re.split("\s+", tw.strip())
             words = [x for x in words if x]  # remove empty words
 
-            # build the context for each word by considering the 3 left neighbours
-            # and the 3 right neighbours of the each word.
+            # build the context for each word by considering the 3 left
+            # neighbours and the 3 right neighbours of the each word.
             target = 0
             for w in words:
                 w_dic = self.contexts[w]
@@ -75,7 +77,8 @@ class ContextSimilar(object):
 
     def buildMostSimilar(self):
         """
-        Returns the words that are most similar to all the words in the vocabulary.
+        Returns the words that are most similar to all the words in the
+        vocabulary.
         """
         total_scores = defaultdict(float)
 
@@ -88,15 +91,16 @@ class ContextSimilar(object):
         # sort the words ordered by cumulated similarity
         sortedSim = sorted(total_scores, key=total_scores.get, reverse=True)
         for w in sortedSim:
-            self.sortedSimilarWords[w] = total_scores[w]/float(len(self.vocabulary))
+            self.sortedSimilarWords[w] = total_scores[w]
+            self.sortedSimilarWords[w] /= float(len(self.vocabulary))
 
         return self.sortedSimilarWords
 
     def buildSimilarityMatrix(self):
         """
-        Builds a similiraty matrix based on the cosine similarity for a given list of words. For
-        each of the word U in the list, it computes the similarity with every word V in the
-        contexts previously built.
+        Builds a similiraty matrix based on the cosine similarity for a given
+        list of words. For each of the word U in the list, it computes the
+        similarity with every word V in the contexts previously built.
         """
         w = len(self.contexts)
         h = len(self.vocabulary)
@@ -120,13 +124,15 @@ class ContextSimilar(object):
 
 class Cooccurrences(object):
     """
-    Class that allows the user to expand a vocabulary by finding the words that are most frequently
-    cooccurrences of the vocabulary words in a given corpus.
+    Class that allows the user to expand a vocabulary by finding the words
+    that are most frequently cooccurrences of the vocabulary words in a given
+    corpus.
     """
 
     def __init__(self, vocabulary, corpus, n=5):
         """
-        Initializes the Cooccurrences instance by setting the vocabulary and the corpus.
+        Initializes the Cooccurrences instance by setting the vocabulary and
+        the corpus.
         """
         super(Cooccurrences, self).__init__()
         self.vocabulary = vocabulary
@@ -139,8 +145,9 @@ class Cooccurrences(object):
 
     def buildCooccurrences(self):
         """
-        For each word in the corpus, counts how much time each of the other words appear. Returns
-        the dictionary that contains the results of the cooccurrences counting.
+        For each word in the corpus, counts how much time each of the other
+        words appear. Returns the dictionary that contains the results of the
+        cooccurrences counting.
         """
         for entry in self.corpus:
             # keep only the words that are in the corpus and in the vocabulary
@@ -159,12 +166,16 @@ class Cooccurrences(object):
 
     def buildTfidf(self):
         """
-        Sort the cooccurrences of each word in the cooccurrences dictionary using TF-IDF.
+        Sort the cooccurrences of each word in the cooccurrences dictionary
+        using TF-IDF.
         """
         for v in self.vocabulary:
             for c in self.cooccurrences[v]:
-                self.tfidf[v][c] = float(self.cooccurrences[v][c])/float(self.docFrequency[c])
-            self.sortedTfidf[v] = sorted(self.tfidf[v].keys(), key=self.tfidf[v].get, reverse=True)
+                self.tfidf[v][c] = float(self.cooccurrences[v][c])
+                self.tfidf[v][c] /= float(self.docFrequency[c])
+            self.sortedTfidf[v] = sorted(self.tfidf[v].keys(),
+                                         key=self.tfidf[v].get,
+                                         reverse=True)
 
     def expandVocabulary(self):
         self.buildCooccurrences()

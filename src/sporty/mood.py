@@ -27,9 +27,11 @@ class api(object):
     Programming interface dedicated to the study of the users' mood.
     """
 
-    def __init__(self, expandVocabularyClass=expand_vocabulary.ContextSimilar, clf=None):
+    def __init__(self, expandVocabularyClass=expand_vocabulary.ContextSimilar,
+                 clf=None):
         """
-        Initializes the api class using ContextSimilar to expand vocabulary by default.
+        Initializes the api class using ContextSimilar to expand vocabulary by
+        default.
         """
         super(api, self).__init__()
         self.expandVocabularyClass = expandVocabularyClass
@@ -42,11 +44,14 @@ class api(object):
 
     def expandVocabulary(self, vocabulary, corpus, n=20):
         """
-        Calls the strategy loaded at the initialization to expand the vocabulary.
+        Calls the strategy loaded at the initialization to expand the
+        vocabulary.
         """
-        return self.expandVocabularyClass(vocabulary, corpus, n).expandVocabulary()
+        c = self.expandVocabularyClass(vocabulary, corpus, n)
+        return c.expandVocabulary()
 
-    def buildX(self, corpus, k=100, cleaner_options={}, fb_options={}, tfidf_options={}):
+    def buildX(self, corpus, k=100, cleaner_options={}, fb_options={},
+               tfidf_options={}):
         """
         """
         self.corpus = corpus
@@ -90,13 +95,14 @@ class api(object):
             y = np.array([d[label] for d in self.labels])
 
             # build cross validation set
-            X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y,
-                                                                                 test_size=c)
+            sets = cross_validation.train_test_split(X, y, test_size=c)
+            X_train, X_test, y_train, y_test = sets
 
             self.clf.fit(X_train, y_train)
             y_pred_proba = self.clf.predict_proba(X_test)[:, 1]
 
-            fpr, tpr, thresholds = metrics.roc_curve(y_test, y_pred_proba, pos_label=1)
+            fpr, tpr, thresholds = metrics.roc_curve(y_test, y_pred_proba,
+                                                     pos_label=1)
             fig = plt.figure()
             # Create an Axes object
             ax = fig.add_subplot(1, 1, 1)  # one row, one column, first plot
@@ -111,7 +117,8 @@ class api(object):
             plt.colorbar(sc)
             fig.savefig("plot_" + label + ".png")
 
-    def benchmark(self, n_folds=3, n_examples=0, top_features=False, probability=False):
+    def benchmark(self, n_folds=3, n_examples=0, top_features=False,
+                  probability=False):
         """
         Computes and displays several scores to evaluate the classifier.
         """
@@ -142,7 +149,8 @@ class api(object):
 
                 if probability:
                     y_pred_proba = self.clf.predict_proba(X_test)[:, 1]
-                    y_pred = map(lambda x: 0 if x < probability else 1, y_pred_proba)
+                    y_pred = map(lambda x: 0 if x < probability else 1,
+                                 y_pred_proba)
                 else:
                     y_pred = self.clf.predict(X_test)
 
@@ -153,11 +161,15 @@ class api(object):
                 scores['nb_pos'].append(sum([1 for x in y_test if x == 1]))
                 scores['nb_neg'].append(sum([1 for x in y_test if x == 0]))
                 scores['acc'].append(metrics.accuracy_score(y_test, y_pred))
-                scores['f1'].append(metrics.f1_score(y_test, y_pred, average='macro'))
-                scores['prec'].append(metrics.precision_score(y_test, y_pred, average='macro'))
-                scores['rec'].append(metrics.recall_score(y_test, y_pred, average='macro'))
+                scores['f1'].append(metrics.f1_score(y_test, y_pred,
+                                                     average='macro'))
+                scores['prec'].append(metrics.precision_score(y_test, y_pred,
+                                                              average='macro'))
+                scores['rec'].append(metrics.recall_score(y_test, y_pred,
+                                                          average='macro'))
                 scores['rocauc'].append(metrics.roc_auc_score(y_test, y_pred))
-                scores['confusion'].append(metrics.confusion_matrix(y_test, y_pred))
+                scores['confusion'].append(metrics.confusion_matrix(y_test,
+                                                                    y_pred))
                 if hascoef:
                     scores['weight'].append(self.clf.coef_[0])
                 if n_examples > 0:
@@ -169,16 +181,28 @@ class api(object):
             left = 12
             right = 15
 
-            posneg = str(sum(scores['nb_pos'])) + "/" + str(sum(scores['nb_neg']))
-            print "Pos/Neg:".ljust(left) + posneg.ljust(right)
-            print "Accuracy:".ljust(left) + str(np.mean(scores['acc'])).ljust(right)
-            print "F1:".ljust(left) + str(np.mean(scores['f1'])).ljust(right)
-            print "Precision:".ljust(left) + str(np.mean(scores['prec'])).ljust(right)
-            print "Recall:".ljust(left) + str(np.mean(scores['rec'])).ljust(right)
-            print "ROC AUC:".ljust(left) + str(np.mean(scores['rocauc'])).ljust(right)
-            print "Confusion Matrix:".ljust(left)
+            posneg = str(sum(scores['nb_pos'])) + "/"
+            posneg += str(sum(scores['nb_neg']))
+
+            print("Pos/Neg:".ljust(left) + posneg.ljust(right))
+
+            print("Accuracy:".ljust(left)
+                  + str(np.mean(scores['acc'])).ljust(right))
+
+            print("F1:".ljust(left) + str(np.mean(scores['f1'])).ljust(right))
+
+            print("Precision:".ljust(left)
+                  + str(np.mean(scores['prec'])).ljust(right))
+
+            print("Recall:".ljust(left)
+                  + str(np.mean(scores['rec'])).ljust(right))
+
+            print("ROC AUC:".ljust(left)
+                  + str(np.mean(scores['rocauc'])).ljust(right))
+
+            print("Confusion Matrix:".ljust(left))
             reduced_cm = reduce(np.add, scores['confusion'])
-            print str(reduced_cm)
+            print(str(reduced_cm))
 
             if n_examples:
                 print
@@ -217,9 +241,11 @@ class api(object):
                     for k in sorted_w_idx:
                         left = 30
                         right = 20
-                        ft = self.vectorizer.get_feature_names()[ft_idx[k]].encode('ascii', 'ignore')
+                        ft = self.vectorizer.get_feature_names()[ft_idx[k]]
+                        ft = ft.encode('ascii', 'ignore')
                         w = ft_w[k]
-                        print ("\t" + ft + ": ").ljust(left) + str(w).ljust(right)
+                        print ("\t" + ft + ": ").ljust(left)
+                        + str(w).ljust(right)
             if n_examples:
                 print
 
@@ -227,16 +253,18 @@ class api(object):
                 print
                 if hascoef:
                     top_features_mean = reduce(np.add, scores['weight'])/n_folds
-                    print("--- Top 50 features [over " + str(len(top_features_mean)) + "]: ---")
+                    print("--- Top 50 features [over "
+                          + str(len(top_features_mean)) + "]: ---")
                     feature_names = [self.vectorizer.get_feature_names()[x]
-                                     for x in self.features_selection.get_support(True)]
+                                     for x in
+                                     self.features_selection.get_support(True)]
                     top50 = np.argsort(top_features_mean)[-50:]
                     for idx in top50:
                         print "\t" + feature_names[idx].ljust(15) \
                               + str(top_features_mean[idx]).ljust(10)
                 else:
-                    print("Error while printing the top features: the classifier does not have a "
-                          + "coef_ attribute.")
+                    print("Error while printing the top features: the "
+                          + "classifier does not have a coef_ attribute.")
                 print
 
             total_stats['acc'].append(np.mean(scores['acc']))

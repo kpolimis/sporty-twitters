@@ -34,7 +34,8 @@ class StatsTree(object):
                 self.head = n
             return n
         else:
-            raise Exception('Wrong type: should be StatsNode but is ' + type(n) + '.')
+            raise Exception('Wrong type: should be StatsNode but is '
+                            + type(n) + '.')
 
     def addNodes(self, nodes):
         for n in nodes:
@@ -43,7 +44,8 @@ class StatsTree(object):
             elif isinstance(n, StatsNode):
                 self.addNode(n)
             else:
-                raise Exception('Wrong type: should be StatsNode but is ' + type(n) + '.')
+                raise Exception('Wrong type: should be StatsNode but is '
+                                + type(n) + '.')
 
     def traverse(self, func):
         cmd = []
@@ -76,6 +78,7 @@ class StatsTree(object):
 
     def cmdlen(self):
         self.count = 0
+
         def addonetocount(cmd):
             self.count += 1
 
@@ -91,7 +94,8 @@ class StatsTree(object):
         def save_benchmark(cmd):
             self.count += 1
             # create unique filename
-            cmdmap = lambda p: ''.join(c for c in p if c not in set(string.punctuation))
+            cmdmap = lambda p: ''.join(c for c in p
+                                       if c not in set(string.punctuation))
             cmdmap2 = lambda p: p.replace(' ', '_')
             cmdcpy = map(cmdmap, cmd[7:])
             cmdcpy = map(cmdmap2, cmdcpy)

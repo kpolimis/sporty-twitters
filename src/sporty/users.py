@@ -82,8 +82,8 @@ class api(TwitterAPIUser):
 
     def loadIds(self, user_ids=[]):
         """
-        Store a list of user IDs in the instance. This list will be used to load users and
-        users' friends.
+        Store a list of user IDs in the instance. This list will be used to
+        load users and users' friends.
         """
         if type(user_ids) == list:
             self.user_ids = user_ids
@@ -94,8 +94,8 @@ class api(TwitterAPIUser):
 
     def load(self, user_dir):
         """
-        For every user id, this function loads the user from a file which name matches with the
-        user id in the given user_dir directory.
+        For every user id, this function loads the user from a file which name
+        matches with the user id in the given user_dir directory.
         """
         self.users = []
         for uid in self.user_ids:
@@ -111,8 +111,8 @@ class api(TwitterAPIUser):
 
     def loadFriends(self, friends_dir):
         """
-        For every user id, this function loads its friends from a file which name match with the
-        user id in the given friends_dir directory.
+        For every user id, this function loads its friends from a file which
+        name match with the user id in the given friends_dir directory.
         """
         self.friends = defaultdict(list)
         for uid in self.user_ids:
@@ -129,11 +129,13 @@ class api(TwitterAPIUser):
 
     def outputFriendsIds(self, output_dir="./"):
         """
-        Outputs the list of friends (intersection between followees and followers) for a user.
+        Outputs the list of friends (intersection between followees and
+        followers) for a user.
         """
         for user_id in self.user_ids:
             user_path = os.path.join(output_dir, user_id)
-            if os.path.isfile(user_path):  # friends list already exists for this user
+            if os.path.isfile(user_path):
+            # friends list already exists for this user
                 continue
             friends = set()
             cursor = -1
@@ -145,15 +147,15 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFolloweesStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                    if 'error' in response.keys()
+                    and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
-                            wait_for = self.getWaitTime('friends', '/friends/ids')
-                            sys.stderr.write("Limit rate reached. Wait for " + str(wait_for) +
-                                             " seconds.\n")
-                            time.sleep(wait_for)
+                            wait_for = self.getWaitTime('friends',
+                                                        '/friends/ids')
+                            self.__msg_wait(wait_for)
                         continue
                     cursor = response['next_cursor']
                     followees = followees.union(set(response['ids']))
@@ -163,16 +165,17 @@ class api(TwitterAPIUser):
             # Get the followers
             while cursor != 0:
                 try:
-                    response = json.loads(self.getFollowersStream(user_id, cursor).text)
-                    if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                    stream = self.getFollowersStream(user_id, cursor)
+                    response = json.loads(stream.text)
+                    if 'error' in response.keys()
+                    and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
                     if 'errors' in response.keys():
                         if response['errors'][0]['code'] == 88:
-                            wait_for = self.getWaitTime('friends', '/followers/ids')
-                            sys.stderr.write("Limit rate reached. Wait for " + str(wait_for) +
-                                             " seconds.\n")
-                            time.sleep(wait_for)
+                            wait_for = self.getWaitTime('friends',
+                                                        '/followers/ids')
+                            self.__msg_wait(wait_for)
                         continue
                     cursor = response['next_cursor']
                     followers = followers.union(set(response['ids']))
@@ -192,7 +195,8 @@ class api(TwitterAPIUser):
         """
         for user_id in self.user_ids:
             user_path = os.path.join(output_dir, user_id)
-            if os.path.isfile(user_path):  # friends list already exists for this user
+            if os.path.isfile(user_path):
+                # if friends list already exists for this user
                 continue
             tweets = Tweets(user_path, 'a+')
             i = 0
@@ -208,10 +212,8 @@ class api(TwitterAPIUser):
                             remaining = r.get_rest_quota()['remaining']
                             if not remaining:
                                 sleep_min = 5
-                                sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
-                                                 " minutes.\n")
                                 sleep_sec = sleep_min*60
-                                time.sleep(sleep_sec)
+                                self.__msg_wait(sleep_sec)
                                 break
                             else:
                                 sys.stderr.write(str(item) + "\n")
@@ -247,10 +249,8 @@ class api(TwitterAPIUser):
                         remaining = r.get_rest_quota()['remaining']
                         if not remaining:
                             sleep_min = 5
-                            sys.stderr.write("Limit rate reached. Wait for " + str(sleep_min) +
-                                             " minutes.\n")
                             sleep_sec = sleep_min*60
-                            time.sleep(sleep_sec)
+                            self.__msg_wait(sleep_sec)
                             break
                         else:
                             sys.stderr.write(str(item) + "\n")
@@ -263,6 +263,141 @@ class api(TwitterAPIUser):
                     sys.stderr.write(str(item) + "\n")
                 raise e
         return extended
+
+    def cosineSimilarity(self, u1, u2, f=lambda x: x):
+        """
+        Compute the cosine similarity between two users considering their
+        statuses count, followees count, and friends count.
+        """
+        U1, U2 = [[f(u['statuses_count']),
+                   f(u['friends_count']),
+                   f(u['followers_count'])]
+                  for u in (u1, u2)]
+        return 1 - cosine(U1, U2)
+
+    def getSimilarFriends(self, user_dir, friends_dir):
+        def find(f, seq):
+            for item in seq:
+                if f(item):
+                    return item
+            return None
+
+        log = lambda x: 0 if not x else math.log(x)
+
+        self.load(user_dir)
+        self.loadFriends(friends_dir)
+
+        # Clean the list of users
+        self.users = self.__filterUsers(self.users)
+
+        # Filter the friends to keep the matching ones
+        for u in self.users:
+            self.friends[u['id']] = self.__filterUsers(self.friends[u['id']],
+                                                       friends=True)
+
+            ## GENDER
+            gender_f = lambda f: f['gender'] == u['gender']
+            self.friends[u['id']] = filter(gender_f,
+                                           self.friends[u['id']])
+
+            ## LOCATION
+            location_filtered = []
+            # match on exact location
+            loc_exact_f = lambda f: f['location'] == u['location']
+            location_filtered = filter(loc_exact_f,
+                                       self.friends[u['id']])
+            # match on same state
+            if not location_filtered:
+                loc_state_f = lambda f: f['location'][1] == u['location'][1]
+                location_filtered = filter(loc_state_f,
+                                           self.friends[u['id']])
+
+            self.friends[u['id']] = location_filtered
+
+        # Compute the similarity value between every user and each of their
+        # friends
+        for u in self.users:
+            d = self.similarityMatrix[u['id']]
+            ufriends = self.friends[u['id']]
+            for f in ufriends:
+                d[f['id']] = self.cosineSimilarity(f, u)  # , log)
+            # Sort the friends by descending similarity
+            sortedFriends = sorted(d, key=d.get, reverse=True)
+            self.sortedFriends[u['id']] = [find(lambda x: x['id'] == uid,
+                                                ufriends)
+                                           for uid in sortedFriends]
+
+        # Display
+        # for u in self.users:
+        #     print self.__displayUser(u)
+        #     for f in self.sortedFriends[u['id']]:
+        #         print self.__displayFriend(f, u, 1)
+        return self.sortedFriends
+
+    def labelGender(self, user, males, females):
+        name = user['name'].lower().split()
+        if len(name) == 0:
+            name = ['']
+        name = name[0]
+        if name in males:
+            user['gender'] = 'm'
+        elif name in females:
+            user['gender'] = 'f'
+        else:
+            user['gender'] = 'n'
+        return user
+
+    def getCensusNames(self):
+        # males_url = 'http://www.census.gov/genealogy/www/data/'
+        # + '1990surnames/dist.male.first'
+        # females_url = 'http://www.census.gov/genealogy/www/data/'
+        # + '1990surnames/dist.female.first'
+        # males = requests.get(males_url).text.split('\n')
+        # females = requests.get(females_url).text.split('\n')
+
+        males = []
+        females = []
+        local_m = '/home/virgile/sporty-twitters/inputs/census/dist.male.first'
+        local_f = '/home/virgile/sporty-twitters/inputs/census/'
+        + 'dist.female.first'
+        with open(local_m) as males_f:
+            for line in males_f:
+                males.append(line)
+        with open(local_f) as females_f:
+            for line in females_f:
+                females.append(line)
+
+        males_dict = {}
+        females_dict = {}
+        for m in males:
+            if m:
+                entry = m.split()
+                males_dict[entry[0].lower()] = float(entry[1])
+        for f in females:
+            if f:
+                entry = f.split()
+                females_dict[entry[0].lower()] = float(entry[1])
+        # Remove ambiguous names (those that appear on both lists)
+        males = males_dict
+        females = females_dict
+        ambiguous = {n: (males[n], females[n])
+                     for n in females.keys() + males.keys()
+                     if n in males and n in females}
+        males = [m for m in males if m not in ambiguous]
+        females = [f for f in females if f not in ambiguous]
+        eps = 0.1
+        todel = []
+        for n in ambiguous:
+            scores = ambiguous[n]
+            if scores[0] > scores[1]+eps:
+                males.append(n)
+                todel.append(n)
+            elif scores[0]+eps < scores[1]:
+                females.append(n)
+                todel.append(n)
+        for n in todel:
+            del ambiguous[n]
+        return set(males), set(females)
 
     def __displayUser(self, u, indent=0):
         udisplay = ""
@@ -282,19 +417,9 @@ class api(TwitterAPIUser):
         udisplay += "\n"
         udisplay += indent*"\t"
         log = lambda x: 0 if not x else math.log(x)
-        udisplay += "  similarity: " + str(self.similarityMatrix[parent['id']][user['id']])
+        udisplay += "  similarity: "
+        udisplay += str(self.similarityMatrix[parent['id']][user['id']])
         return udisplay
-
-    def cosineSimilarity(self, u1, u2, f=lambda x: x):
-        """
-        Compute the cosine similarity between two users considering their
-        statuses count, followees count, and friends count.
-        """
-        U1, U2 = [[f(u['statuses_count']),
-                   f(u['friends_count']),
-                   f(u['followers_count'])]
-                  for u in (u1, u2)]
-        return 1 - cosine(U1, U2)
 
     def __filterUsers(self, users, friends=False):
         cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
@@ -337,114 +462,7 @@ class api(TwitterAPIUser):
 
         return users
 
-    def buildSimilarityMatrix(self, user_dir, friends_dir):
-        def find(f, seq):
-            for item in seq:
-                if f(item):
-                    return item
-            return None
-
-        log = lambda x: 0 if not x else math.log(x)
-
-        self.load(user_dir)
-        self.loadFriends(friends_dir)
-
-        # Clean the list of users
-        self.users = self.__filterUsers(self.users)
-
-        # Filter the friends to keep the matching ones
-        for u in self.users:
-            self.friends[u['id']] = self.__filterUsers(self.friends[u['id']], friends=True)
-
-            ## GENDER
-            self.friends[u['id']] = filter(lambda f: f['gender'] == u['gender'],
-                                           self.friends[u['id']])
-
-            ## LOCATION
-            location_filtered = []
-            # match on exact location
-            location_filtered = filter(lambda f: f['location'] == u['location'],
-                                       self.friends[u['id']])
-            # match on same state
-            if not location_filtered:
-                location_filtered = filter(lambda f: f['location'][1] == u['location'][1],
-                                           self.friends[u['id']])
-
-            self.friends[u['id']] = location_filtered
-
-        # Compute the similarity value between every user and each of their friends
-        for u in self.users:
-            d = self.similarityMatrix[u['id']]
-            ufriends = self.friends[u['id']]
-            for f in ufriends:
-                d[f['id']] = self.cosineSimilarity(f, u)  # , log)
-            # Sort the friends by descending similarity
-            sortedFriends = sorted(d, key=d.get, reverse=True)
-            self.sortedFriends[u['id']] = [find(lambda x: x['id'] == uid, ufriends)
-                                           for uid in sortedFriends]
-
-        # Display
-        # for u in self.users:
-        #     print self.__displayUser(u)
-        #     for f in self.sortedFriends[u['id']]:
-        #         print self.__displayFriend(f, u, 1)
-        return self.sortedFriends
-
-    def labelGender(self, user, males, females):
-        name = user['name'].lower().split()
-        if len(name) == 0:
-            name = ['']
-        name = name[0]
-        if name in males:
-            user['gender'] = 'm'
-        elif name in females:
-            user['gender'] = 'f'
-        else:
-            user['gender'] = 'n'
-        return user
-
-    def getCensusNames(self):
-        # males_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.male.first'
-        # females_url = 'http://www.census.gov/genealogy/www/data/1990surnames/dist.female.first'
-        # males = requests.get(males_url).text.split('\n')
-        # females = requests.get(females_url).text.split('\n')
-
-        males = []
-        females = []
-        with open('/home/virgile/sporty-twitters/inputs/census/dist.male.first') as males_f:
-            for line in males_f:
-                males.append(line)
-        with open('/home/virgile/sporty-twitters/inputs/census/dist.female.first') as females_f:
-            for line in females_f:
-                females.append(line)
-
-        males_dict = {}
-        females_dict = {}
-        for m in males:
-            if m:
-                entry = m.split()
-                males_dict[entry[0].lower()] = float(entry[1])
-        for f in females:
-            if f:
-                entry = f.split()
-                females_dict[entry[0].lower()] = float(entry[1])
-        # Remove ambiguous names (those that appear on both lists)
-        males = males_dict
-        females = females_dict
-        ambiguous = {n: (males[n], females[n]) for n in females.keys() + males.keys()
-                     if n in males and n in females}
-        males = [m for m in males if m not in ambiguous]
-        females = [f for f in females if f not in ambiguous]
-        eps = 0.1
-        todel = []
-        for n in ambiguous:
-            scores = ambiguous[n]
-            if scores[0] > scores[1]+eps:
-                males.append(n)
-                todel.append(n)
-            elif scores[0]+eps < scores[1]:
-                females.append(n)
-                todel.append(n)
-        for n in todel:
-            del ambiguous[n]
-        return set(males), set(females)
+    def __msg_wait(self, wait_time):
+        sys.stderr.write("Limit rate reached. Wait for "
+                         + str(wait_time) + " seconds.\n")
+        time.sleep(wait_time)

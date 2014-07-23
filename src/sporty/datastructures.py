@@ -36,7 +36,8 @@ class Tweets(object):
             self.tweets = open(tw_in, mode)
             self.lazy = True
         else:
-            raise Exception("Unsupported type for tweets source: " + str(type(tw_in)))
+            raise Exception("Unsupported type for tweets source: "
+                            + str(type(tw_in)))
 
     def __iter__(self):
         return self
@@ -63,8 +64,8 @@ class Tweets(object):
 
     def tolist(self):
         """
-        Returns a list of tweets. If the tweets are stored on disk, it loads all the tweets thus
-        making the lazy loading mode useless.
+        Returns a list of tweets. If the tweets are stored on disk, it loads
+        all the tweets thus making the lazy loading mode useless.
         """
         if type(self.tweets) == list:
             return self.tweets
@@ -78,8 +79,9 @@ class Tweets(object):
 
     def append(self, tw):
         """
-        Appends a given tweet to the list of tweets. If the tweets are stored in a file on disk,
-        then the appended tweet is written at the end of the file.
+        Appends a given tweet to the list of tweets. If the tweets are stored
+        in a file on disk, then the appended tweet is written at the end of
+        the file.
         """
         if self.lazy:
             self.tweets.seek(0, os.SEEK_END)
@@ -94,11 +96,12 @@ class Tweets(object):
 
 class TSV(object):
     """
-    Tool to load a TSV file into several dictionaries. It is used in this project to load the POMS
-    vocabulary and the emoticons. Each word of these vocabularies belong to a category. This data
-    structure give access to a dictionary 'keys' that maps a category to a list of words belonging
-    to this category, and a dictionary 'values' that maps each word in the vocabulary to the
-    category it belongs to.
+    Tool to load a TSV file into several dictionaries. It is used in this
+    project to load the POMS vocabulary and the emoticons. Each word of these
+    vocabularies belong to a category. This data structure give access to a
+    dictionary 'keys' that maps a category to a list of words belonging to
+    this category, and a dictionary 'values' that maps each word in the
+    vocabulary to the category it belongs to.
     """
     def __init__(self, tsv_file):
         """
@@ -131,8 +134,8 @@ class TSV(object):
 
 class LSF(object):
     """
-    Tool to load a Line-Separated File. This kind of file contains a list of words, one word on
-    each line.
+    Tool to load a Line-Separated File. This kind of file contains a list of
+    words, one word on each line.
     """
     def __init__(self, input_file):
         """
