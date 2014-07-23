@@ -92,13 +92,18 @@ class api(TwitterAPIUser):
         else:
             self.user_ids = LSF(user_ids).tolist()
 
-    def load(self, user_dir):
+    def load(self, user_dir, debug=False):
         """
         For every user id, this function loads the user from a file which name
         matches with the user id in the given user_dir directory.
         """
         self.users = []
-        for uid in self.user_ids:
+        debug_str = "Loading users: "
+        user_list = self.user_ids[:1000]
+        nb_uids = str(len(user_list))
+        for i, uid in enumerate(user_list):
+            if debug:
+                sys.stderr.write(debug_str + str(i) + "/" + nb_uids + "\r")
             user_file = os.path.join(user_dir, str(uid))
             if os.path.isfile(user_file):
                 with open(user_file) as uf:
@@ -107,24 +112,30 @@ class api(TwitterAPIUser):
                         tw = json.loads(line)
                         user = tw['user']
                         self.users.append(user)
+        if debug:
+            sys.stderr.write(debug_str + "Done.\n")
         return self.users
 
-    def loadFriends(self, friends_dir):
+    def loadFriends(self, friends_dir, debug=False):
         """
         For every user id, this function loads its friends from a file which
         name match with the user id in the given friends_dir directory.
         """
         self.friends = defaultdict(list)
-        for uid in self.user_ids:
-            # print "loading " + str(uid) + "'s friends."
+        debug_str = "Loading friends: "
+        user_list = self.user_ids[:1000]
+        nb_uids = str(len(user_list))
+        for i, uid in enumerate(user_list):
             friends_file = os.path.join(friends_dir, str(uid) + '.extended')
+            if debug:
+                sys.stderr.write(debug_str + str(i) + "/" + nb_uids + "\r")
             if os.path.isfile(friends_file):
                 friends = self.friends[int(uid)]
                 with open(friends_file) as ff:
                     for line in ff:
                         friends.append(json.loads(line))
-            # else:
-            #     print "no " + str(uid) + ".extended in " + friends_dir
+        if debug:
+            sys.stderr.write(debug_str + "Done.\n")
         return self.friends
 
     def outputFriendsIds(self, output_dir="./"):
@@ -284,8 +295,8 @@ class api(TwitterAPIUser):
 
         log = lambda x: 0 if not x else math.log(x)
 
-        self.load(user_dir)
-        self.loadFriends(friends_dir)
+        self.load(user_dir, debug=True)
+        self.loadFriends(friends_dir, debug=True)
 
         # Clean the list of users
         self.users = self.__filterUsers(self.users)
@@ -358,7 +369,7 @@ class api(TwitterAPIUser):
         males = []
         females = []
         local_m = '/home/virgile/sporty-twitters/inputs/census/dist.male.first'
-        local_f = '/home/virgile/sporty-twitters/inputs/census/'
+        local_f = '/home/virgile/sporty-twitters/inputs/census/' \
         + 'dist.female.first'
         with open(local_m) as males_f:
             for line in males_f:
