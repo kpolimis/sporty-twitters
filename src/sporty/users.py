@@ -147,7 +147,7 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFolloweesStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys()
+                    if 'error' in response.keys() \
                     and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
@@ -167,7 +167,7 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFollowersStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys()
+                    if 'error' in response.keys() \
                     and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
