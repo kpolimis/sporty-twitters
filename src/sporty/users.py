@@ -111,7 +111,7 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFolloweesStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys()
+                    if 'error' in response.keys() \
                     and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
@@ -131,7 +131,7 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFollowersStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys()
+                    if 'error' in response.keys() \
                     and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
@@ -320,14 +320,7 @@ class api(TwitterAPIUser):
         return u
 
     def getSimilarFriends(self, user_dir, friends_dir):
-        def find(f, seq):
-            for item in seq:
-                if f(item):
-                    return item
-            return None
-
         males, females = self.getCensusNames()
-
         for uid in self.user_ids:
             u = self.__getUser(uid, user_dir)
             u = self.getMostSimilar(u, males, females, friends_dir)
@@ -368,7 +361,7 @@ class api(TwitterAPIUser):
         males = []
         females = []
         local_m = '/home/virgile/sporty-twitters/inputs/census/dist.male.first'
-        local_f = '/home/virgile/sporty-twitters/inputs/census/'
+        local_f = '/home/virgile/sporty-twitters/inputs/census/' \
         + 'dist.female.first'
         with open(local_m) as males_f:
             for line in males_f:

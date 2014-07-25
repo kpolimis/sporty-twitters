@@ -244,7 +244,7 @@ class api(object):
                         ft = self.vectorizer.get_feature_names()[ft_idx[k]]
                         ft = ft.encode('ascii', 'ignore')
                         w = ft_w[k]
-                        print ("\t" + ft + ": ").ljust(left)
+                        print ("\t" + ft + ": ").ljust(left) \
                         + str(w).ljust(right)
             if n_examples:
                 print
