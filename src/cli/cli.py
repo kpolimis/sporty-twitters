@@ -118,12 +118,10 @@ def main(argv=None):
 
         elif args['most_similar']:
             api.users.loadIds(args['<user_ids_file>'])
-            friends = api.users.getSimilarFriends(args['<users_dir>'],
-                                                  args['<friends_dir>'])
-            for u in friends:
-                ufriends = friends[u]
-                if ufriends:
-                    print str(u) + ";" + str(ufriends[0]['id'])
+            most_similar_list = api.users.getSimilarFriends(args['<users_dir>'],
+                                                            args['<friends_dir>'])
+            # for entry in most_similar_list:
+            #     print ";".join(map(str, entry))
 
     elif args['mood']:
         keys = ['AH', 'DD', 'TA']

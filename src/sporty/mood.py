@@ -260,8 +260,8 @@ class api(object):
                                      self.features_selection.get_support(True)]
                     top50 = np.argsort(top_features_mean)[-50:]
                     for idx in top50:
-                        print "\t" + feature_names[idx].ljust(15) \
-                              + str(top_features_mean[idx]).ljust(10)
+                        print("\t" + feature_names[idx].ljust(15)
+                              + str(top_features_mean[idx]).ljust(10))
                 else:
                     print("Error while printing the top features: the "
                           + "classifier does not have a coef_ attribute.")
