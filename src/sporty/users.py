@@ -337,7 +337,11 @@ class api(TwitterAPIUser):
                 print(str(uid) + "\t" + str(fid)
                       + str(similarity))
                 self.most_similar_list.append(uid, fid, similarity)
-        sys.stderr.write(str(self.filter_stats))
+
+        for k in self.filter_stats:
+            sys.stderr.write(k + str(len(self.filter_stats[k])) + "\n")
+            sys.stderr.write(k + str(self.filter_stats[k]) + "\n")
+
         return self.most_similar_list
 
     def labelGender(self, user, males, females):
