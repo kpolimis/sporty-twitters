@@ -13,6 +13,7 @@ Usage: cli -h | --help
                                 [-c C]
        cli users list_friends <settings_file> <user_ids_file> <output_dir>
        cli users most_similar <user_ids_file> <users_dir> <friends_dir>
+                              [--no-tweets]
        cli users show <settings_file> <input_dir>
 
 Options:
@@ -30,6 +31,8 @@ Options:
     --n-folds=K             Number of folds for the cross validation
                             [default: 3]
     --no-rt                 Remove retweets when filtering
+    --no-tweets             Do not use the tweets of the users to infer their
+                            location
     --proba=P               Classify a tweet as positive only if the
                             probability to be positive is greater than P
     --roc=R                 Plot the ROC curve with R the test set size given
@@ -119,7 +122,8 @@ def main(argv=None):
         elif args['most_similar']:
             api.users.loadIds(args['<user_ids_file>'])
             most_similar_list = api.users.getSimilarFriends(args['<users_dir>'],
-                                                            args['<friends_dir>'])
+                                                            args['<friends_dir>'],
+                                                            not args['--no-tweets'])
             # for entry in most_similar_list:
             #     print ";".join(map(str, entry))
 

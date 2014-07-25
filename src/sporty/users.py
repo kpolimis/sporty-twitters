@@ -18,7 +18,7 @@ class api(TwitterAPIUser):
         self.loadIds(user_ids)
         self.users = []
         self.most_similar_list = []
-        self.filter_stats = defaultdict(list)
+        self.filter_stats = defaultdict(int)  # list)
         self.states = {
             'AK': 'Alaska',
             'AL': 'Alabama',
@@ -258,58 +258,80 @@ class api(TwitterAPIUser):
                 for line in ff:
                     yield json.loads(line)
 
-    def __processUser(self, u, males, females, user_dir, friends_dir, is_friend=False):
+    def __processUser(self, u, males, females, user_dir, friends_dir, use_tweets=True, is_friend=False):
         cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
         accr_set = set(map(lambda x: x.lower(), self.states.keys()))
         states_set = set(map(lambda x: x.lower(), self.states.values()))
+        inspected = []
+
+        def find_location_in_tweets(u):
+            if not use_tweets or u['id'] in inspected:
+                return u, False
+            else:
+                inspected.append(u['id'])
+            utweets = Tweets(os.path.join(user_dir, str(u['id'])))
+            found_location = False
+
+            for t in utweets:
+                if t['place'] and t['place']['full_name']:
+                    u['location'] = t['place']['full_name']
+                    found_location = True
+                    break
+            # if u['location']:
+            #     sys.stderr.write(str(u['id']) + "\t" + str(i) + "\t" +  str(u['location'].encode('ascii', 'ignore')) + "\n")
+            return u, found_location
 
         if is_friend:
-            self.filter_stats['friends'].append(u['id'])
+            self.filter_stats['friends'] += 1
         else:
-            self.filter_stats['user'].append(u['id'])
+            self.filter_stats['users'] += 1
 
         if not u['location']:
             if is_friend:
-                self.filter_stats['friend_empty_location'].append(u['id'])
+                self.filter_stats['friend_empty_location'] += 1
                 return False
             else:
-                self.filter_stats['user_empty_location'].append(u['id'])
-                utweets = Tweets(os.path.join(user_dir, str(u['id'])))
-                found_location = False
-                for t in utweets:
-                    if t['place'] and t['place']['full_name']:
-                        u['location'] = t['place']['full_name']
-                        found_location = True
-                        break
+                self.filter_stats['user_empty_location'] += 1
+                u, found_location = find_location_in_tweets(u)
                 if found_location:
-                    self.filter_stats['user_found_location_using_tweets'].append(u['id'])
+                    self.filter_stats['user_found_location_using_tweets'] += 1
                 else:
                     return False
 
         if not cityregex.match(u['location']):
             if is_friend:
-                self.filter_stats['friend_not_matching_regex'].append(u['id'])
+                self.filter_stats['friend_not_matching_regex'] += 1
+                return False
             else:
-                self.filter_stats['user_not_matching_regex'].append(u['id'])
-            return False
+                self.filter_stats['user_not_matching_regex'] += 1
+                u, found_location = find_location_in_tweets(u)
+                if found_location:
+                    if cityregex.match(u['location']):
+                        self.filter_stats['user_found_location_using_tweets'] += 1
+                    else:
+                        return False
+                else:
+                    return False
 
         u['location'] = cityregex.match(u['location']).group(1, 2)
-        if u['location'][1].lower() in accr_set:
+        if u['location'][0].lower() in states_set and u['location'][0] == 'USA':
+            u['location'] = ('', u['location'][1])
+        elif u['location'][1].lower() in accr_set:
             u['location'] = (u['location'][0],
                              self.states[u['location'][1].upper()])
         elif u['location'][1].lower() not in states_set:
             if is_friend:
-                self.filter_stats['friend_no_matching_state'].append(u['id'])
+                self.filter_stats['friend_no_matching_state'] += 1
             else:
-                self.filter_stats['user_no_matching_state'].append(u['id'])
+                self.filter_stats['user_no_matching_state'] += 1
             return False
 
         self.labelGender(u, males, females)
         if u['gender'] == 'n':
             if is_friend:
-                self.filter_stats['friend_ambiguous_gender'].append(u['id'])
+                self.filter_stats['friend_ambiguous_gender'] += 1
             else:
-                self.filter_stats['user_ambiguous_gender'].append(u['id'])
+                self.filter_stats['user_ambiguous_gender'] += 1
             return False
 
         if is_friend:
@@ -318,10 +340,12 @@ class api(TwitterAPIUser):
         return self.__getFriends(u['id'], friends_dir)
 
     def getMostSimilar(self, u, males, females,
-                       user_dir, friends_dir, is_friend=False):
+                       user_dir, friends_dir,
+                       use_tweets=True, is_friend=False):
         log = lambda x: 0 if not x else math.log(x)
         # clean a user and get his/her friends
-        friends = self.__processUser(u, males, females, user_dir, friends_dir)
+        friends = self.__processUser(u, males, females, user_dir, friends_dir,
+                                     use_tweets=use_tweets)
         if not friends:
             return False
 
@@ -330,51 +354,51 @@ class api(TwitterAPIUser):
         for f in friends:
             i += 1
             f = self.__processUser(f, males, females, user_dir,
-                                   friends_dir, is_friend=True)
+                                   friends_dir, use_tweets=use_tweets,
+                                   is_friend=True)
             if not f:
                 continue
             # filter on gender
             if f['gender'] != u['gender']:
-                self.filter_stats['different_gender'].append(f['id'])
+                self.filter_stats['different_gender'] += 1
                 continue
             # filter on location
             if f['location'][1] != u['location'][1]:
-                self.filter_stats['different_location'].append(f['id'])
+                self.filter_stats['different_location'] += 1
                 continue
 
             # is this user the most similar until now?
-            self.filter_stats['friend_OK'].append(f['id'])
+            self.filter_stats['friend_OK'] += 1
             similarity = self.cosineSimilarity(f, u, log)
             if similarity > most_similar[1]:
                 most_similar = (f['id'], similarity)
 
         if i == 0:
-            self.filter_stats['user_no_friends_loaded'].append(u['id'])
+            self.filter_stats['user_no_friends_loaded'] += 1
         else:
-            self.filter_stats['user_with_friends'].append(u['id'])
+            self.filter_stats['user_with_friends'] += 1
         u['most_similar'] = most_similar if most_similar != (0, 0) else None
         return u
 
-    def getSimilarFriends(self, user_dir, friends_dir):
+    def getSimilarFriends(self, user_dir, friends_dir, use_tweets=True):
         males, females = self.getCensusNames()
         for uid in self.user_ids:
             u = self.__getUser(uid, user_dir)
             if not u:  # cannot load the user
-                self.filter_stats['cannot_load_user'].append(uid)
+                self.filter_stats['cannot_load_user'] += 1
                 continue
-            u = self.getMostSimilar(u, males, females, user_dir, friends_dir)
+            u = self.getMostSimilar(u, males, females, user_dir, friends_dir,
+                                    use_tweets=use_tweets)
 
             if u and u['most_similar']:
                 fid = u['most_similar'][0]
                 similarity = u['most_similar'][1]
                 entry = (uid, fid, similarity)
-                print ";".join(map(str,entry))
+                print ";".join(map(str, entry))
                 self.most_similar_list.append(entry)
                     
         for k in self.filter_stats:
-            sys.stderr.write(k + ": " + str(len(self.filter_stats[k])) + "\n")
-            # sys.stderr.write(k + " " + str(self.filter_stats[k]) + "\n")
-        # sys.stderr.write("total: " + str(sum(map(len, self.filter_stats.values()))) + "\n")
+            sys.stderr.write(k + " " + str(self.filter_stats[k]) + "\n")
 
         return self.most_similar_list
 
