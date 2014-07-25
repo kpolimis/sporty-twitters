@@ -111,8 +111,7 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFolloweesStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys() \
-                    and response['error'] == 'Not authorized.':
+                    if 'error' in response.keys() and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
                     if 'errors' in response.keys():
@@ -131,8 +130,7 @@ class api(TwitterAPIUser):
                 try:
                     stream = self.getFollowersStream(user_id, cursor)
                     response = json.loads(stream.text)
-                    if 'error' in response.keys() \
-                    and response['error'] == 'Not authorized.':
+                    if 'error' in response.keys() and response['error'] == 'Not authorized.':
                         cursor = 0
                         break
                     if 'errors' in response.keys():
@@ -258,7 +256,8 @@ class api(TwitterAPIUser):
                 for line in ff:
                     yield json.loads(line)
 
-    def __processUser(self, u, males, females, user_dir, friends_dir, use_tweets=True, is_friend=False):
+    def __processUser(self, u, males, females, user_dir, friends_dir,
+                      use_tweets=True, is_friend=False):
         cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
         accr_set = set(map(lambda x: x.lower(), self.states.keys()))
         states_set = set(map(lambda x: x.lower(), self.states.values()))
@@ -294,7 +293,7 @@ class api(TwitterAPIUser):
                 self.filter_stats['user_empty_location'] += 1
                 u, found_location = find_location_in_tweets(u)
                 if found_location:
-                    self.filter_stats['user_found_location_using_tweets'] += 1
+                    self.filter_stats['user_location_via_tweets'] += 1
                 else:
                     return False
 
@@ -307,7 +306,7 @@ class api(TwitterAPIUser):
                 u, found_location = find_location_in_tweets(u)
                 if found_location:
                     if cityregex.match(u['location']):
-                        self.filter_stats['user_found_location_using_tweets'] += 1
+                        self.filter_stats['user_location_via_tweets'] += 1
                     else:
                         return False
                 else:
@@ -396,7 +395,7 @@ class api(TwitterAPIUser):
                 entry = (uid, fid, similarity)
                 print ";".join(map(str, entry))
                 self.most_similar_list.append(entry)
-                    
+
         for k in self.filter_stats:
             sys.stderr.write(k + " " + str(self.filter_stats[k]) + "\n")
 
@@ -426,8 +425,7 @@ class api(TwitterAPIUser):
         males = []
         females = []
         local_m = '/home/virgile/sporty-twitters/inputs/census/dist.male.first'
-        local_f = '/home/virgile/sporty-twitters/inputs/census/' \
-        + 'dist.female.first'
+        local_f = '/home/virgile/sporty-twitters/inputs/census/dist.female.first'
         with open(local_m) as males_f:
             for line in males_f:
                 males.append(line)
