@@ -17,9 +17,8 @@ class api(TwitterAPIUser):
         super(api, self).__init__(settings_file)
         self.loadIds(user_ids)
         self.users = []
-        self.friends = defaultdict(list)
-        self.similarityMatrix = defaultdict(dict)
-        self.sortedFriends = defaultdict(list)
+        self.most_similar_list = []
+        self.filter_stats = defaultdict(list)
         self.states = {
             'AK': 'Alaska',
             'AL': 'Alabama',
@@ -91,41 +90,6 @@ class api(TwitterAPIUser):
             self.user_ids = [user_ids]
         else:
             self.user_ids = LSF(user_ids).tolist()
-
-    def load(self, user_dir):
-        """
-        For every user id, this function loads the user from a file which name
-        matches with the user id in the given user_dir directory.
-        """
-        self.users = []
-        for uid in self.user_ids:
-            user_file = os.path.join(user_dir, str(uid))
-            if os.path.isfile(user_file):
-                with open(user_file) as uf:
-                    line = uf.readline()
-                    if line:
-                        tw = json.loads(line)
-                        user = tw['user']
-                        self.users.append(user)
-        return self.users
-
-    def loadFriends(self, friends_dir):
-        """
-        For every user id, this function loads its friends from a file which
-        name match with the user id in the given friends_dir directory.
-        """
-        self.friends = defaultdict(list)
-        for uid in self.user_ids:
-            # print "loading " + str(uid) + "'s friends."
-            friends_file = os.path.join(friends_dir, str(uid) + '.extended')
-            if os.path.isfile(friends_file):
-                friends = self.friends[int(uid)]
-                with open(friends_file) as ff:
-                    for line in ff:
-                        friends.append(json.loads(line))
-            # else:
-            #     print "no " + str(uid) + ".extended in " + friends_dir
-        return self.friends
 
     def outputFriendsIds(self, output_dir="./"):
         """
@@ -275,6 +239,86 @@ class api(TwitterAPIUser):
                   for u in (u1, u2)]
         return 1 - cosine(U1, U2)
 
+    def __getUser(self, uid, user_dir):
+        user_file = os.path.join(user_dir, str(uid))
+        if os.path.isfile(user_file):
+            with open(user_file) as uf:
+                line = uf.readline()
+                if line:
+                    tw = json.loads(line)
+                    user = tw['user']
+                    return user
+
+    def __getFriends(self, uid, friends_dir):
+        friends_file = os.path.join(friends_dir, str(uid) + '.extended')
+        if os.path.isfile(friends_file):
+            with open(friends_file) as ff:
+                for line in ff:
+                    yield json.loads(line)
+        else:
+            return False
+
+    def __processUser(self, u, males, females, friends_dir, is_friend=False):
+        cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
+        accr_set = set(map(lambda x: x.lower(), self.states.keys()))
+        states_set = set(map(lambda x: x.lower(), self.states.values()))
+
+        if not u['location']:
+            self.filter_stats['empty_location'].append(u['id'])
+            return False
+
+        if not cityregex.match(u['location']):
+            self.filter_stats['non_matching_regex'].append(u['id'])
+            return False
+
+        u['location'] = cityregex.match(u['location']).group(1, 2)
+        if u['location'][1].lower() in accr_set:
+            u['location'] = (u['location'][0],
+                             self.states[u['location'][1].upper()])
+        elif u['location'][1].lower() not in states_set:
+            self.filter_stats['no_matching_state'].append(u['id'])
+            return False
+
+        self.labelGender(u, males, females)
+        if u['gender'] == 'n':
+            self.filter_stats['ambiguous_gender'].append(u['id'])
+            return False
+
+        if is_friend:
+            return u
+
+        friends = self.__getFriends(u['id'], friends_dir)
+        if not is_friend and not friends:
+            self.filter_stats['no_friends'].append(u['id'])
+            return False
+        else:
+            return friends
+
+    def getMostSimilar(self, u, males, females, friends_dir, is_friend=False):
+        log = lambda x: 0 if not x else math.log(x)
+        # clean a user and get his/her friends
+        friends = self.__processUser(u, males, females, friends_dir)
+        if not friends:
+            return False
+
+        most_similar = (0, 0)  # tuple (uid, cosine_similarity)
+        for f in friends:
+            f = self.__processUser(f, males, females, friends_dir,
+                                   is_friend=True)
+            # filter on gender
+            if f['gender'] != u['gender']:
+                continue
+            # filter on location
+            if f['location'][1] != u['location'][1]:
+                continue
+            # is this user the most similar until now?
+            similarity = self.cosineSimilarity(f, u, log)
+            if similarity > most_similar[1]:
+                most_similar = (f['id'], similarity)
+
+        u['most_similar'] = most_similar if most_similar != (0, 0) else None
+        return u
+
     def getSimilarFriends(self, user_dir, friends_dir):
         def find(f, seq):
             for item in seq:
@@ -282,57 +326,19 @@ class api(TwitterAPIUser):
                     return item
             return None
 
-        log = lambda x: 0 if not x else math.log(x)
+        males, females = self.getCensusNames()
 
-        self.load(user_dir)
-        self.loadFriends(friends_dir)
-
-        # Clean the list of users
-        self.users = self.__filterUsers(self.users)
-
-        # Filter the friends to keep the matching ones
-        for u in self.users:
-            self.friends[u['id']] = self.__filterUsers(self.friends[u['id']],
-                                                       friends=True)
-
-            ## GENDER
-            gender_f = lambda f: f['gender'] == u['gender']
-            self.friends[u['id']] = filter(gender_f,
-                                           self.friends[u['id']])
-
-            ## LOCATION
-            location_filtered = []
-            # match on exact location
-            loc_exact_f = lambda f: f['location'] == u['location']
-            location_filtered = filter(loc_exact_f,
-                                       self.friends[u['id']])
-            # match on same state
-            if not location_filtered:
-                loc_state_f = lambda f: f['location'][1] == u['location'][1]
-                location_filtered = filter(loc_state_f,
-                                           self.friends[u['id']])
-
-            self.friends[u['id']] = location_filtered
-
-        # Compute the similarity value between every user and each of their
-        # friends
-        for u in self.users:
-            d = self.similarityMatrix[u['id']]
-            ufriends = self.friends[u['id']]
-            for f in ufriends:
-                d[f['id']] = self.cosineSimilarity(f, u)  # , log)
-            # Sort the friends by descending similarity
-            sortedFriends = sorted(d, key=d.get, reverse=True)
-            self.sortedFriends[u['id']] = [find(lambda x: x['id'] == uid,
-                                                ufriends)
-                                           for uid in sortedFriends]
-
-        # Display
-        # for u in self.users:
-        #     print self.__displayUser(u)
-        #     for f in self.sortedFriends[u['id']]:
-        #         print self.__displayFriend(f, u, 1)
-        return self.sortedFriends
+        for uid in self.user_ids:
+            u = self.__getUser(uid, user_dir)
+            u = self.getMostSimilar(u, males, females, friends_dir)
+            if u['most_similar']:
+                fid = u['most_similar'][0]
+                similarity = u['most_similar'][1]
+                print(str(uid) + "\t" + str(fid)
+                      + str(similarity))
+                self.most_similar_list.append(uid, fid, similarity)
+        sys.stderr.write(str(self.filter_stats))
+        return self.most_similar_list
 
     def labelGender(self, user, males, females):
         name = user['name'].lower().split()
@@ -398,69 +404,6 @@ class api(TwitterAPIUser):
         for n in todel:
             del ambiguous[n]
         return set(males), set(females)
-
-    def __displayUser(self, u, indent=0):
-        udisplay = ""
-        udisplay += indent*"\t"
-        udisplay += "- name: " + u['name'].encode('ascii', 'ignore')
-        udisplay += ", gender: " + u['gender']
-        udisplay += ", location: " + str(u['location'])
-        udisplay += "\n"
-        udisplay += indent*"\t"
-        udisplay += "  statuses: " + str(u['statuses_count'])
-        udisplay += ", followees: " + str(u['friends_count'])
-        udisplay += ", followers: " + str(u['followers_count'])
-        return udisplay
-
-    def __displayFriend(self, user, parent, indent=0):
-        udisplay = self.__displayUser(user, indent)
-        udisplay += "\n"
-        udisplay += indent*"\t"
-        log = lambda x: 0 if not x else math.log(x)
-        udisplay += "  similarity: "
-        udisplay += str(self.similarityMatrix[parent['id']][user['id']])
-        return udisplay
-
-    def __filterUsers(self, users, friends=False):
-        cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
-        males, females = self.getCensusNames()
-
-        ## LOCATION
-
-        # only keep users that have a US formated location (e.g. 'Chicago, IL')
-        users = filter(lambda u: cityregex.match(u['location']), users)
-
-        accr_set = set(map(lambda x: x.lower(), self.states.keys()))
-        states_set = set(map(lambda x: x.lower(), self.states.values()))
-        allowed_set = accr_set.union(states_set)
-
-        def group_location(user):
-            user['location'] = cityregex.match(user['location']).group(1, 2)
-            if user['location'][1].lower() in accr_set:
-                user['location'] = (user['location'][0],
-                                    self.states[user['location'][1].upper()])
-            elif user['location'][1].lower() not in allowed_set:
-                user['location'] = None
-
-        map(group_location, users)
-
-        # only keep users that have a defined location
-        users = filter(lambda u: u['location'], users)
-
-        ## GENDER
-
-        # label users on gender
-        map(lambda u: self.labelGender(u, males, females), users)
-        # only keep users that have a non ambiguous gender
-        users = filter(lambda u: u['gender'] != 'n', users)
-
-        ## FRIENDS
-
-        if not friends:
-            # only keep users that have at least one friend
-            users = filter(lambda u: self.friends[u['id']], users)
-
-        return users
 
     def __msg_wait(self, wait_time):
         sys.stderr.write("Limit rate reached. Wait for "
