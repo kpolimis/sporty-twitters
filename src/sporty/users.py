@@ -258,7 +258,7 @@ class api(TwitterAPIUser):
                 for line in ff:
                     yield json.loads(line)
 
-    def __processUser(self, u, males, females, friends_dir, is_friend=False):
+    def __processUser(self, u, males, females, user_dir, friends_dir, is_friend=False):
         cityregex = re.compile("([^,]+),\s*([A-Za-z\s]{2,})")
         accr_set = set(map(lambda x: x.lower(), self.states.keys()))
         states_set = set(map(lambda x: x.lower(), self.states.values()))
@@ -271,9 +271,20 @@ class api(TwitterAPIUser):
         if not u['location']:
             if is_friend:
                 self.filter_stats['friend_empty_location'].append(u['id'])
+                return False
             else:
                 self.filter_stats['user_empty_location'].append(u['id'])
-            return False
+                utweets = Tweets(os.path.join(user_dir, str(u['id'])))
+                found_location = False
+                for t in utweets:
+                    if t['place'] and t['place']['full_name']:
+                        u['location'] = t['place']['full_name']
+                        found_location = True
+                        break
+                if found_location:
+                    self.filter_stats['user_found_location_using_tweets'].append(u['id'])
+                else:
+                    return False
 
         if not cityregex.match(u['location']):
             if is_friend:
@@ -306,10 +317,11 @@ class api(TwitterAPIUser):
 
         return self.__getFriends(u['id'], friends_dir)
 
-    def getMostSimilar(self, u, males, females, friends_dir, is_friend=False):
+    def getMostSimilar(self, u, males, females,
+                       user_dir, friends_dir, is_friend=False):
         log = lambda x: 0 if not x else math.log(x)
         # clean a user and get his/her friends
-        friends = self.__processUser(u, males, females, friends_dir)
+        friends = self.__processUser(u, males, females, user_dir, friends_dir)
         if not friends:
             return False
 
@@ -317,8 +329,8 @@ class api(TwitterAPIUser):
         i = 0
         for f in friends:
             i += 1
-            f = self.__processUser(f, males, females, friends_dir,
-                                   is_friend=True)
+            f = self.__processUser(f, males, females, user_dir,
+                                   friends_dir, is_friend=True)
             if not f:
                 continue
             # filter on gender
@@ -350,7 +362,7 @@ class api(TwitterAPIUser):
             if not u:  # cannot load the user
                 self.filter_stats['cannot_load_user'].append(uid)
                 continue
-            u = self.getMostSimilar(u, males, females, friends_dir)
+            u = self.getMostSimilar(u, males, females, user_dir, friends_dir)
 
             if u and u['most_similar']:
                 fid = u['most_similar'][0]
