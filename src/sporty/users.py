@@ -79,6 +79,11 @@ class api(TwitterAPIUser):
             'WY': 'Wyoming'
             }
 
+    def __msg_wait(self, wait_time):
+        sys.stderr.write("Limit rate reached. Wait for "
+                         + str(wait_time) + " seconds.\n")
+        time.sleep(wait_time)
+
     def loadIds(self, user_ids=[]):
         """
         Store a list of user IDs in the instance. This list will be used to
@@ -238,6 +243,9 @@ class api(TwitterAPIUser):
         return 1 - cosine(U1, U2)
 
     def __getUser(self, uid, user_dir):
+        """
+        Load the details of a user given its user identifier.
+        """
         user_file = os.path.join(user_dir, str(uid))
         if os.path.isfile(user_file):
             with open(user_file) as uf:
@@ -276,8 +284,6 @@ class api(TwitterAPIUser):
                     u['location'] = t['place']['full_name']
                     found_location = True
                     break
-            # if u['location']:
-            #     sys.stderr.write(str(u['id']) + "\t" + str(i) + "\t" +  str(u['location'].encode('ascii', 'ignore')) + "\n")
             return u, found_location
 
         if is_friend:
@@ -464,8 +470,3 @@ class api(TwitterAPIUser):
         for n in todel:
             del ambiguous[n]
         return set(males), set(females)
-
-    def __msg_wait(self, wait_time):
-        sys.stderr.write("Limit rate reached. Wait for "
-                         + str(wait_time) + " seconds.\n")
-        time.sleep(wait_time)

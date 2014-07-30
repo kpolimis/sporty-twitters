@@ -1,4 +1,5 @@
 import argparse
+import copy
 import expand_vocabulary
 import json
 import matplotlib.pyplot as plt
@@ -39,6 +40,9 @@ class api(object):
         self.labels = []
         self.X = None
         self.corpus = []
+        self.cleaner_options = {}
+        self.fb_options = {}
+        self.tfidf_options = {}
         if not clf:
             self.clf = svm.SVC(kernel='linear', C=1, class_weight='auto')
 
@@ -51,13 +55,30 @@ class api(object):
         return c.expandVocabulary()
 
     def buildX(self, corpus, k=100, cleaner_options={}, fb_options={},
-               tfidf_options={}):
+               tfidf_options={}, predict=False):
         """
+        Build the features vectors for each entry in the corpus given the
+        options for the cleaner, the feature builder, and the vectorizer.
+        If the flag predict is True, then we assume that we want to predict the
+        labels of the given corpus and that the classifier has already been
+        trained. Therefore, the options dictionaries already exist and we do
+        not do features selection.
         """
         self.corpus = corpus
 
-        # clean the corpus
-        cl = utils.Cleaner(**cleaner_options)
+        # Different behavior given the predict flag
+        if predict:
+            cleaner_options = self.cleaner_options
+            fb_options = self.fb_options
+            fb_options['labels'] = False
+            tfidf_options = self.tfidf_options
+        else:
+            self.cleaner_options = cleaner_options
+            self.fb_options = fb_options
+            self.tfidf_options = tfidf_options
+
+        # build cleaner
+        self.cl = utils.Cleaner(**cleaner_options)
         # build the features
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
         self.features, self.labels = fb.run()
@@ -68,11 +89,15 @@ class api(object):
             array_labels = [x[0] for x in array_labels]
         self.vect_labels = array_labels
 
-        self.vectorizer = TfidfVectorizer(**tfidf_options)
-        self.features_selection = SelectKBest(chi2, k)
-        self.pipeline = Pipeline([('tfidf', self.vectorizer),
-                                  ('chi2', self.features_selection)])
-        self.X = self.pipeline.fit_transform(self.features, self.vect_labels)
+        if not predict:
+            self.vectorizer = TfidfVectorizer(**tfidf_options)
+            self.features_selection = SelectKBest(chi2, k)
+            self.pipeline = Pipeline([('tfidf', self.vectorizer),
+                                      ('chi2', self.features_selection)])
+            self.X = self.pipeline.fit_transform(self.features,
+                                                 self.vect_labels)
+        else:
+            self.X = self.vectorizer.fit_transform(self.features)
         self.X = preprocessing.scale(self.X.toarray())
         return self.X
 
@@ -277,3 +302,29 @@ class api(object):
         for s in total_stats:
             returned_stats[s] = np.mean(total_stats[s])
         return returned_stats
+
+    def classifyUser(self, users_dir, uids, probability=False):
+        """
+        Returns a list containing the users' class: 1 if the user shows sign of
+        depression, 0 otherwise.
+        """
+        if type(uid) != list:
+            return self.classifyUser(users_dir, [uid])
+
+        label_names = self.labels[0].keys()
+        corpus = self.corpus.tolist()
+        classifiers = {}
+        for label in label_names:
+            X_train = self.X
+            y_train = np.array([d[label] for d in self.labels])
+            self.clf.fit(X_train, y_train)
+            classifiers[label] = copy.deepcopy(self.clf)
+
+        for uid in uids:
+            utweets = Tweets(os.path.join(user_dir, str(uid)))
+            X = self.buildX(utweets, predict=True)
+            for label in label_names:
+                print label
+                pred = classifiers[label].predict(X)
+                print pred
+        return False

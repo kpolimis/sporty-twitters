@@ -151,6 +151,8 @@ class FeaturesBuilder(object):
             self.labels.append(d)
 
     def run(self):
+        self.features = []
+        self.labels = []
         for tw in self.corpus:
             self.tw_features = set()
             if self.extractFeatures(tw):

@@ -5,6 +5,11 @@ Usage: cli -h | --help
                           [--clf=C [--clf-options=O]] [--proba=P] [--roc=R]
                           [--reduce-func=R] [--features-func=F] [--liwc=L]
        cli mood label <input_tweets> <labeled_tweets> [-l L]
+       cli mood predict_user <labeled_tweets> <users_dir> <user_ids_file>
+                            [-bmptu] [-s SW] [-e E] [-k K] [--liwc=L]
+                            [--proba=P] [--min-df=M] [--n-folds=K]
+                            [--features-func=F] [--clf=C [--clf-options=O]]
+                            [--reduce-func=R]
        cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file>
@@ -135,7 +140,7 @@ def main(argv=None):
             api.tweets.label(labels, args['<labeled_tweets>'],
                              int(args['--begin-line']))
 
-        elif args['benchmark']:
+        elif args['benchmark'] or args['predict_user']:
             # Build the right classifier given the CLI options
             classifier_choices = {'logistic-reg': LogisticRegression,
                                   'svm': SVC,
@@ -197,18 +202,24 @@ def main(argv=None):
                             cleaner_options, fb_options, tfidf_options)
 
             # Plot the ROC curve if asked:
-            if args['--roc']:
+            if args['benchmark'] and args['--roc']:
                 api.mood.ROC_curve(float(args['--roc']))
                 return
 
-            # Run the benchmark
             argproba = False
             if args['--proba']:
                 argproba = float(args['--proba'])
-            return args, api.mood.benchmark(int(args['--n-folds']),
-                                            int(args['--n-examples']),
-                                            args['--top-features'],
-                                            argproba)
+
+            if args['benchmark']:
+                # Run the benchmark
+                return args, api.mood.benchmark(int(args['--n-folds']),
+                                                int(args['--n-examples']),
+                                                args['--top-features'],
+                                                argproba)
+            elif args['predict_user']:
+                return api.mood.classifyUser(args['<users_dir>'],
+                                             args['<user_ids_file'],
+                                             argproba)
 
 if __name__ == "__main__":
     main()
