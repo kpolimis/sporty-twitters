@@ -7,9 +7,8 @@ Usage: cli -h | --help
        cli mood label <input_tweets> <labeled_tweets> [-l L]
        cli mood predict_user <labeled_tweets> <users_dir> <user_ids_file>
                             [-bmptu] [-s SW] [-e E] [-k K] [--liwc=L]
-                            [--proba=P] [--min-df=M] [--n-folds=K]
+                            [--proba=P] [--min-df=M] [--reduce-func=R]
                             [--features-func=F] [--clf=C [--clf-options=O]]
-                            [--reduce-func=R]
        cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file>
@@ -29,8 +28,8 @@ Options:
     --clf-options=O         Options for the classifier as a string
                             representing a Python dictionary
     --each                  Filter C tweets for each of the tracked words
-    --liwc=L                Path to the LIWC dictionary
-    --min-df=M              See min_df from sklearn vectorizers [default: 1]
+    --liwc=L                Path to the LIWC dictionary [default: /data/1/lexicons/liwc.dic]
+    --min-df=M              See min_df from sklearn vectorizers [default: 3]
     --n-examples=N          Number of wrongly classified examples to display
                             [default: 0]
     --n-folds=K             Number of folds for the cross validation
@@ -39,18 +38,19 @@ Options:
     --no-tweets             Do not use the tweets of the users to infer their
                             location
     --proba=P               Classify a tweet as positive only if the
-                            probability to be positive is greater than P
+                            probability to be positive is greater than P [default: 0.91]
     --roc=R                 Plot the ROC curve with R the test set size given
                             as a ratio (e.g. 0.2 for 20 percent of the data)
                             and return. Note: the benchmark is not run
     -b, --binary            No count of features, only using binary features
     -c C, --count=C         Number of tweets to collect/filter [default: 3200]
     -e E, --emoticons=E     Path to file containing the dictionary of emoticons
+                            [default: /home/virgile/sporty-twitters/inputs/params/emoticons]
     -f F, --features-func=F List of functions to execute amongst the functions
                             of the FeatureBuilder class. The functions of this
                             list will be executed in order
     -k K, --k-features=K    Number of features to keep during the features
-                            selection [default: 100]
+                            selection [default: 160]
     -l, --begin-line=L      Line to start labeling the tweets [default: 0]
     -m                      Keep mentions when cleaning corpus
     -p                      Keep punctuation when cleaning corpus
@@ -150,7 +150,7 @@ def main(argv=None):
 
             if not args['--clf']:
                 # default classifier
-                clf = SVC(kernel='linear', C=1, class_weight='auto')
+                clf = LogisticRegression()
             elif args['--clf'] in classifier_choices.keys():
                 clfoptions = {}
                 if args['--clf-options']:
@@ -206,9 +206,7 @@ def main(argv=None):
                 api.mood.ROC_curve(float(args['--roc']))
                 return
 
-            argproba = False
-            if args['--proba']:
-                argproba = float(args['--proba'])
+            argproba = float(args['--proba'])
 
             if args['benchmark']:
                 # Run the benchmark
@@ -217,9 +215,11 @@ def main(argv=None):
                                                 args['--top-features'],
                                                 argproba)
             elif args['predict_user']:
+                user_ids = LSF(args['<user_ids_file>']).tolist()
                 return api.mood.classifyUser(args['<users_dir>'],
-                                             args['<user_ids_file'],
-                                             argproba)
+                                             user_ids,
+                                             argproba,
+                                             k=int(args['--k-features']))
 
 if __name__ == "__main__":
     main()

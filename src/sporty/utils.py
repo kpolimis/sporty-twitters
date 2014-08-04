@@ -55,15 +55,16 @@ class FeaturesBuilder(object):
         else:
             self.func_list = func_list
 
-    def clean(self):
+    def clean(self): 
         self.tweet = self.cleaner.clean_tw(self.tweet)
 
     def tokenize(self, analyzer='word', ngram_range=(1, 1)):
         text = self.tweet['text']
-        vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range,
-                              lowercase=False)
-        vec.fit_transform([text])
-        self.tw_features = self.tw_features.union(set(vec.get_feature_names()))
+        if text:
+            vec = CountVectorizer(analyzer=analyzer, ngram_range=ngram_range,
+                                  lowercase=False)
+            vec.fit_transform([text])
+            self.tw_features = self.tw_features.union(set(vec.get_feature_names()))
 
     def wordTokenize(self):
         self.tokenize()
@@ -77,13 +78,13 @@ class FeaturesBuilder(object):
             self.cleaner.rm_punctuation = True
             self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
-        if -1 != text.find(' '):
-                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1,
-                                         lowercase=False, stop_words=None)
-                ngrams.fit_transform([text])
-                ngrams_undersc = map(lambda x: x.replace(" ", "_"),
-                                     ngrams.get_feature_names())
-                self.tw_features = self.tw_features.union(set(ngrams_undersc))
+        if text and -1 != text.find(' '):
+            ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1,
+                                     lowercase=False, stop_words=None)
+            ngrams.fit_transform([text])
+            ngrams_undersc = map(lambda x: x.replace(" ", "_"),
+                                 ngrams.get_feature_names())
+            self.tw_features = self.tw_features.union(set(ngrams_undersc))
         self.tweet = tw_save
 
     def mentionsFeature(self):
@@ -230,9 +231,7 @@ class Cleaner():
         text = self.preprocess(text)
         words = self.tokenize(text)
         text = " ".join(words)
-
-        if text:
-            tw['text'] = text
+        tw['text'] = text
         return tw
 
     def clean(self, corpus):
