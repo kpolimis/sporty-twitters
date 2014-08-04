@@ -78,7 +78,7 @@ class api(object):
             self.tfidf_options = tfidf_options
 
         # build cleaner
-        self.cl = utils.Cleaner(**cleaner_options)
+        cl = utils.Cleaner(**cleaner_options)
         # build the features
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
         self.features, self.labels = fb.run()
