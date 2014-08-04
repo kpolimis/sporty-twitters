@@ -92,12 +92,15 @@ class api(object):
         if not predict:
             self.vectorizer = TfidfVectorizer(**tfidf_options)
             self.features_selection = SelectKBest(chi2, k)
-            self.pipeline = Pipeline([('tfidf', self.vectorizer),
-                                      ('chi2', self.features_selection)])
+        self.pipeline = Pipeline([('tfidf', self.vectorizer),
+                                  ('chi2', self.features_selection)])
+
+        if not predict:
             self.X = self.pipeline.fit_transform(self.features,
                                                  self.vect_labels)
         else:
-            self.X = self.vectorizer.fit_transform(self.features)
+            self.X = self.pipeline.transform(self.features)
+
         self.X = preprocessing.scale(self.X.toarray())
         return self.X
 
