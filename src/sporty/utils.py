@@ -67,10 +67,18 @@ class FeaturesBuilder(object):
             self.tw_features = self.tw_features.union(set(vec.get_feature_names()))
 
     def wordTokenize(self):
-        self.tokenize()
+        try:
+            self.tokenize()
+        except ValueError, e:
+            sys.stderr.write(self.tweet['text'] + "\n")
+            sys.stderr.write(repr(e) + "\n")
 
     def charTokenize(self):
-        self.tokenize(analyzer='char_wb', ngram_range=(3, 3))
+        try:
+            self.tokenize(analyzer='char_wb', ngram_range=(3, 3))
+        except ValueError, e:
+            sys.stderr.write(self.tweet['text'] + "\n")
+            sys.stderr.write(repr(e) + "\n")
 
     def ngrams(self, ngram_range=(2, 2)):
         tw_save = self.tweet
@@ -78,13 +86,19 @@ class FeaturesBuilder(object):
             self.cleaner.rm_punctuation = True
             self.tweet = self.cleaner.clean_tw(self.tweet)
         text = self.tweet['text']
-        if text and -1 != text.find(' '):
-            ngrams = CountVectorizer(ngram_range=ngram_range, min_df=1,
-                                     lowercase=False, stop_words=None)
-            ngrams.fit_transform([text])
-            ngrams_undersc = map(lambda x: x.replace(" ", "_"),
-                                 ngrams.get_feature_names())
-            self.tw_features = self.tw_features.union(set(ngrams_undersc))
+        try:
+            if text and -1 != text.find(' '):
+                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=0.0,
+                                         analyzer='word',
+                                         lowercase=False, stop_words=None)
+                ngrams.fit_transform([text])
+                ngrams_undersc = map(lambda x: x.replace(" ", "_"),
+                                     ngrams.get_feature_names())
+                self.tw_features = self.tw_features.union(set(ngrams_undersc))
+        except ValueError, e:
+            sys.stderr.write(text + "\n")
+            sys.stderr.write(str(e) + "\n")
+
         self.tweet = tw_save
 
     def mentionsFeature(self):

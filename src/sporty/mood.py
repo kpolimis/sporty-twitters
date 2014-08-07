@@ -5,6 +5,7 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
+import os.path
 import re
 import StringIO
 import sys
@@ -21,6 +22,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.pipeline import Pipeline
 from time import time
+from tweets import Tweets
 
 
 class api(object):
@@ -311,8 +313,8 @@ class api(object):
         Returns a list containing the users' class: 1 if the user shows sign of
         depression, 0 otherwise.
         """
-        if type(uid) != list:
-            return self.classifyUser(users_dir, [uid])
+        if type(uids) != list:
+            return self.classifyUser(users_dir, [uids])
 
         label_names = self.labels[0].keys()
         corpus = self.corpus.tolist()
@@ -324,10 +326,11 @@ class api(object):
             classifiers[label] = copy.deepcopy(self.clf)
 
         for uid in uids:
-            utweets = Tweets(os.path.join(user_dir, str(uid)))
+            print uid
+            utweets = Tweets(os.path.join(users_dir, str(uid)))
             X = self.buildX(utweets, predict=True)
             for label in label_names:
-                print label
                 pred = classifiers[label].predict(X)
-                print pred
+                predl = pred.tolist()
+                print label + ": " + str(predl.count(1)) + "/" + str(len(predl))
         return False
