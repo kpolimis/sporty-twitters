@@ -6,7 +6,7 @@ Usage: cli -h | --help
                           [--reduce-func=R] [--features-func=F] [--liwc=L]
        cli mood label <input_tweets> <labeled_tweets> [-l L]
        cli mood predict_user <labeled_tweets> <users_dir> <user_ids_file>
-                            [-bmptu] [-s SW] [-e E] [-k K] [--liwc=L]
+                            [-bmptu] [-s SW] [-e E] [--liwc=L]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
                             [--features-func=F] [--clf=C [--clf-options=O]]
        cli tweets collect <settings_file> <output_tweets> <track_file>
@@ -218,8 +218,6 @@ def main(argv=None):
                 user_ids = LSF(args['<user_ids_file>']).tolist()
                 return api.mood.classifyUser(args['<users_dir>'],
                                              user_ids,
-                                             argproba,
-                                             k=int(args['--k-features']))
-
+                                             argproba)
 if __name__ == "__main__":
     main()
