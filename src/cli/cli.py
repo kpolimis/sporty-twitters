@@ -7,8 +7,9 @@ Usage: cli -h | --help
        cli mood label <input_tweets> <labeled_tweets> [-l L]
        cli mood predict_user <labeled_tweets> <users_dir> <user_ids_file>
                             [-bmptu] [-s SW] [-e E] [--liwc=L]
+                            [--forbid=F] [--clf=C [--clf-options=O]]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
-                            [--features-func=F] [--clf=C [--clf-options=O]]
+                            [--features-func=F]
        cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file>
@@ -28,6 +29,10 @@ Options:
     --clf-options=O         Options for the classifier as a string
                             representing a Python dictionary
     --each                  Filter C tweets for each of the tracked words
+    --forbid=F              Path to a file containing a list of forbidden
+                            words. If a tweet contains any of these words,
+                            it will not be used for the classification
+                            task.
     --liwc=L                Path to the LIWC dictionary [default: /data/1/lexicons/liwc.dic]
     --min-df=M              See min_df from sklearn vectorizers [default: 3]
     --n-examples=N          Number of wrongly classified examples to display
@@ -216,8 +221,10 @@ def main(argv=None):
                                                 argproba)
             elif args['predict_user']:
                 user_ids = LSF(args['<user_ids_file>']).tolist()
+                forbidden_words = set(LSF(args['--forbid']).tolist())
                 return api.mood.classifyUser(args['<users_dir>'],
                                              user_ids,
+                                             forbidden_words,
                                              argproba)
 if __name__ == "__main__":
     main()

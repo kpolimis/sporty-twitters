@@ -175,6 +175,9 @@ class api(TwitterAPIUser):
                     if not r.get_iterator().results:
                         keep_try = False
                     for item in r.get_iterator():
+                        if 'error' in response.keys() and response['error'] == 'Not authorized.':
+                            cursor = 0
+                            break
                         if 'message' in item.keys():
                             remaining = r.get_rest_quota()['remaining']
                             if not remaining:

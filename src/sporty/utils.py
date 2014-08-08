@@ -70,15 +70,17 @@ class FeaturesBuilder(object):
         try:
             self.tokenize()
         except ValueError, e:
-            sys.stderr.write(self.tweet['text'] + "\n")
-            sys.stderr.write(repr(e) + "\n")
+            pass
+            # sys.stderr.write(self.tweet['text'] + "\n")
+            # sys.stderr.write(repr(e) + "\n")
 
     def charTokenize(self):
         try:
             self.tokenize(analyzer='char_wb', ngram_range=(3, 3))
         except ValueError, e:
-            sys.stderr.write(self.tweet['text'] + "\n")
-            sys.stderr.write(repr(e) + "\n")
+            pass
+            # sys.stderr.write(self.tweet['text'] + "\n")
+            # sys.stderr.write(repr(e) + "\n")
 
     def ngrams(self, ngram_range=(2, 2)):
         tw_save = self.tweet
@@ -88,16 +90,16 @@ class FeaturesBuilder(object):
         text = self.tweet['text']
         try:
             if text and -1 != text.find(' '):
-                ngrams = CountVectorizer(ngram_range=ngram_range, min_df=0.0,
-                                         analyzer='word',
+                ngrams = CountVectorizer(ngram_range=ngram_range, analyzer='word',
                                          lowercase=False, stop_words=None)
                 ngrams.fit_transform([text])
                 ngrams_undersc = map(lambda x: x.replace(" ", "_"),
                                      ngrams.get_feature_names())
                 self.tw_features = self.tw_features.union(set(ngrams_undersc))
         except ValueError, e:
-            sys.stderr.write(text + "\n")
-            sys.stderr.write(str(e) + "\n")
+            pass
+            # sys.stderr.write(text + "\n")
+            # sys.stderr.write(str(e) + "\n")
 
         self.tweet = tw_save
 

@@ -77,11 +77,22 @@ class Tweets(object):
                     tweets_list.append(json.loads(line.strip()))
                 return tweets_list
 
+    def filter(self, f=None):
+        """
+        Return in a list the tweets for which the function f returns True.
+        """
+        tweets = self.tolist()
+        if f is None:
+            return tweets
+        else:
+            filtered = filter(f, tweets)
+        return filtered
+
     def append(self, tw):
         """
         Appends a given tweet to the list of tweets. If the tweets are stored
-        in a file on disk, then the appended tweet is written at the end of
-        the file.
+        in a file on disk, then the appended tweet is written at the end of the
+        file.
         """
         if self.lazy:
             self.tweets.seek(0, os.SEEK_END)

@@ -308,13 +308,26 @@ class api(object):
             returned_stats[s] = np.mean(total_stats[s])
         return returned_stats
 
-    def classifyUser(self, users_dir, uids, probability=False):
+    def classifyUser(self, users_dir, uids, forbid=set(), probability=False):
         """
         Returns a list containing the users' class: 1 if the user shows sign of
         depression, 0 otherwise.
         """
         if type(uids) != list:
             return self.classifyUser(users_dir, [uids])
+
+        def filter_on_hashtags(tw):
+            hashtags = set([h['text'].lower() for h in tw['entities']['hashtags']])
+            if forbid.intersection(hashtags):
+                return False
+            return True
+
+        def filter_on_expression(tw):
+            text = tw['text']
+            for e in forbid:
+                if text.find(e) != -1:
+                    return False
+            return True
 
         label_names = self.labels[0].keys()
         corpus = self.corpus.tolist()
@@ -326,11 +339,15 @@ class api(object):
             classifiers[label] = copy.deepcopy(self.clf)
 
         for uid in uids:
-            print uid
-            utweets = Tweets(os.path.join(users_dir, str(uid)))
+            scores = []
+            utweets = Tweets(os.path.join(users_dir, str(uid))).filter(filter_on_hashtags)
             X = self.buildX(utweets, predict=True)
             for label in label_names:
                 pred = classifiers[label].predict(X)
                 predl = pred.tolist()
-                print label + ": " + str(predl.count(1)) + "/" + str(len(predl))
+                score = 0.
+                if predl:
+                    score = float(predl.count(1))/float(len(predl))
+                scores.append(score)
+            print str(uid) + "," + ",".join(map(str, scores))
         return False
