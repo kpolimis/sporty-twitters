@@ -24,7 +24,6 @@ from sklearn.pipeline import Pipeline
 from time import time
 from tweets import Tweets
 
-
 class api(object):
     """
     Programming interface dedicated to the study of the users' mood.
@@ -338,16 +337,18 @@ class api(object):
             self.clf.fit(X_train, y_train)
             classifiers[label] = copy.deepcopy(self.clf)
 
-        for uid in uids:
-            scores = []
+        scores = defaultdict(list)
+        for i, uid in enumerate(uids):
             utweets = Tweets(os.path.join(users_dir, str(uid))).filter(filter_on_hashtags)
             X = self.buildX(utweets, predict=True)
             for label in label_names:
                 pred = classifiers[label].predict(X)
-                predl = pred.tolist()
                 score = 0.
-                if predl:
-                    score = float(predl.count(1))/float(len(predl))
-                scores.append(score)
-            print str(uid) + "," + ",".join(map(str, scores))
+                if pred.size:
+                    ones = float(np.count_nonzero(pred))
+                    score = ones/float(pred.size)
+                    scores[uid].append(score)
+            print str(uid) + "," + ",".join(map(str, scores[uid]))
+        # for uid in scores:
+        #     print str(uid) + "," + ",".join(map(str, scores[uid]))
         return False
