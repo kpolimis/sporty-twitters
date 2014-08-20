@@ -85,10 +85,12 @@ class api(object):
         self.features, self.labels = fb.run()
 
         # process labels so they are in the right format
-        array_labels = DictVectorizer().fit_transform(self.labels).toarray()
-        if array_labels.shape[1] == 1:
-            array_labels = [x[0] for x in array_labels]
-        self.vect_labels = array_labels
+        self.vect_labels = []
+        if self.labels:
+            array_labels = DictVectorizer().fit_transform(self.labels).toarray()
+            if array_labels.shape[1] == 1:
+                array_labels = [x[0] for x in array_labels]
+            self.vect_labels = array_labels
 
         if not predict:
             self.vectorizer = TfidfVectorizer(**tfidf_options)

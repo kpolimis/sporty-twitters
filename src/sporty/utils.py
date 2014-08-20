@@ -153,6 +153,7 @@ class FeaturesBuilder(object):
         # apply features extractors
         for f in check_func:
             getattr(self, f)()
+
         self.features.append(" ".join(self.tw_features))
         return True
 
