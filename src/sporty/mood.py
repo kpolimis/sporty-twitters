@@ -72,6 +72,7 @@ class api(object):
             cleaner_options = self.cleaner_options
             fb_options = self.fb_options
             fb_options['labels'] = False
+            fb_options['keep_rt'] = False
             tfidf_options = self.tfidf_options
         else:
             self.cleaner_options = cleaner_options
