@@ -342,6 +342,9 @@ class api(object):
         scores = defaultdict(list)
         for i, uid in enumerate(uids):
             utweets = Tweets(os.path.join(users_dir, str(uid))).filter(filter_on_hashtags)
+            if not utweets:
+                sys.stderr.write("no tweets for " + str(uid) + "\n")
+                continue
             X = self.buildX(utweets, predict=True)
             for label in label_names:
                 pred = classifiers[label].predict(X)
@@ -351,6 +354,7 @@ class api(object):
                     score = ones/float(pred.size)
                     scores[uid].append(score)
             print str(uid) + "," + ",".join(map(str, scores[uid]))
+            sys.stdout.flush()
         # for uid in scores:
         #     print str(uid) + "," + ",".join(map(str, scores[uid]))
         return False
