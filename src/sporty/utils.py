@@ -131,15 +131,16 @@ class FeaturesBuilder(object):
         text = self.tweet['text']
         caps = float(sum(1 for c in text if c.isupper()))
         length = float(len(text))
-        if caps/length > 0.8:
+        if length != 0 and caps/length > 0.8:
             self.tw_features.add("_ALL_CAPS_")
 
     def liwcFeature(self):
         if self.lexicon:
             words = self.tweet['text'].split()
             categories = self.lexicon.categories_for_tokens(words)
-            features = reduce(lambda x, y: set(x).union(set(y)), categories)
-            self.tw_features = self.tw_features.union(features)
+            if categories:
+                features = reduce(lambda x, y: set(x).union(set(y)), categories)
+                self.tw_features = self.tw_features.union(features)
 
     def extractFeatures(self, tw):
         check_func = (f for f in self.func_list
