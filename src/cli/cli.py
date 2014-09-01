@@ -33,7 +33,7 @@ Options:
                             words. If a tweet contains any of these words,
                             it will not be used for the classification
                             task.
-    --liwc=L                Path to the LIWC dictionary [default: /data/1/lexicons/liwc.dic]
+    --liwc=L                Path to the LIWC dictionary [default: /data/1/sporty/lexicons/liwc/liwc.dic]
     --min-df=M              See min_df from sklearn vectorizers [default: 3]
     --n-examples=N          Number of wrongly classified examples to display
                             [default: 0]
@@ -50,7 +50,7 @@ Options:
     -b, --binary            No count of features, only using binary features
     -c C, --count=C         Number of tweets to collect/filter [default: 3200]
     -e E, --emoticons=E     Path to file containing the dictionary of emoticons
-                            [default: /home/virgile/sporty-twitters/inputs/params/emoticons]
+                            [default: /data/1/sporty/lexicons/stopwords/emoticons]
     -f F, --features-func=F List of functions to execute amongst the functions
                             of the FeatureBuilder class. The functions of this
                             list will be executed in order
