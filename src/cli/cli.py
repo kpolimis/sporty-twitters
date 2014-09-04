@@ -9,7 +9,7 @@ Usage: cli -h | --help
                             [-bmptu] [-s SW] [-e E] [--liwc=L]
                             [--forbid=F] [--clf=C [--clf-options=O]]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
-                            [--features-func=F]
+                            [--features-func=F] [--sporty]
        cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file>
@@ -44,6 +44,7 @@ Options:
                             location
     --proba=P               Classify a tweet as positive only if the
                             probability to be positive is greater than P [default: 0.91]
+    --sporty                Flag to put when the users are expected to be exercising.
     --roc=R                 Plot the ROC curve with R the test set size given
                             as a ratio (e.g. 0.2 for 20 percent of the data)
                             and return. Note: the benchmark is not run
@@ -225,6 +226,7 @@ def main(argv=None):
                 return api.mood.classifyUser(args['<users_dir>'],
                                              user_ids,
                                              forbidden_words,
-                                             argproba)
+                                             argproba,
+                                             args['--sporty'])
 if __name__ == "__main__":
     main()

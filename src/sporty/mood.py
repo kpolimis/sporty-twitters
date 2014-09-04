@@ -362,11 +362,11 @@ class api(object):
                 sys.stderr.write("no tweets for " + str(uid) + "\n")
                 continue
             # filter out non-english users
-            user = utweets[0]['user']
+            user = filtered_utweets[0]['user']
             if user['lang'] != 'en':
                 sys.stderr.write("user " + str(uid) + " lang is not en\n")
                 continue
-            X = self.buildX(utweets, predict=True)
+            X = self.buildX(filtered_utweets, predict=True)
             for label in label_names:
                 pred = classifiers[label].predict(X)
                 score = 0.
