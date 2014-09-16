@@ -345,6 +345,10 @@ class api(TwitterAPIUser):
         if is_friend:
             return u
 
+        u_stats = ("u", u['id'], u['gender'], u['location'],
+                   u['statuses_count'], u['followers_count'], u['friends_count'])
+        sys.stderr.write(",".join(map(str, u_stats)) + "\n")
+
         return self.__getFriends(u['id'], friends_dir)
 
     def getMostSimilar(self, u, males, females,
@@ -380,11 +384,14 @@ class api(TwitterAPIUser):
             similarity = self.cosineSimilarity(f, u, log)
             if similarity > most_similar[1]:
                 most_similar = (f['id'], similarity)
-
+                f_stats = ("f", f['id'], f['gender'], f['location'],
+                           f['statuses_count'], f['followers_count'], f['friends_count'])
+        
         if i == 0:
             self.filter_stats['user_no_friends_loaded'] += 1
         else:
             self.filter_stats['user_with_friends'] += 1
+            sys.stderr.write(",".join(map(str, f_stats)) + "\n")
         u['most_similar'] = most_similar if most_similar != (0, 0) else None
         return u
 
@@ -433,8 +440,8 @@ class api(TwitterAPIUser):
 
         males = []
         females = []
-        local_m = '/home/virgile/sporty-twitters/inputs/census/dist.male.first'
-        local_f = '/home/virgile/sporty-twitters/inputs/census/dist.female.first'
+        local_m = '/data/1/sporty/census/dist.male.first'
+        local_f = '/data/1/sporty/census/dist.female.first'
         with open(local_m) as males_f:
             for line in males_f:
                 males.append(line)

@@ -309,7 +309,8 @@ class TwitterAPIUser(object):
             wait_time = 0
         return wait_time
 
-    def getStatusStream(self, tracked_words, lang, locations):
+    def getStatusStream(self, tracked_words=None,
+                        lang=None, locations=None):
         """
         Returns the response sent by the Twitter API when requested the last
         statuses in the Twitter timeline.
@@ -320,8 +321,10 @@ class TwitterAPIUser(object):
                             + "to collect tweets.")
 
         req_options = dict()
-        req_options['track'] = ",".join(tracked_words)
-        req_options['language'] = ",".join(lang)
+        if tracked_words:
+            req_options['track'] = ",".join(tracked_words)
+        if lang:
+            req_options['language'] = ",".join(lang)
         if locations:
             req_options['locations'] = locations
 

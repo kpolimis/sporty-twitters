@@ -10,6 +10,7 @@ Usage: cli -h | --help
                             [--forbid=F] [--clf=C [--clf-options=O]]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
                             [--features-func=F] [--sporty]
+       cli mood match_users <sport_scores> <no_sport_scores> <user_match>
        cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file>
@@ -20,6 +21,7 @@ Usage: cli -h | --help
        cli users most_similar <user_ids_file> <users_dir> <friends_dir>
                               [--no-tweets]
        cli users show <settings_file> <input_dir>
+       cli stream collect <settings_file> [--lang=L] [-c C]
 
 Options:
     -h, --help              Show this screen.
@@ -33,6 +35,7 @@ Options:
                             words. If a tweet contains any of these words,
                             it will not be used for the classification
                             task.
+    --lang=L                Language of the tweets to collect [default: en]
     --liwc=L                Path to the LIWC dictionary [default: /data/1/sporty/lexicons/liwc/liwc.dic]
     --min-df=M              See min_df from sklearn vectorizers [default: 3]
     --n-examples=N          Number of wrongly classified examples to display
@@ -228,5 +231,32 @@ def main(argv=None):
                                              forbidden_words,
                                              argproba,
                                              args['--sporty'])
+        elif args['match_users']:
+            return api.mood.match_users(args['<sport_scores>'],
+                                        args['<no_sport_scores>'],
+                                        args['<user_match>'])
+
+    elif args['stream']:
+        if args['collect']:
+            # Authenticate to the Twitter API
+            api.tweets = sporty.tweets.api(args['<settings_file>'])
+            count = args['--count']
+            i = 0
+            while True:
+                try:
+                    location='-126.01,24.75,-65.84,49.38'
+                    r = api.tweets.getStatusStream(locations=location)
+                    for item in r.get_iterator():
+                        if 'limit' not in item.keys():
+                            print json.dumps(item)
+                            i += 1
+                            if count and i >= count:
+                                break
+                    sys.stdout.flush()
+                    break
+                except Exception, e:
+                    # sys.stderr.write("ChunkedEncodingError\n")
+                    continue
+
 if __name__ == "__main__":
     main()

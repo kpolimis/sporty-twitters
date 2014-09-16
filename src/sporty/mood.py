@@ -379,3 +379,53 @@ class api(object):
         # for uid in scores:
         #     print str(uid) + "," + ",".join(map(str, scores[uid]))
         return False
+
+    def match_users(self, sport_file, no_sport_file, match_file):
+        sfd = open(sport_file)
+        nsfd = open(no_sport_file)
+        mfd = open(match_file)
+        s_scores = {}
+        ns_scores = {}
+        matches = {}
+        
+        for line in sfd:
+            row = line.strip().split(",")
+            if len(row) != 4:
+                continue
+            s_scores[int(row[0])] = np.array(map(float, row[1:]))
+        for line in nsfd:
+            row = line.strip().split(",")
+            if len(row) != 4:
+                continue
+            ns_scores[int(row[0])] = np.array(map(float, row[1:]))
+        for line in mfd:
+            row = line.strip().split(",")
+            if len(row) != 3:
+                continue
+            matches[int(row[0])] = int(row[1])
+        sfd.close()
+        nsfd.close()
+        mfd.close()
+
+        print "u,u_AH,u_DD,u_TA,u_avg,m,m_AH,m_DD,m_TA,m_avg,diff_AH,diff_DD,diff_TA,diff_avg"
+        for u in matches:
+            if u in s_scores:
+                uscores = s_scores[u]
+                # find match in ns_scores
+                m = matches[u]
+                if 0 in uscores: # remove users with empty classification
+                    continue
+                if m in ns_scores:
+                    mscores = ns_scores[m]
+                    if 0 in mscores: # remove friends with empty classification
+                        continue
+                    toprint = [u]
+                    toprint += uscores.tolist()
+                    toprint.append(np.average(uscores))
+                    toprint.append(m)
+                    toprint += mscores.tolist()
+                    toprint.append(np.average(mscores))
+                    diff = uscores-mscores
+                    toprint += diff.tolist()
+                    toprint.append(np.average(diff))
+                    print ",".join(map(str, toprint))
