@@ -41,7 +41,7 @@ Options:
     --n-examples=N          Number of wrongly classified examples to display
                             [default: 0]
     --n-folds=K             Number of folds for the cross validation
-                            [default: 3]
+                            [default: 10]
     --no-rt                 Remove retweets when filtering
     --no-tweets             Do not use the tweets of the users to infer their
                             location
