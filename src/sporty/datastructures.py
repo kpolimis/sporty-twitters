@@ -146,16 +146,20 @@ class Tweets(object):
 
 class TSV(object):
 	"""
-	Tool to load a TSV file into several dictionaries. It is used in this
-	project to load the POMS vocabulary and the emoticons. Each word of these
-	vocabularies belong to a category. This data structure give access to a
-	dictionary 'keys' that maps a category to a list of words belonging to
-	this category, and a dictionary 'values' that maps each word in the
-	vocabulary to the category it belongs to.
+	Tool to load a tabulation-separated values (TSV) file into several
+	dictionaries. It can be used to:
+		- load the POMS vocabulary
+		- load the emoticons
+		- etc
+	Each element of these vocabularies is associated to a category and a category
+	can have many elements. This data structure gives access to two dictionaries:
+		- keys: store the belonging elements for every category
+		- values: store the associated category for every elements
 	"""
 	def __init__(self, tsv_file):
 		"""
-		Initializes an TSV instance by loading a TSV file.
+		Parameters:
+		tsv_file - the TSV file to load
 		"""
 		super(TSV, self).__init__()
 		self.tsv_file = tsv_file
@@ -166,21 +170,31 @@ class TSV(object):
 	def load(self):
 		"""
 		Loads the TSV file in the dictionaries.
+
+		Return value:
+		True if the file has been properly loaded, False otherwise.
 		"""
-		if not self.tsv_file:
-				return
-		if type(self.tsv_file) == str:
-			tsv_file = open(self.tsv_file)
-		elif type(self.tsv_file) == file:
-			tsv_file = self.tsv_file
+		tsv_type = type(self.tsv_file) if self.tsv_file else None
+		cases = {
+				  str: lambda: open(self.tsv_file),
+				  file: lambda: self.tsv_file
+				}
+		if tsv_type in cases.keys():
+			tsv_file = cases[tsv_type]()
 		else:
-			raise Exception("Unsupported type for TSV file.")
+			logging.error("Input type not suported. Is %s but should be one of %s." % (tsv_type, repr(cases.keys())))
+			return False
+
+		linecount = 0
 		for line in tsv_file:
+			linecount += 1
 			fields = re.split("\s+", line.strip())
 			if len(fields) > 1:
 				self.keys[fields[0]].append(fields[1])
 				self.values[fields[1]] = fields[0]
-
+			else:
+				logging.warning("Only %d field(s) on line %d of the TSV file." % (len(fields), linecount))
+		return True
 
 class LSF(object):
 	"""
