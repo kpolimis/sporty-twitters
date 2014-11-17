@@ -115,7 +115,7 @@ class api(object):
 		# build the cleaner and the features
 		cl = utils.Cleaner(**cleaner_options)
 		fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
-		self.features, self.labels = fb.run()
+		self.features, self.labels, self.twids = fb.run()
 
 		# process labels so they are in the right format
 		self.vect_labels = []
@@ -393,7 +393,7 @@ class api(object):
 
 		def classify_one_user(sport_hash, auto_hash, classifiers,
 							  users_dir, uids, label_names,
-							  scores):
+							  scores, probability):
 			while not uids.empty():
 				uid = uids.get()
 				# removing sport tracker tweets
@@ -420,17 +420,15 @@ class api(object):
 				X = self.buildX(filtered_utweets, predict=True)
 				local_scores = []
 				for label in label_names:
-					if probability:
-						y_pred_proba = classifiers[label].predict_proba(X)[:, 1]
-						pred = map(lambda x: 0 if x < probability else 1,
+					if not probability:
+						probability = 0.5
+					y_pred_proba = classifiers[label].predict_proba(X)[:, 1]
+					pred = map(lambda x: 0 if x < probability else 1,
 								   y_pred_proba)
-					else:
-						pred = classifiers[label].predict(X)
 					score = 0.
-					if pred.size:
-						ones = float(np.count_nonzero(pred))
-						score = ones/float(pred.size)
-						local_scores.append(score)
+					ones = float(np.count_nonzero(pred))
+					score = ones/float(l1)
+					local_scores.append(score)
 				scores.put((uid, local_scores))
 
 		label_names = self.labels[0].keys()
@@ -450,12 +448,9 @@ class api(object):
 		for uid in uids:
 			uids_q.put(uid)
 		proc_count = multiprocessing.cpu_count()
-		processes = []
+		processes = [None]*proc_count
 		for i in range(proc_count):
-			processes[i] = Process(target=classify_one_user,
-								   args=(sport_hash, auto_hash, classifiers,
-								   		 users_dir, uids_q, label_names,
-								   		 scores))
+			processes[i] = Process(target=classify_one_user,args=(sport_hash, auto_hash, classifiers, users_dir, uids_q, label_names, scores, probability))
 		for p in processes:
 			p.start()
 		for p in processes:
@@ -463,7 +458,7 @@ class api(object):
 
 		while not scores.empty():
 			score = scores.get()
-			print "%d,%s" % (score[0],",".join(map(str, score[1])))
+			print "%s,%s" % (score[0],",".join(map(str, score[1])))
 
 	def match_users(self, sport_file, no_sport_file, match_file):
 		sfd = open(sport_file)

@@ -19,13 +19,10 @@ class Tweets(object):
 		Parameters:
 		tw_in - Object from which the input tweets are read.
 		mode - Opening mode if tw_in is a file path, useless otherwise.
-
-		Return value:
-		True if the tweets have been correctly loaded, False otherwise.
 		"""
 		super(Tweets, self).__init__()
 		self.index = 0	# cursor pointing to the next tweet to return
-		return self._load(tw_in, mode)
+		self._load(tw_in, mode)
 
 	def _load(self, tw_in=None, mode='a+'):
 		"""
@@ -129,7 +126,7 @@ class Tweets(object):
 		"""
 		if self.lazy:
 			self.tweets.seek(0, os.SEEK_END)
-			cases : {
+			cases = {
 					  dict: lambda: self.tweets.write(json.dumps(tw) + "\n"),
 					  str: lambda: self.tweets.write(tw + "\n")
 					}
@@ -174,6 +171,8 @@ class TSV(object):
 		Return value:
 		True if the file has been properly loaded, False otherwise.
 		"""
+		if not self.tsv_file:
+			return
 		tsv_type = type(self.tsv_file) if self.tsv_file else None
 		cases = {
 				  str: lambda: open(self.tsv_file),
@@ -182,7 +181,7 @@ class TSV(object):
 		if tsv_type in cases.keys():
 			tsv_file = cases[tsv_type]()
 		else:
-			logging.error("Input type not suported. Is %s but should be one of %s." % (tsv_type, repr(cases.keys())))
+			logging.error("Input type not suported for TSV. Is %s but should be one of %s." % (tsv_type, repr(cases.keys())))
 			return False
 
 		linecount = 0
@@ -220,6 +219,8 @@ class LSF(object):
 		Return value:
 		True if the file has been properly loaded, False otherwise.
 		"""
+		if not self.input_file:
+			return
 		type_lsf = type(self.input_file) if self.input_file else None
 		cases = {
 				  str: lambda: open(self.input_file),
@@ -228,7 +229,7 @@ class LSF(object):
 		if type_lsf in cases.keys():
 			input_file = cases[type_lsf]()
 		else:
-			logging.error("Input type not suported. Is %s but should be one of %s." % (lsf_type, repr(cases.keys())))
+			logging.error("Input type not suported for LSF. Is %s but should be one of %s." % (type_lsf, repr(cases.keys())))
 			return False
 
 		for line in input_file:
