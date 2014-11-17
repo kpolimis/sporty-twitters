@@ -11,6 +11,7 @@ import StringIO
 import sys
 import utils as utils
 from collections import defaultdict
+from datastructures import TSV
 from sklearn import cross_validation
 from sklearn import metrics
 from sklearn import preprocessing
@@ -18,6 +19,7 @@ from sklearn import svm
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.pipeline import Pipeline
@@ -83,7 +85,7 @@ class api(object):
         cl = utils.Cleaner(**cleaner_options)
         # build the features
         fb = utils.FeaturesBuilder(corpus, cleaner=cl, **fb_options)
-        self.features, self.labels = fb.run()
+        self.features, self.labels, self.idmap = fb.run()
 
         # process labels so they are in the right format
         self.vect_labels = []
@@ -96,6 +98,21 @@ class api(object):
         if not predict:
             self.vectorizer = TfidfVectorizer(**tfidf_options)
             self.features_selection = SelectKBest(chi2, k)
+
+        ### TEST ###
+        # self.vectorizer = CountVectorizer(min_df=2)
+        # self.pipeline = Pipeline([('tfidf', self.vectorizer),
+        #                           ('chi2', self.features_selection)])
+        # for il, label in enumerate(self.labels[0].keys()):
+        #     self.pipeline.fit_transform(self.features,
+        #                                 self.vect_labels[:,il])
+
+        #     selected_ft = np.asarray(self.vectorizer.get_feature_names())[self.features_selection.get_support()]
+        #     for i, ft in enumerate(selected_ft):
+        #         print label + " " + str(self.features_selection.scores_[i]) + " " + ft
+        # exit(0)
+        ### END TEST ###
+
         self.pipeline = Pipeline([('tfidf', self.vectorizer),
                                   ('chi2', self.features_selection)])
 
@@ -148,6 +165,38 @@ class api(object):
             # Produce an image
             plt.colorbar(sc)
             fig.savefig("plot_" + label + ".png")
+
+    def set_ft_attr(self, ft, clf, val):
+        vect_idx = self.vectorizer.get_feature_names().index(ft)
+        coef_array = self.features_selection.get_support(True)
+        coef_indexes = np.where(coef_array == vect_idx)
+        if coef_indexes[0].size:
+            coef_idx = coef_indexes[0][0]
+        else:
+            coef_idx = -1
+        hascoef = False
+        if hasattr(clf, 'coef_'):
+            hascoef = True
+        if hascoef and coef_idx != -1:
+            clf.coef_[0][coef_idx] = 0
+        return clf.coef_[0][coef_idx]
+
+    def get_ft_attr(self, ft, clf):
+        vect_idx = self.vectorizer.get_feature_names().index(ft)
+        coef_array = self.features_selection.get_support(True)
+        coef_indexes = np.where(coef_array == vect_idx)
+        if coef_indexes[0].size:
+            coef_idx = coef_indexes[0][0]
+        else:
+            coef_idx = -1
+        hascoef = False
+        if hasattr(clf, 'coef_'):
+            hascoef = True
+        if hascoef and coef_idx != -1:
+            w = clf.coef_[0][coef_idx]
+        else:
+            w = 0
+        return vect_idx, w
 
     def benchmark(self, n_folds=3, n_examples=0, top_features=False,
                   probability=False):
@@ -240,20 +289,6 @@ class api(object):
                 print
                 print "--- " + str(n_examples) + " Misclassified Tweets ---"
 
-            def get_ft_attr(ft):
-                vect_idx = self.vectorizer.get_feature_names().index(ft)
-                coef_array = self.features_selection.get_support(True)
-                coef_indexes = np.where(coef_array == vect_idx)
-                if coef_indexes[0].size:
-                    coef_idx = coef_indexes[0][0]
-                else:
-                    coef_idx = -1
-                if hascoef and coef_idx != -1:
-                    w = self.clf.coef_[0][coef_idx]
-                else:
-                    w = 0
-                return vect_idx, w
-
             for j in range(min(n_examples, len(wrong_class))):
                 idx = wrong_class.pop()
                 true_class = self.labels[idx][label]  # y_pred[idx]
@@ -265,7 +300,7 @@ class api(object):
                     ft_w = []
                     for ft in self.features[idx].split():
                         if ft in self.vectorizer.get_feature_names():
-                            vect_idx, w = get_ft_attr(ft)
+                            vect_idx, w = self.get_ft_attr(ft)
                             if w != 0:
                                 ft_idx.append(vect_idx)
                                 ft_w.append(w)
@@ -332,6 +367,17 @@ class api(object):
                     return False
             return True
 
+        ### TEST ###
+        poms = TSV("/data/1/sporty/lexicons/poms/poms_extended")
+        poms_words = set(poms.keys['AH']).union(set(poms.keys['DD'])).union(set(poms.keys['TA']))
+        def filter_on_poms(tw):
+            text = tw['text']
+            for w in text.split():
+                if w.lower() in poms_words:
+                    return True
+            return False
+        ### END TEST ###
+
         label_names = self.labels[0].keys()
         corpus = self.corpus.tolist()
         classifiers = {}
@@ -340,6 +386,11 @@ class api(object):
             y_train = np.array([d[label] for d in self.labels])
             self.clf.fit(X_train, y_train)
             classifiers[label] = copy.deepcopy(self.clf)
+        
+        ### TEST EVERYONES AND SOMEBODY WEIGHTS = 0
+        # self.set_ft_attr("somebody", classifiers['DD'], 0)
+        # self.set_ft_attr("everyones", classifiers['DD'], 0)
+        ### END TEST
 
         sport_hash = forbid
         auto_hash = set(['foursquare', 'yelp'])
@@ -354,10 +405,14 @@ class api(object):
             if l1 != l2:  # sporty tweets have been removed
                 if not sporty:  # user is not supposed to be exercising
                     sys.stderr.write("no_sport user " + str(uid) + " is exercising\n")
-                    continue  # so we don't classify him
+                    continue  # so we don't classify this user
             # removing tweets generated by well-known apps
             forbid = auto_hash
-            filtered_utweets = filter(filter_on_hashtags, no_sport_utweets)
+            filtered_utweets_hashtags = filter(filter_on_hashtags, no_sport_utweets)
+            ### TEST ###
+            # filtered_utweets = filtered_utweets_hashtags
+            filtered_utweets = filter(filter_on_poms, filtered_utweets_hashtags)
+            ### TEST ###
             if not filtered_utweets:
                 sys.stderr.write("no tweets for " + str(uid) + "\n")
                 continue
@@ -367,17 +422,37 @@ class api(object):
                 sys.stderr.write("user " + str(uid) + " lang is not en\n")
                 continue
             X = self.buildX(filtered_utweets, predict=True)
+            ### TEST ###
+            preds = {}
+            ### END TEST ###
+            ### ALWAYS KEEP ###
             for label in label_names:
                 pred = classifiers[label].predict(X)
                 score = 0.
+            ### END ALWAYS KEEP ###
+            ### TO DECOMMENT
                 if pred.size:
                     ones = float(np.count_nonzero(pred))
-                    score = ones/float(pred.size)
-                    scores[uid].append(score)
+                    score = ones/float(l1)#pred.size)
+                scores[uid].append(score)
             print str(uid) + "," + ",".join(map(str, scores[uid]))
+            ### END TO DECOMMENT
+            ### TEST ###
+            #     preds[label] = copy.deepcopy(pred)
+            # for it, tw in enumerate(np.array(filtered_utweets)[np.where(self.idmap)]):
+            #     for label in label_names:
+            #         fts = defaultdict(list)
+            #         for ft in tw['text'].split(): #self.features[idx].split():
+            #             if ft in self.vectorizer.get_feature_names():
+            #                 vect_idx, w = self.get_ft_attr(ft, classifiers[label])
+            #                 if w != 0:
+            #                     fts[label].append((ft, w))
+            #         print ",".join(map(str, [tw['AH'], preds['AH'][it], tw['DD'], preds['DD'][it], tw['TA'], preds['TA'][it]]))
+            #         tw['p'+label] = preds[label][it]
+            #         tw['fts_' + label] = ",".join(map(lambda x: ":".join(map(str,x)), fts[label]))
+            ### print json.dumps(tw)
+            ### END TEST ###
             sys.stdout.flush()
-        # for uid in scores:
-        #     print str(uid) + "," + ",".join(map(str, scores[uid]))
         return False
 
     def match_users(self, sport_file, no_sport_file, match_file):
