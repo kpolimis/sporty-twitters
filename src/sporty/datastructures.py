@@ -204,6 +204,9 @@ class LSF(object):
 	def __init__(self, input_file):
 		"""
 		Initializes the LSF instance by loading the input file.
+
+		Parameters:
+		input_file - file to read to store its content in memory
 		"""
 		super(LSF, self).__init__()
 		self.input_file = input_file
@@ -211,16 +214,26 @@ class LSF(object):
 		self.load()
 
 	def load(self):
-		if not self.input_file:
-			return
-		if type(self.input_file) == str:
-			input_file = open(self.input_file)
-		elif type(self.input_file) == file:
-			input_file = self.input_file
+		"""
+		Load the input file in memory
+
+		Return value:
+		True if the file has been properly loaded, False otherwise.
+		"""
+		type_lsf = type(self.input_file) if self.input_file else None
+		cases = {
+				  str: lambda: open(self.input_file),
+				  file: lambda: self.input_file
+				}
+		if type_lsf in cases.keys():
+			input_file = cases[type_lsf]()
 		else:
-			raise Exception("Unsupported type for input file.")
+			logging.error("Input type not suported. Is %s but should be one of %s." % (lsf_type, repr(cases.keys())))
+			return False
+
 		for line in input_file:
 			self.words.append(line.strip())
+		return True
 
 	def tolist(self):
 		return self.words
