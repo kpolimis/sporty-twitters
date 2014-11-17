@@ -172,11 +172,15 @@ class FeaturesBuilder(object):
     def run(self):
         self.features = []
         self.labels = []
+        self.twids = []
         for tw in self.corpus:
             self.tw_features = set()
             if self.extractFeatures(tw):
                 self.extractLabels(tw)
-        return self.features, self.labels
+                self.twids.append(1)
+            else:
+                self.twids.append(0)
+        return self.features, self.labels, self.twids
 
 
 class Cleaner():

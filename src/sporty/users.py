@@ -345,11 +345,11 @@ class api(TwitterAPIUser):
         if is_friend:
             return u
 
-        u_stats = ("u", u['id'], u['gender'], u['location'],
+        u_stats = ("u", u['id'], u['gender'], u['location'][0], u['location'][1],
                    u['statuses_count'], u['followers_count'], u['friends_count'])
         sys.stderr.write(",".join(map(str, u_stats)) + "\n")
 
-        return self.__getFriends(u['id'], friends_dir)
+        #return self.__getFriends(u['id'], friends_dir)
 
     def getMostSimilar(self, u, males, females,
                        user_dir, friends_dir,
@@ -384,7 +384,7 @@ class api(TwitterAPIUser):
             similarity = self.cosineSimilarity(f, u, log)
             if similarity > most_similar[1]:
                 most_similar = (f['id'], similarity)
-                f_stats = ("f", f['id'], f['gender'], f['location'],
+                f_stats = ("f", f['id'], f['gender'], f['location'][0], f['location'][1],
                            f['statuses_count'], f['followers_count'], f['friends_count'])
         
         if i == 0:
