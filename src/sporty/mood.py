@@ -425,9 +425,8 @@ class api(object):
 					y_pred_proba = classifiers[label].predict_proba(X)[:, 1]
 					pred = map(lambda x: 0 if x < probability else 1,
 								   y_pred_proba)
-					score = 0.
 					ones = float(np.count_nonzero(pred))
-					score = ones/float(l1)
+					score = ones/l1
 					local_scores.append(score)
 				scores.put((uid, local_scores))
 			return

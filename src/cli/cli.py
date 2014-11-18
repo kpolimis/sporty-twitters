@@ -217,7 +217,6 @@ def main(argv=None):
                 return
 
             argproba = float(args['--proba'])
-
             if args['benchmark']:
                 # Run the benchmark
                 return args, api.mood.benchmark(int(args['--n-folds']),
