@@ -85,7 +85,7 @@ from sklearn.multiclass import OneVsRestClassifier
 import os.path
 from os import listdir
 import logging
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 def main(argv=None):
     args = docopt(__doc__, argv)
