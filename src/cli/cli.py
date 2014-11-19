@@ -86,7 +86,13 @@ from sklearn.multiclass import OneVsRestClassifier
 import os.path
 from os import listdir
 import logging
-#logging.basicConfig(level=logging.DEBUG)
+import time
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    filename='/tmp/cli-%s.log' % time.strftime("%Y-%m-%d-%H:%M:%S"),
+                    filemode='w')
+logger = logging.getLogger(__name__)
 
 def main(argv=None):
     args = docopt(__doc__, argv)
@@ -229,7 +235,7 @@ def main(argv=None):
                 forbidden_words = set(LSF(args['--forbid']).tolist())
                 poms = False
                 if args['--poms']:
-                    poms = TSV(poms)
+                    poms = TSV(args['--poms'])
                 return api.mood.classifyUser(args['<users_dir>'],
                                              user_ids,
                                              forbidden_words,
