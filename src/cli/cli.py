@@ -10,7 +10,7 @@ Usage: cli -h | --help
                             [--forbid=F] [--clf=C [--clf-options=O]]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
                             [--features-func=F] [--sporty] [--poms=P]
-       cli mood match_users <sport_scores> <no_sport_scores> <user_match>
+       cli mood match_users <sport_scores> <no_sport_scores> <user_match> [--rand=R]
        cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
        cli tweets filter <input_tweets> <output_tweets> <track_file>
@@ -49,6 +49,7 @@ Options:
     --proba=P               Classify a tweet as positive only if the
                             probability to be positive is greater than P [default: 0.91]
     --sporty                Flag to put when the users are expected to be exercising.
+    --rand=R                Path to file containing the scores of the random users.
     --roc=R                 Plot the ROC curve with R the test set size given
                             as a ratio (e.g. 0.2 for 20 percent of the data)
                             and return. Note: the benchmark is not run
@@ -245,7 +246,8 @@ def main(argv=None):
         elif args['match_users']:
             return api.mood.match_users(args['<sport_scores>'],
                                         args['<no_sport_scores>'],
-                                        args['<user_match>'])
+                                        args['<user_match>'],
+                                        args['--rand'])
 
     elif args['stream']:
         if args['collect']:
