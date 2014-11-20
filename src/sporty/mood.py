@@ -27,7 +27,8 @@ from sklearn.pipeline import Pipeline
 from time import time
 from tweets import Tweets
 logger = logging.getLogger(__name__)
-Q_MAXSIZE=2000
+
+
 class api(object):
 	"""
 	Programming interface dedicated to the study of the users' mood.
@@ -167,9 +168,8 @@ class api(object):
 
 			self.clf.fit(X_train, y_train)
 			y_pred_proba = self.clf.predict_proba(X_test)[:, 1]
-
 			fpr, tpr, thresholds = metrics.roc_curve(y_test, y_pred_proba,
-													 pos_label=1)
+								 pos_label=1)
 			fig = plt.figure()
 			# Create an Axes object
 			ax = fig.add_subplot(1, 1, 1)  # one row, one column, first plot
@@ -438,18 +438,18 @@ class api(object):
 				X = self.buildX(filtered_utweets, predict=True)
 				local_scores = []
 				for label in label_names:
-					# # binary classification
-					# if not probability:
-					# 	probability = 0.5
-					# y_pred_proba = classifiers[label].predict_proba(X)[:, 1]
-					# pred = map(lambda x: 0 if x < probability else 1,
-					# 	   y_pred_proba)
-					# ones = float(np.count_nonzero(pred))
-					# score = ones/l1
-					# average pred proba
-					pred = classifiers[label].predict_proba(X)[:, 1]
-					score = sum(pred)/float(score_denom)
-					local_scores.append(score)
+					# binary classification
+					if not probability:
+						probability = 0.5
+					y_pred_proba = classifiers[label].predict_proba(X)[:, 1]
+					pred = map(lambda x: 0 if x < probability else 1,
+						   y_pred_proba)
+					ones = float(np.count_nonzero(pred))
+					score = ones/score_denom
+					# # average pred proba
+					# pred = classifiers[label].predict_proba(X)[:, 1]
+					# score = sum(pred)/float(score_denom)
+					# local_scores.append(score)
 				print_results(uid, local_scores)
 		label_names = self.labels[0].keys()
 		corpus = self.corpus.tolist()
