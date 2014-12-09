@@ -128,7 +128,7 @@ Options:
                             location
     --poms=P                Path to the poms lexicon
     --proba=P               Classify a tweet as positive only if the
-                            probability to be positive is greater than P [default: 0.91]
+                            probability to be positive is greater than P [default: 0.5]
     --sporty                Flag to put when the users are expected to be exercising.
     --rand=R                Path to file containing the scores of the random users.
     --roc=R                 Plot the ROC curve with R the test set size given
