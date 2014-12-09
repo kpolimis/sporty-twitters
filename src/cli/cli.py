@@ -1,27 +1,27 @@
 """
-Usage: cli -h | --help
-       cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [-k K]
+Usage: sporty-cli -h | --help
+       sporty-cli mood benchmark <labeled_tweets> [-bmptu] [-s SW] [-e E] [-k K]
                           [--min-df=M] [--n-folds=K] [--n-examples=N]
                           [--clf=C [--clf-options=O]] [--proba=P] [--roc=R]
                           [--reduce-func=R] [--features-func=F] [--liwc=L]
-       cli mood label <input_tweets> <labeled_tweets> [-l L]
-       cli mood predict_user <labeled_tweets> <users_dir> <user_ids_file>
+       sporty-cli mood label <input_tweets> <labeled_tweets> [-l L]
+       sporty-cli mood predict_user <labeled_tweets> <users_dir> <user_ids_file>
                             [-bmptu] [-s SW] [-e E] [--liwc=L]
                             [--forbid=F] [--clf=C [--clf-options=O]]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
                             [--features-func=F] [--sporty] [--poms=P]
-       cli mood match_users <sport_scores> <no_sport_scores> <user_match> [--rand=R]
-       cli tweets collect <settings_file> <output_tweets> <track_file>
+       sporty-cli mood match_users <sport_scores> <no_sport_scores> <user_match> [--rand=R]
+       sporty-cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
-       cli tweets filter <input_tweets> <output_tweets> <track_file>
+       sporty-cli tweets filter <input_tweets> <output_tweets> <track_file>
                          [<track_file>...] [-c C] [--each] [--no-rt]
-       cli users collect_tweets <settings_file> <user_ids_file> <output_dir>
+       sporty-cli users collect_tweets <settings_file> <user_ids_file> <output_dir>
                                 [-c C]
-       cli users list_friends <settings_file> <user_ids_file> <output_dir>
-       cli users most_similar <user_ids_file> <users_dir> <friends_dir>
+       sporty-cli users list_friends <settings_file> <user_ids_file> <output_dir>
+       sporty-cli users most_similar <user_ids_file> <users_dir> <friends_dir>
                               [--no-tweets]
-       cli users show <settings_file> <input_dir>
-       cli stream collect <settings_file> [--lang=L] [-c C]
+       sporty-cli users show <settings_file> <input_dir>
+       sporty-cli stream collect <settings_file> [--lang=L] [-c C]
 
 Options:
     -h, --help              Show this screen.
@@ -36,7 +36,7 @@ Options:
                             it will not be used for the classification
                             task.
     --lang=L                Language of the tweets to collect [default: en]
-    --liwc=L                Path to the LIWC dictionary [default: /data/1/sporty/lexicons/liwc/liwc.dic]
+    --liwc=L                Path to the LIWC dictionary
     --min-df=M              See min_df from sklearn vectorizers [default: 3]
     --n-examples=N          Number of wrongly classified examples to display
                             [default: 0]
@@ -56,7 +56,6 @@ Options:
     -b, --binary            No count of features, only using binary features
     -c C, --count=C         Number of tweets to collect/filter [default: 3200]
     -e E, --emoticons=E     Path to file containing the dictionary of emoticons
-                            [default: /data/1/sporty/lexicons/stopwords/emoticons]
     -f F, --features-func=F List of functions to execute amongst the functions
                             of the FeatureBuilder class. The functions of this
                             list will be executed in order

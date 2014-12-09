@@ -4,11 +4,11 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='Sporty Twitters',
-      version='0.1',
-      description='Source code to the sporty twitters project looking to correlate the amount of exercise of a Twitter user with its well-being.',
-      author='Virgile Landeiro',
+      version='1.0',
+      description='Code and data for the AAAI2015 paper entitled "Using matched samples to estimate the effects of exercise on mental health from Twitter", by Virgile Landeiro Dos Reis and Aron Culotta.',
+      author='Virgile Landeiro Dos Reis, Aron Culotta',
       author_email='vlandeir@hawk.iit.edu',
-      url='https://github.com/vlandeiro/sporty-twitters',
+      url='https://github.com/tapilab/aaai-2015-matching',
       packages=['sporty', 'cli'],
       package_dir={'sporty': 'src/sporty', 'cli': 'src/cli'},
       py_modules=['sporty.mood',
@@ -16,12 +16,11 @@ setup(name='Sporty Twitters',
                   'sporty.tweets',
                   'sporty.user',
                   'sporty.utils'],
-      install_requires=['TwitterAPI',
-                        'docopt',
-                        'scipy',
-                        'numpy',
-                        'scikit-learn'],
+      install_requires=[
+      					'TwitterAPI',
+                        'docopt'
+                       ],
       entry_points={'console_scripts': [
-                    'sporty = cli.cli:main'
+                    'sporty-cli = cli.cli:main'
                     ]}
       )
