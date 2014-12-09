@@ -16,11 +16,10 @@ setup(name='Sporty Twitters',
                   'sporty.tweets',
                   'sporty.user',
                   'sporty.utils'],
-      install_requires=['TwitterAPI',
-                        'docopt',
-                        'scipy',
-                        'numpy',
-                        'scikit-learn'],
+      install_requires=[
+      					'TwitterAPI',
+                        'docopt'
+                       ],
       entry_points={'console_scripts': [
                     'sporty-cli = cli.cli:main'
                     ]}

@@ -16,16 +16,25 @@ This project relies on machine learning techniques, it uses:
 This project is written in Python and uses the following packages:
 
 - [sklearn](http://scikit-learn.org/stable/) for the machine learning algorithms,
-- [TwitterAPI](https://github.com/geduldig/TwitterAPI) to access the Twitter API in Python,
+- [matplotlib](http://matplotlib.org/) to draw graphs in Python,
+- [TwitterAPI](https://github.com/geduldig/TwitterAPI) to make requests to the Twitter API in Python,
 - [docopt](http://docopt.org/) to easily implement a command-line interface.
 
-To install it, just clone this github repository, and run the following command:
+The installation process requires three steps:
 
-    python setup.py install
+1. [Install scikit-learn](http://scikit-learn.org/stable/install.html). 
+2. [Install matplotlib](http://matplotlib.org/faq/installing_faq.html#how-to-install)
+3. Clone this github repository and install as usual:
+
+	> git clone https://github.com/vlandeiro/sporty-twitters.git
+	> cd sporty-twitters
+	> python setup.py install
 
 ## Usage
 
-This project has been developed with the idea that it could be tweaked by developers that want to adapt it to their need. To facilitate this, the sporty API has been developed. Moreover, it is often convenient to have an easy way to run experiments from a terminal instead of having to code it every time using the API: that is the purpose of the Command-Line Interface (CLI).
+This project has been developed with the idea that it could be tweaked by developers that want to adapt it to their need. To facilitate this, the sporty API has been developed so the different parts of this project can be integrated to existing code.
+
+It is also convenient to have an easy way to run experiments from a terminal instead of having to code it every time using the API: that is the purpose of the Command-Line Interface (CLI).
 
 ### API
 
