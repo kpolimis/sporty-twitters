@@ -358,7 +358,7 @@ class api(object):
 			returned_stats[s] = np.mean(total_stats[s])
 		return returned_stats
 
-	def _classifyUser_onethread(self, sport_hash, auto_hash, requested,
+	def _classifyUser_onethread(self, forbid, auto_hash, requested,
 								classifiers, users_dir, uids, label_names,
 								probability, i, stdout_lock, raw=False):
 		def print_results(scores):
@@ -379,7 +379,7 @@ class api(object):
 			utweets = Tweets(os.path.join(users_dir, str(uid)))
 
 			# removing sport tracker tweets
-			no_sport_utweets = utweets.filter_on_hashtags(sport_hash)
+			no_sport_utweets = utweets.filter_on_hashtags(forbid)
 			if no_sport_utweets.size() < utweets.size(): 
 				# some sporty tweets have been removed
 				if not sporty:  # user is not supposed to be exercising
@@ -402,7 +402,7 @@ class api(object):
 					logger.info("user %s lang is not en" % uid)
 					continue
 			X = self.buildX(poms_tweets, predict=True)
-			
+
 			preds = []
 			for label in label_names:
 				# raw predicted probability scores
@@ -441,36 +441,36 @@ class api(object):
 		if type(uids) != list:
 			return self.classifyUser(users_dir, [uids])
 
-		label_names = self.labels[0].keys()
-		corpus = self.corpus.tolist()
 		# Build classifiers for each dimension
+		label_names = self.labels[0].keys()
 		classifiers = {}
 		for label in label_names:
 			X_train = self.X
 			y_train = np.array([d[label] for d in self.labels])
 			self.clf.fit(X_train, y_train)
 			classifiers[label] = copy.deepcopy(self.clf)
-		sport_hash = forbid
+
 		auto_hash = set(['foursquare', 'yelp'])
-		requested = False
+		requested = None
 		if poms:
 			poms_AH = set(poms.keys['AH'])
 			poms_DD = set(poms.keys['DD'])
 			poms_TA = set(poms.keys['TA'])
 			requested = poms_AH | poms_DD | poms_TA
-		uids_q = Queue()
 		proc_count = multiprocessing.cpu_count()
-		processes = []
+		uids_q = Queue()
 		stdout_lock = Lock()
+		processes = []
 		# Copy uids to process into task queue
 		for uid in uids:
 			uids_q.put(uid)
 		# Add kill pill tasks to the task queue so that the workers exit
 		for i in range(proc_count):
 			uids_q.put(None)
+		# Run the jobs
 		for i in range(proc_count):
 			p = Process(target=self._classifyUser_onethread,
-				    	args=(sport_hash, auto_hash, requested, classifiers,
+				    	args=(forbid, auto_hash, requested, classifiers,
 				    		  users_dir, uids_q, label_names, probability, i,
 				    		  stdout_lock, raw))
 			processes.append(p)
