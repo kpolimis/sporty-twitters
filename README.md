@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This project has been realized on a 6 month period (2014/1 - 2014/7) at the Illinois Institute of Technology. It has been supervised by [Dr. Aron Culotta](http://cs.iit.edu/~culotta/).
+This project has been realized on a 6 month period at the Illinois Institute of Technology. It has been supervised by [Dr. Aron Culotta](http://cs.iit.edu/~culotta/).
 
 The goal of this project is to find a correlation between the well-being of a person and the fact that this person regularly exercises.
 
@@ -26,9 +26,9 @@ The installation process requires three steps:
 2. [Install matplotlib](http://matplotlib.org/faq/installing_faq.html#how-to-install)
 3. Clone this github repository and install as usual:
 
-	> git clone https://github.com/vlandeiro/sporty-twitters.git
-	> cd sporty-twitters
-	> python setup.py install
+	git clone https://github.com/vlandeiro/sporty-twitters.git
+	cd sporty-twitters
+	python setup.py install
 
 ## Usage
 
