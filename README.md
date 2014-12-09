@@ -26,9 +26,11 @@ The installation process requires three steps:
 2. [Install matplotlib](http://matplotlib.org/faq/installing_faq.html#how-to-install)
 3. Clone this github repository and install as usual:
 
-	git clone https://github.com/vlandeiro/sporty-twitters.git
-	cd sporty-twitters
-	python setup.py install
+```
+git clone https://github.com/vlandeiro/sporty-twitters.git
+cd sporty-twitters
+python setup.py install
+```
 
 ## Usage
 
