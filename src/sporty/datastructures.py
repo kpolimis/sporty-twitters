@@ -108,7 +108,19 @@ class Tweets(object):
 			return tweets
 		else:
 			filtered = filter(f, tweets)
-		return filtered
+		return Tweets(filtered)
+
+	def filter_on_hashtags(self, hashtags):
+		f = lambda tw: not(hashtags & set([h['text'].lower()
+										   for h in tw['entities']['hashtags']])
+		return self.filter(f)
+
+	def filter_on_contains(self, words):
+		f = lambda tw: words & set(w.lower() for w in tw['text'].split())
+		return self.filter(f)
+
+	def size(self):
+		return len(self.tolist())
 
 	def append(self, tw):
 		"""
