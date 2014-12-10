@@ -9,7 +9,7 @@ Usage: sporty-cli -h | --help
                             [-bmptu] [-s SW] [-e E] [--liwc=L]
                             [--forbid=F] [--clf=C [--clf-options=O]]
                             [--proba=P] [--min-df=M] [--reduce-func=R]
-                            [--features-func=F] [--sporty] [--poms=P]
+                            [--features-func=F] [--sporty] [--poms=P] [--raw]
        sporty-cli mood match_users <sport_scores> <no_sport_scores> <user_match> [--rand=R]
        sporty-cli tweets collect <settings_file> <output_tweets> <track_file>
                           [<track_file>...] [-c C]
@@ -50,6 +50,9 @@ Options:
                             probability to be positive is greater than P [default: 0.5]
     --sporty                Flag to put when the users are expected to be exercising.
     --rand=R                Path to file containing the scores of the random users.
+    --raw                   Flag to put to get the raw results of the classifier (ie,
+                            the value printed are those returned by predict_proba from
+                            scikit-learn)
     --roc=R                 Plot the ROC curve with R the test set size given
                             as a ratio (e.g. 0.2 for 20 percent of the data)
                             and return. Note: the benchmark is not run
@@ -236,12 +239,14 @@ def main(argv=None):
                 poms = False
                 if args['--poms']:
                     poms = TSV(args['--poms'])
+                raw_scores = bool(args['--raw'])
                 return api.mood.classifyUser(args['<users_dir>'],
                                              user_ids,
                                              forbidden_words,
                                              argproba,
                                              args['--sporty'],
-                                             poms)
+                                             poms,
+                                             raw_scores)
         elif args['match_users']:
             return api.mood.match_users(args['<sport_scores>'],
                                         args['<no_sport_scores>'],
