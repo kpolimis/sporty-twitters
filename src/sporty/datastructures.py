@@ -112,7 +112,7 @@ class Tweets(object):
 
 	def filter_on_hashtags(self, hashtags):
 		f = lambda tw: not(hashtags & set([h['text'].lower()
-										   for h in tw['entities']['hashtags']])
+						   for h in tw['entities']['hashtags']]))
 		return self.filter(f)
 
 	def filter_on_contains(self, words):

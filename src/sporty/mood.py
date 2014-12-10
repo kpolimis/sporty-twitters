@@ -358,11 +358,13 @@ class api(object):
 			returned_stats[s] = np.mean(total_stats[s])
 		return returned_stats
 
-	def _classifyUser_onethread(self, forbid, auto_hash, requested,
-								classifiers, users_dir, uids, label_names,
-								probability, i, stdout_lock, raw=False):
-		def print_results(scores):
+	def _classifyUser_onethread(self, forbid, auto_hash, requested, sporty,
+				    classifiers, users_dir, uids, label_names,
+				    probability, i, stdout_lock, raw=False):
+		def print_results(t):
 			stdout_lock.acquire()
+			uid = t[0]
+			scores = t[1]
 			if raw:
 				print json.dumps(scores)
 			else:
@@ -396,13 +398,14 @@ class api(object):
 
 			if not poms_tweets:
 				logger.info("no tweets for %s" % uid)
+				continue
 			else:
 				user = poms_tweets[0]['user']
 				if user['lang'] != 'en':
 					logger.info("user %s lang is not en" % uid)
 					continue
 			X = self.buildX(poms_tweets, predict=True)
-
+			
 			preds = []
 			for label in label_names:
 				# raw predicted probability scores
@@ -415,7 +418,7 @@ class api(object):
 							   y_pred_proba)
 					ones = float(np.count_nonzero(pred))
 					score = ones/score_denom
-					pred.append(score)
+					preds.append(score)
 			print_results((uid,preds))
 
 	def classifyUser(self, users_dir, uids, forbid=set(), probability=0.5,
@@ -457,7 +460,7 @@ class api(object):
 			poms_DD = set(poms.keys['DD'])
 			poms_TA = set(poms.keys['TA'])
 			requested = poms_AH | poms_DD | poms_TA
-		proc_count = multiprocessing.cpu_count()
+		proc_count = 1 #multiprocessing.cpu_count()
 		uids_q = Queue()
 		stdout_lock = Lock()
 		processes = []
@@ -470,9 +473,9 @@ class api(object):
 		# Run the jobs
 		for i in range(proc_count):
 			p = Process(target=self._classifyUser_onethread,
-				    	args=(forbid, auto_hash, requested, classifiers,
-				    		  users_dir, uids_q, label_names, probability, i,
-				    		  stdout_lock, raw))
+				    args=(forbid, auto_hash, requested, sporty, classifiers,
+					  users_dir, uids_q, label_names, probability, i,
+					  stdout_lock, raw))
 			processes.append(p)
 			p.start()
 		for p in processes:
