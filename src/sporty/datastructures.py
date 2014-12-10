@@ -110,13 +110,52 @@ class Tweets(object):
 			filtered = filter(f, tweets)
 		return Tweets(filtered)
 
-	def filter_on_hashtags(self, hashtags):
-		f = lambda tw: not(hashtags & set([h['text'].lower()
-										   for h in tw['entities']['hashtags']])
+	def filter_on_hashtags(self, hashtags, action='remove'):
+		"""
+		Filter the list of tweets on their hashtags. It keeps the tweets that
+		contain given hashtags if the action parameter is set to 'keep' and
+		remove the tweets that contain these hashtags if the action parameter is
+		set to 'remove' (default behavior).
+
+		Parameters:
+		hashtags - a list of hashtags (without the # symbol)
+		action   - must be either 'keep' or 'remove'
+
+		Return value:
+		The filtered list of tweets.
+		"""
+		if action == 'remove':
+			wrap = lambda x: not(x)
+		elif action == 'keep':
+			wrap = lambda x: x
+		else:
+			return self
+
+		f = lambda tw: wrap(hashtags & set([h['text'].lower()
+							 				for h in tw['entities']['hashtags']]))
 		return self.filter(f)
 
-	def filter_on_contains(self, words):
-		f = lambda tw: words & set(w.lower() for w in tw['text'].split())
+	def filter_on_text(self, words, action='remove'):
+		"""
+		Filter the list of tweets on their text. It keeps the tweets that contain
+		given words if the action parameter is set to 'keep' and  remove the
+		tweets that contain these words if the action parameter is set to
+		'remove'(default behavior).
+
+		Parameters:
+		words  - a list of words
+		action - must be either 'keep' or 'remove'
+
+		Return value:
+		The filtered list of tweets.
+		"""
+		if action == 'remove':
+			wrap = lambda x: not(x)
+		elif action == 'keep':
+			wrap = lambda x: x
+		else:
+			return self
+		f = lambda tw: words & wrap(set(w.lower() for w in tw['text'].split()))
 		return self.filter(f)
 
 	def size(self):
