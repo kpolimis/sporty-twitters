@@ -93,7 +93,7 @@ import time
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/cli-%s.log' % time.strftime("%Y-%m-%d-%H:%M:%S"),
+                    filename=os.path.join('/tmp', 'cli-%s.log' % time.strftime("%Y-%m-%d-%H%M%S")),
                     filemode='w')
 logger = logging.getLogger(__name__)
 
