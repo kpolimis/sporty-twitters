@@ -169,15 +169,30 @@ query.
 
 \section{Experiments and results}
 
-To evaluate the differences in the relation to food and health between users who exercise and users who do not exercise, we experimented at two levels. First, we looked at the distribution of food-related words in both groups and studied the most discriminative features between both groups after keeping a subset of users that we detected tweeted about food. Then, we focused on a network-level analysis where we compared the relation between health exemplar accounts and the users both in our treatment and our control group.
+To evaluate the differences in the relation to food and health between users who exercise and users who do not exercise, we experimented at two levels. First, we looked at the distribution of food-related words in both groups and studied the most discriminative features between both groups after keeping a subset of users that we detected tweeted about food. Then, we focused on a network-level analysis where we compared the relation that the users in our treatment and control groups have with health exemplar accounts.
+
+
+\subsection{Text-level analysis}
+
+To evaluate the vocabulary differences between our two groups of users, we started by filtering out tweets that are not about food. We then trained two models: one to underline the most predictive features of each group (linear SVM), and one to explain similar observations and group them together (Latent Dirichlet Allocation).
+
+\subsubsection{Filter food-related tweets}
+
+In order to remove irrelevant tweets for our analysis, we started by combining
+the FooDB dataset and the food sources in the dataset developed by
+\citeauthor{abbar2015you}. In later steps, we noticed that some food words were
+more often associated with non food-related topics. For example, the word
+"apple" was more frequently used in reference to the technology company
+\verb+Apple+ and its products than to the actual apple fruit. For this reason,
+we manually created a set of excluded words that we detect as being sources of
+false positive in the detection of food-related tweets. Initially, this set is
+composed of the words \verb+apple+ (the tech company), \verb+raspberry+ (the
+\$30 computer raspberry pi), \verb+blackberry+ (the smartphone company),
+\verb+kevin+ (Kevin Bacon). We will see in some of the next steps that we sometimes come back to this step and add words to it in order to avoid false positive tweets.
 
 \cut{
   - wordnet filter is subject to high false positive rate (e.g. must, cat, dog)
 }
-
-\subsection{Text-level analysis}
-
-\subsubsection{Filter food-related tweets}
 
 \subsubsection{Most predictive features for each group}
 
