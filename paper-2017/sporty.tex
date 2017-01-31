@@ -87,9 +87,59 @@ Methods:
   - explain how it has been built: hashtag of tracking apps gives us the physically active users. matching on social media features, gender, and location gives us the control group.
 }
 
-We use the dataset from \cite{landeiro2015using} as our main dataset to compare the difference in  
+We use the dataset from \cite{landeiro2015using} as our main dataset. This dataset is composed of two groups of users: a group of physically active users, and a group of users who do not exercise. We summarize in a few points how this dataset has been constructed:
 
-\subsection{FooDB and Wordnet}
+\begin{enumerate}
+  
+  \item To detect physically active users, \citeauthor{landeiro2015using}
+  leveraged existing physical activity tracking applications such as Nike Plus,
+  Runtastic, or RunKeeper. These applications help active users track their
+  progress and give them a summary of their workouts. Additionally, it can
+  automatically tweet a summary of each workout associated with a dedicated
+  hashtag if the user has activated this function. When a user is found to have
+  used one of these dedicated hashtags, it is placed in the treatment group.
+
+  \item To build the control group, \citeauthor{landeiro2015using} used a
+  technique where each user in the treatment group is matched with another user.
+  To find this match for a user $i$, they first collected the list of accounts
+  $F_i$ that have a mutual-follow relationship with $i$ on Twitter. Then, they
+  filtered out from $F_i$ users that were not of the same gender than $i$ (using
+  the US Census data) and users that were not in the same city or same state as
+  $i$ (using heuristics on the Twitter location field of each user). Finally,
+  they built a cosine similarity score between $i$ and the remaining users in
+  $F_i$ on social media features (number of followers, number of followees,
+  number of posts) and kept the user in $F_i$ with the highest score as the best
+  match to be included in the control group.
+
+  \item For each of the 2,322 users in this dataset (1161 in each group), they
+  collected the most recent tweets, up to 3,200.
+
+\end{enumerate}
+
+\subsection{Food-related datasets}
+
+Because the Twitter dataset built in the previous section does not focus on food tweets, we merge three datasets with food information into one in order to construct a large dataset of food vocabulary.
+
+\begin{enumerate}
+
+  \item FooDB\footnote{http://foodb.ca/} is an ensemble of resources on food
+  constituents, chemistry and biology. In particular, we use the dataset listing
+  889 food sources associated with a category (e.g. kiwi is associated with the
+  fruits category and turkey is in the poultry category).
+
+  \item In \cite{abbar2015you}, the authors combined a large data collection of
+  50M tweets on manually selected keywords, bootstraping techniques, and
+  crowdsourcing to build a dataset of food vocabulary of 461 words with the
+  category they belong to as well as the average amount of calorie per serving
+  for each food.
+
+\end{enumerate}
+
+\cut{
+  - foodb: http://foodb.ca/
+  - wordnet: miller1995wordnet
+  - you tweet what you eat
+}
 
 \subsection{Exemplar health Twitter accounts}
 
@@ -99,8 +149,11 @@ We use the dataset from \cite{landeiro2015using} as our main dataset to compare 
 
 \cut {
   - most predictive features
-  -
+  - most used categories
 }
+
+\subsection{Network-level analysis}
+
 
 
 
