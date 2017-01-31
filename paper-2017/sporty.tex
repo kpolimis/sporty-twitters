@@ -133,6 +133,22 @@ Because the Twitter dataset built in the previous section does not focus on food
   category they belong to as well as the average amount of calorie per serving
   for each food.
 
+  \item Finally, we use WordNet \cite{miller1995wordnet}, the popular lexical
+  database for English, and we build a dynamic programming algorithm that looks
+  up the ancestors of a word up to the tree root and returns True if at least one ancestor is one of:
+  \begin{itemize}
+
+    \item food: any substance that can be metabolized by an animal to give
+    energy and build tissue.
+    
+    \item food: any solid substance (as opposed to liquid) that is used as a
+    source of nourishment.
+
+    \item edible nut: a hard-shelled seed consisting of an edible kernel or meat
+    enclosed in a woody or leathery shell.
+
+  \end{itemize}
+
 \end{enumerate}
 
 \cut{
@@ -143,7 +159,14 @@ Because the Twitter dataset built in the previous section does not focus on food
 
 \subsection{Exemplar health Twitter accounts}
 
+Using a subset of the data built by \cite{culotta16mining}, we obtain a list of 
+407 accounts that tweet about health, called exemplar accounts. These exemplar accounts are collected using Twitter Lists (i.e. manual aggregation of accounts). First, a query (e.g. "health") is sent to Twitter's search engine, which returns Twitter Lists and tweets. If an account appear in at least two of the top 50 Lists, then this account becomes an exemplar account for the given query.
+
 \section{Experiments and results}
+
+\cut{
+  - wordnet filter is subject to high false positive rate (e.g. must, cat, dog)
+}
 
 \subsection{Text-level analysis}
 
