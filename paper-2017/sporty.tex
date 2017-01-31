@@ -1,0 +1,109 @@
+\def\year{2015}
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{color}
+\usepackage{courier}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{helvet}
+\usepackage{multirow}
+\usepackage{outline}
+\usepackage{siunitx}
+\usepackage{subfigure}
+\usepackage{times}
+\usepackage{url}
+\usepackage{amsmath}
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\citenoun}[1]{{\citeauthor{#1} \shortcite{#1}}}
+\newcommand{\cut}[1]{}
+\newcommand{\fixme}[1]{{\color{blue}\textless #1 \textgreater}}
+\newcommand{\voc}[1]{{\sl #1}}
+\newcommand{\y}{\mathbf{y}}
+
+\nocopyright
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+\pdfinfo{
+/Title ()
+/Author (Virgile Landeiro Dos Reis, Aron Culotta)}
+\setcounter{secnumdepth}{2}  
+ \begin{document}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+\title{}
+\author{
+Virgile Landeiro Dos Reis \and Aron Culotta\\
+Department of Computer Science\\
+Illinois Institute of Technology\\
+Chicago, IL 60616\\
+vlandeir@hawk.iit.edu, aculotta@iit.edu\\
+}
+\maketitle
+
+% Outline
+\cut{
+
+Overall research question:
+- can we find significant differences in the food consumption of people who exercise vs people who don't exercise using matched samples on twitter data?
+
+Research questions:
+  - can we find interesting differences in the food-related vocabulary used by people who exercise vs. people who don't? what are the most predictive words for each class once data is reduced to food-related tweets?
+  - can we find significant differences in the network of users that exercise vs users who don't?
+
+Related Work: social media + nutrition, social media + food deserts
+  - health:
+  - food: weber paper + de choudhury paper on instagram food deserts
+
+Data:
+  - sporty twitter data
+  - filter with foodb + weber keywords
+  - compute score using wordnet while removing ambiguous words
+
+Methods:
+  - text level: compare most predictive features for each class, compare most referenced food categories using weber dataset.
+  - network level: compare number of friends that are known to be health related (food brands + health related twitter accounts).
+}
+
+\begin{abstract}
+\begin{quote}
+  
+\end{quote}
+\end{abstract}
+
+\section{Introduction}
+
+\section{Related Work}
+
+\section{Data}
+
+\subsection{Physically active users}
+
+\cut {
+  - landeiro2015using data
+  - explain how it has been built: hashtag of tracking apps gives us the physically active users. matching on social media features, gender, and location gives us the control group.
+}
+
+We use the dataset from \cite{landeiro2015using} as our main dataset to compare the difference in  
+
+\subsection{FooDB and Wordnet}
+
+\subsection{Exemplar health Twitter accounts}
+
+\section{Experiments and results}
+
+\subsection{Text-level analysis}
+
+\cut {
+  - most predictive features
+  -
+}
+
+
+
+\bibliographystyle{aaai}
+\bibliography{sporty}
+\end{document}
