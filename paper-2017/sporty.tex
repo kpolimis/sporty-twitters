@@ -238,8 +238,52 @@ of .15 or more. This yields 530 users that are talking about food in each group.
 
 \subsubsection{Most predictive features for each group}
 
+\begin{table}
+  \begin{tabular}{lll}
+  \toprule
+  \textbf{Control group} &     \textbf{Treatment group} \\
+  \midrule
+          last &     others \\
+          wish &      state \\
+         right &      looks \\
+          girl &    burrito \\
+            dr &  starbucks \\
+          king &       used \\
+        celery &    cookies \\
+          plus &         co \\
+          real &       cafe \\
+  thanksgiving &        pic \\
+  \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}
+\begin{tabular}{llll}
+\toprule
+\textbf{Control} & & \textbf{Treatment} & \\
+Rank & Feature & Rank & Feature \\
+\cmidrule(lr){1-2} \cmidrule(lr){3-4}
+7  &      celery & 4  &    burrito \\
+14 &         gin & 7  &    cookies \\
+20 &  mozzarella & 18 &   broccoli \\
+21 &     pickles & 23 &    caramel \\
+34 &        deer & 25 &  breakfast \\
+40 &    molasses & 30 &     carrot \\
+43 &     bananas & 31 &   burritos \\
+50 &        wrap & 32 &    coconut \\
+57 &       curds & 33 &     onions \\
+62 &       frank & 34 &     citrus \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsubsection{Differences in food categories between groups}
 
+\begin{figure}
+  \includegraphics[width=.45\textwidth]{figs/top_food_cats.png}\\
+  \includegraphics[width=.45\textwidth]{figs/exemplar_friends.png}\\
+  \includegraphics[width=.45\textwidth]{figs/exemplar_mentions.png}\\
+\end{figure}
 
 \subsection{Network-level analysis}
 
