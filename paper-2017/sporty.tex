@@ -13,6 +13,7 @@
 \usepackage{times}
 \usepackage{url}
 \usepackage{amsmath}
+\usepackage{booktabs}
 
 \newcommand{\beq}{\begin{equation}}
 \newcommand{\eeq}{\end{equation}}
@@ -188,9 +189,27 @@ this reason, we manually created a set of excluded words that we detect as being
 sources of false positive in the detection of food-related tweets. Initially,
 this set is composed of the words \verb+apple+ (the tech company),
 \verb+raspberry+ (the \$30 computer raspberry pi), \verb+blackberry+ (the
-smartphone company), \verb+kevin+ (Kevin Bacon). We will see in some of the next
-steps that we had to come back to this step and add words to the list of
-excluded words in order to remove more false positive tweets.
+smartphone company), \verb+kevin+ (Kevin Bacon), as well as the words displayed
+in Table~\ref{tab:excluded-words}. We will see in some of the next steps that we
+had to come back to this step and add words to the list of excluded words in
+order to remove more false positive tweets.
+
+\begin{table}
+  \center
+  \begin{tabular}{lllllllll}
+  \toprule
+   bite &  bootleg &     brain &  buffalo &       cat \\
+  enter &   centre &  coloring &      cup &       cut \\
+   date &      dip &      dish &      dog &      feed \\
+   game &    green &      jack &    joint &    kisses \\
+    leg &     must &       pop &    punch &      rock \\
+   rose &  scratch &  shoulder &     side &  snowball \\
+  stick &    stock &    sucker &    table &     white \\
+  \bottomrule
+  \end{tabular}
+  \label{tab:excluded-words}
+  \caption{Example of words detected as food-related that we manually remove from our analysis.}
+\end{table}
 
 We end up with a list of 1,217 food-related words $food\_list$, and a list of words
 inclined to yield false positive tweets $excluded\_list$. Then, for each tweet $t$ of each user, we keep $t$ if none of the words in $t$ are in $excluded\_list$ and if at least one of the words in $t$ is in $food\_list$.
