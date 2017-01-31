@@ -183,16 +183,39 @@ the FooDB dataset and the food sources in the dataset developed by
 \citeauthor{abbar2015you}. In later steps, we noticed that some food words were
 more often associated with non food-related topics. For example, the word
 "apple" was more frequently used in reference to the technology company
-\verb+Apple+ and its products than to the actual apple fruit. For this reason,
-we manually created a set of excluded words that we detect as being sources of
-false positive in the detection of food-related tweets. Initially, this set is
-composed of the words \verb+apple+ (the tech company), \verb+raspberry+ (the
-\$30 computer raspberry pi), \verb+blackberry+ (the smartphone company),
-\verb+kevin+ (Kevin Bacon). We will see in some of the next steps that we sometimes come back to this step and add words to it in order to avoid false positive tweets.
+\verb+Apple+ and its products than it was to reference the actual fruit. For
+this reason, we manually created a set of excluded words that we detect as being
+sources of false positive in the detection of food-related tweets. Initially,
+this set is composed of the words \verb+apple+ (the tech company),
+\verb+raspberry+ (the \$30 computer raspberry pi), \verb+blackberry+ (the
+smartphone company), \verb+kevin+ (Kevin Bacon). We will see in some of the next
+steps that we had to come back to this step and add words to the list of
+excluded words in order to remove more false positive tweets.
 
-\cut{
-  - wordnet filter is subject to high false positive rate (e.g. must, cat, dog)
-}
+We end up with a list of 1,217 food-related words $food\_list$, and a list of words
+inclined to yield false positive tweets $excluded\_list$. Then, for each tweet $t$ of each user, we keep $t$ if none of the words in $t$ are in $excluded\_list$ and if at least one of the words in $t$ is in $food\_list$.
+
+\subsubsection{Filter food-conscious users}
+
+Once we obtained the food-related tweets for each user in both groups, we
+compute a score for each tweet $t$ as the proportion of terms that are
+food-related (i.e. number of food terms in $t$ over the total number of terms).
+
+In order to define if a term is a food term, we not only use $food\_list$ and
+$excluded\_list$ as in the previous step, but we also make use of our algorithm
+based on WordNet. This allows us to detect a wider range of food terms to
+compute the score for users. We decided not to use the WordNet-based algorithm
+in the previous step to avoid detecting too many false positive food-related
+tweets. Indeed, with our algorithm, all the words that have at least one
+ancestor being "food"" or "edible nut" in the WordNet graph will be classified
+as food-related terms. Therefore, a large amount of words that have several
+meanings and for which the main meaning is not related to food will be
+classified as food-related (e.g. "must" is a kind of freshly pressed grape
+juice, "dog" is a way to describe a "hotdog").
+
+Finally, we keep a physically active user $u$ in our treatment group if $u$ and
+its match in the control group have at least 15 food-related tweets with a score
+of .15 or more. This yields 530 users that are talking about food in each group.
 
 \subsubsection{Most predictive features for each group}
 
