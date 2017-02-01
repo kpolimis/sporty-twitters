@@ -238,26 +238,28 @@ of .15 or more. This yields 530 users that are talking about food in each group.
 
 \subsubsection{Most predictive features for each group}
 
+Using the food-related tweets of each of the remaining 1060 users, we analyze
+the differences between the most predictive features of the physically active
+group and the most predictive features of the matched group. To do so, we create
+a features vector for each user by removing retweets, tokenizing the remaining
+tweets using unigrams, removing punctuation signs as well as stopwords. Then, we
+fit a linear SVM model on these features where the label of each user is the
+group to which it belongs. In table~\ref{tab:top_fts_all}, we report the twenty most important features for each class.
+
 \begin{table}
-  \begin{tabular}{lll}
-  \toprule
-  \textbf{Control group} &     \textbf{Treatment group} \\
-  \midrule
-          last &     others \\
-          wish &      state \\
-         right &      looks \\
-          girl &    burrito \\
-            dr &  starbucks \\
-          king &       used \\
-        celery &    cookies \\
-          plus &         co \\
-          real &       cafe \\
-  thanksgiving &        pic \\
-  \bottomrule
-  \end{tabular}
+  \center
+\begin{tabular}{lp{0.3\textwidth}}
+\toprule
+\textbf{Control}  &  last, wish, right, girl, dr, king, celery, plus, real, thanksgiving, hate, corner, lost, gin, wrong, episode, event, ah, smoked, mozzarella \\
+\textbf{Treatment} & others, state, looks, burrito, starbucks, used, cookies, co, cafe, pic, run, man, drinking, lots, NUMBERk, pub, day, broccoli, going, grill \\
+\bottomrule
+\end{tabular}
+  \label{tab:top_fts_all}
+  \caption{20 most predictive features for each group.}
 \end{table}
 
 \begin{table}
+\center
 \begin{tabular}{llll}
 \toprule
 \textbf{Control} & & \textbf{Treatment} & \\
