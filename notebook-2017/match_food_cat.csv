@@ -1,0 +1,146 @@
+,match,coef_match,food_cat,definition,extra_cat,cat
+3,gin,-0.57303984,alcoholic beverages,strong liquor flavored with juniper berries,,
+13,spread,-0.512469691,baking goods,process or result of distributing or extending over a wide expanse of space,,baking goods
+17,peaches,-0.495457343,fruits,cultivated in temperate regions,,fruits
+20,gin,-0.57303984,alcoholic beverages,strong liquor flavored with juniper berries,,
+34,treat,-0.43049037,sweets,something considered choice to eat,,
+36,smoked,-0.426137914,,"inhale and exhale smoke from cigarettes, cigars, pipes",,
+38,pickles,-0.424446974,vegetables,vegetables (especially cucumbers) preserved in brine or vinegar,,vegetables
+41,mozzarella,-0.414158759,dairy,mild white Italian cheese,,dairy
+104,cocktails,-0.327956711,alcoholic beverages,a short mixed drink,,
+112,molasses,-0.321643348,sweets,thick dark syrup produced by boiling down juice from sugar cane; especially during sugar refining,,
+116,donut,-0.317164657,confectioneries,a small ring-shaped friedcake,,
+123,drank,-0.311413368,beverages,take in liquids,,
+140,cheddar,-0.304184141,dairy,a village in southwestern England where cheddar cheese was first made,dairy,dairy
+165,beer,-0.290961965,alcoholic beverages,a general name for alcoholic beverages made by fermenting a cereal (or mixture of cereals) flavored with hops,,alcoholic beverages
+166,avocados,-0.290160156,vegetables,a pear-shaped tropical fruit with green or blackish skin and rich yellowish pulp enclosing a single large seed,,vegetables
+169,cocoa,-0.289356734,beverages,a beverage made from cocoa powder and milk and sugar; usually drunk hot,,
+211,cheeseburgers,-0.270511187,fast foods,a hamburger with melted cheese on it,,
+238,sour,-0.261409319,fats and oils,a cocktail made of a liquor (especially whiskey or gin) mixed with lemon or lime juice and sugar,beverages,fats and oils
+242,jello,-0.26043932,confectioneries,fruit-flavored dessert (trade mark Jell-O) made from a commercially prepared gelatin powder,,
+256,sushi,-0.252440849,dishes,rice (with raw fish) wrapped in seaweed,,
+296,goodies,-0.241040729,,something considered choice to eat,,
+303,croissant,-0.239398571,confectioneries,very rich flaky crescent-shaped roll,,
+328,chowder,-0.23353701,soups,a thick soup or stew made with milk and bacon and onions and potatoes,vegetables,vegetables
+329,sweet,-0.233266111,balsamic,English phonetician; one of the founders of modern phonetics (1845-1912),,balsamic
+359,limeade,-0.229376664,beverages,sweetened beverage of lime juice and water,beverages,beverages
+370,guacamole,-0.226733145,snack foods,a dip made of mashed avocado mixed with chopped onions and other seasonings,vegetables,vegetables
+372,cranberries,-0.226117786,fruits,any of numerous shrubs of genus Vaccinium bearing cranberries,,fruits
+374,veal,-0.225626699,meats,meat from a calf,,meats
+376,icecream,-0.225208569,dairy,frozen dessert containing cream and sugar and flavoring,,dairy
+380,serrano,-0.224553562,vegetables,,,vegetables
+405,grape,-0.219840158,fruits,any of various juicy fruit of the genus Vitis with green or purple skins; grow in clusters,,fruits
+411,treats,-0.219445471,sweets,something considered choice to eat,,
+413,wines,-0.219200915,alcoholic beverages,fermented juice (of grapes especially),,
+445,quail,-0.213413574,poultry,flesh of quail; suitable for roasting or broiling if young; otherwise must be braised,,poultry
+449,cookout,-0.212764521,,an informal meal cooked and eaten outdoors,,
+479,kahlua,-0.208269827,alcoholic beverages,coffee-flavored liqueur made in Mexico,,
+480,smelt,-0.208172087,seafood,small cold-water silvery fish; migrate between salt and fresh water,,seafood
+515,mint,-0.200801678,herbs and spices,(often followed by `of') a large number or amount or extent,,
+542,milkshake,-0.197465553,confectioneries,frothy drink of milk and flavoring and sometimes fruit or ice cream,,confectioneries
+543,bratwurst,-0.197450796,meats,a small pork sausage,meats,meats
+544,okra,-0.197422569,vegetables,long green edible beaked pods of the okra plant,vegetables,vegetables
+556,custard,-0.195663465,baking goods,sweetened mixture of milk and eggs baked or boiled or frozen,,
+578,plums,-0.192632674,fruits,any of several trees producing edible oval fruit having a smooth skin and a single hard stone,,fruits
+603,cookouts,-0.189272464,,an informal meal cooked and eaten outdoors,,
+607,steak,-0.188773357,meats,a slice of meat cut from the fleshy part of an animal or large fish,meats,meats
+612,tonic,-0.188460482,beverages,lime- or lemon-flavored carbonated water containing quinine,,
+634,herbal,-0.185305035,herbs and spices,tea-like drink made of leaves of various herbs,,
+640,consumed,-0.184501653,,eat immoderately,,
+641,whiskey,-0.184295383,alcoholic beverages,a liquor made from fermented mash of grain,,alcoholic beverages
+650,fizz,-0.182910496,beverages,an effervescent beverage (usually alcoholic),,
+651,shortcake,-0.182879326,sweets,very short biscuit dough baked as individual biscuits or a round loaf; served with sweetened fruit and usually whipped cream,,
+663,beets,-0.181689932,vegetables,biennial Eurasian plant usually having a swollen edible root; widely cultivated as a food crop,,vegetables
+665,sirloin,-0.181062828,meats,the portion of the loin (especially of beef) just in front of the rump,,
+670,chili,-0.180822264,soups,ground beef and chili peppers or chili powder often with tomatoes and kidney beans,vegetables,soups
+681,whey,-0.179354905,dairy,the serum or watery part of milk that is separated from the curd in making cheese,dairy,dairy
+685,eats,-0.178728031,,informal terms for a meal,,
+690,pudding,-0.178359364,confectioneries,any of various soft thick unsweetened baked dishes,,confectioneries
+698,chilli,-0.1774436,herbs and spices,very hot and finely tapering pepper of special pungency,,
+703,homebrew,-0.177101512,alcoholic beverages,an alcoholic beverage (especially beer) made at home,,
+710,shellfish,-0.176446017,seafood,meat of edible aquatic invertebrate with a shell (especially a mollusk or crustacean),,
+719,vitamin,-0.175409117,,any of a group of organic substances essential in small quantities to normal metabolism,,
+733,dripping,-0.174255561,fats and oils,a liquid (as water) that flows in drops (as from the eaves of house),,fats and oils
+735,thistle,-0.174208827,vegetables,any of numerous plants of the family Compositae and especially of the genera Carduus and Cirsium and Onopordum having prickly-edged leaves,,vegetables
+751,oktoberfest,-0.172904448,,a strong lager made originally in Germany for the Oktoberfest celebration; sweet and copper-colored,,
+782,snail,-0.169595384,seafood,freshwater or marine or terrestrial gastropod mollusk usually having an external enclosing spiral shell,,seafood
+819,brie,-0.166278935,dairy,soft creamy white cheese; milder than Camembert,,
+820,cardamom,-0.166277062,herbs and spices,rhizomatous herb of India having aromatic seeds used as seasoning,,herbs and spices
+847,capers,-0.164235093,vegetables,any of numerous plants of the genus Capparis,,vegetables
+850,toast,-0.16398494,confectioneries,slices of bread that have been toasted,,
+858,goat,-0.163304757,meats,any of numerous agile ruminants related to sheep but having a beard and straight horns,,meats
+859,jams,-0.163290722,baking goods,preserve of crushed fruit,,
+861,monterey,-0.1630913,dairy,a town in western California to the south of San Francisco on a peninsula at the southern end of Monterey Bay,,dairy
+862,dandelion,-0.16306306,herbs and spices,any of several herbs of the genus Taraxacum having long tap roots and deeply notched leaves and bright yellow flowers followed by fluffy seed balls,,herbs and spices
+863,conserve,-0.163030476,,fruit preserved by cooking with sugar,,
+929,espresso,-0.158288015,beverages,strong black coffee brewed by forcing hot water under pressure through finely ground coffee beans,beverages,beverages
+931,blts,-0.158166328,snack foods,sandwich filled with slices of bacon and tomato with lettuce,vegetables,vegetables
+949,halal,-0.156752639,,(Islam) meat from animals that have been slaughtered in the prescribed way according to the shariah,,
+952,watermelon,-0.156603421,fruits,an African melon,,fruits
+973,feta,-0.155322617,dairy,,,dairy
+980,bacon,-0.154622389,meats,back and sides of a hog salted and dried or smoked; usually sliced thin and fried,,meats
+996,gouda,-0.153617739,dairy,mild cream-colored Dutch cheese shaped in balls,,dairy
+1035,cognac,-0.150618579,alcoholic beverages,high quality grape brandy distilled in the Cognac district of France,,
+1039,luncheon,-0.150519941,,a midday meal,,
+1063,generic,-0.148598821,,a wine that is a blend of several varieties of grapes with no one grape predominating; a wine that does not carry the name of any specific grape,fruits,fruits
+1067,basil,-0.148185967,herbs and spices,any of several Old World tropical aromatic annual or perennial herbs of the genus Ocimum,,herbs and spices
+1068,huckleberry,-0.148149907,,any of various dark-fruited as distinguished from blue-fruited blueberries,,
+1073,condiments,-0.147701245,herbs and spices,a preparation (a sauce or relish or spice) to enhance flavor or enjoyment,,
+1078,pretzel,-0.147476521,snack foods,glazed and salted cracker typically in the shape of a loose knot,,
+1086,gingerbread,-0.147054134,confectioneries,cake flavored with ginger,,
+1113,sucked,-0.145676406,,draw into the mouth by creating a practical vacuum in the mouth,,
+1121,turnips,-0.145342628,vegetables,widely cultivated plant having a large fleshy edible white or yellow root,,vegetables
+1172,mascarpone,-0.142523178,dairy,soft mild Italian cream cheese,,
+1173,fryer,-0.142497071,,flesh of a medium-sized young chicken suitable for frying,,
+1203,rhubarb,-0.140820773,fruits,long pinkish sour leafstalks usually eaten cooked and sweetened,,fruits
+1213,tabbouleh,-0.139914136,dishes,a finely chopped salad with tomatoes and parsley and mint and scallions and bulgur wheat,cereal grains and pasta,cereal grains and pasta
+1216,dumplings,-0.139773395,dishes,small balls or strips of boiled or steamed dough,,
+1220,omelette,-0.139573678,eggs,beaten eggs or an egg mixture cooked until just set; may be folded around e.g. ham or cheese or jelly,dairy,dairy
+1259,spelt,-0.137557993,cereal grains and pasta,hardy wheat grown mostly in Europe for livestock feed,,cereal grains and pasta
+1272,mayonnaise,-0.137079113,fats and oils,egg yolks and oil and vinegar,,fats and oils
+1281,sauces,-0.136474931,sauces,flavorful relish or dressing or topping served as an accompaniment to food,baking goods,baking goods
+1319,whisky,-0.134379491,beverages,a liquor made from fermented mash of grain,,beverages
+1330,bread,-0.133916662,confectioneries,food made from dough of flour or meal and usually raised with yeast or baking powder and then baked,cereal grains and pasta,cereal grains and pasta
+1360,corn,-0.132510618,cereal grains and pasta,tall annual cereal grass bearing kernels on large ears: widely cultivated in America in many varieties; the principal cereal in Mexico and Central and South America since pre-Columbian times,breakfast cereals,cereal grains and pasta
+1384,jelly,-0.131464043,sweets,an edible jelly (sweet or pungent) made with gelatin and used as a dessert or salad base or a coating for foods,,
+1385,hash,-0.131273891,,chopped meat mixed with potatoes and browned,,
+1389,gorging,-0.131127517,,overeat or eat immodestly; make a pig of oneself,,
+1391,potato,-0.131067594,vegetables,an edible tuber native to South America; a staple food of Ireland,,vegetables
+1415,mullet,-0.130162998,,highly valued lean flesh of marine or freshwater mullet,,
+1420,pancakes,-0.129972632,confectioneries,a flat cake of thin batter fried on both sides on a griddle,,
+1430,matzah,-0.129709107,,brittle flat bread eaten at Passover,,
+1448,roux,-0.128553258,,a mixture of fat and flour heated and used as a basis for sauces,,
+1475,potatos,-0.126728333,baking goods,an edible tuber native to South America; a staple food of Ireland,,
+1486,yolk,-0.126128148,eggs,the yellow spherical part of an egg that is surrounded by the albumen,,eggs
+1490,meats,-0.126055195,,the flesh of animals (including fishes and birds and snails) used as food,,
+1495,adobo,-0.125921144,baking goods,a dish of marinated vegetables and meat or fish; served with rice,,baking goods
+1498,weenie,-0.12586733,,a smooth-textured sausage of minced beef or pork usually smoked; often served on a bread roll,meats,meats
+1502,allspice,-0.125731275,,aromatic West Indian tree that produces allspice berries,,
+1523,bitters,-0.124384524,,alcoholic liquor flavored with bitter herbs and roots,,
+1548,twinkie,-0.123079122,sweets,a small sponge cake with a synthetic cream filling,,
+1551,edible,-0.122980454,,any substance that can be used as food,,
+1600,cherries,-0.121116269,fruits,wood of any of various cherry trees especially the black cherry,fruits,fruits
+1612,milk,-0.120680962,dairy,a white nutritious liquid secreted by mammals and used as food by human beings,,dairy
+1618,swede,-0.120427072,vegetables,a native or inhabitant of Sweden,,vegetables
+1621,gyros,-0.120225456,dishes,a Greek sandwich: sliced roast lamb with onion and tomato stuffed into pita bread,,
+1622,syrup,-0.120207302,sweets,a thick sweet sticky liquid,,
+1626,peach,-0.119969687,fruits,cultivated in temperate regions,,fruits
+1631,preserves,-0.119850794,,fruit preserved by cooking with sugar,,
+1645,calamari,-0.119332598,seafood,(Italian cuisine) squid prepared as food,,
+1694,trout,-0.117385469,seafood,flesh of any of several primarily freshwater game and food fishes,,
+1720,durian,-0.116161481,fruits,tree of southeastern Asia having edible oval fruit with a hard spiny rind,,fruits
+1723,steamers,-0.11604561,,a clam that is usually steamed in the shell,,
+1735,coffees,-0.115317321,beverages,a beverage consisting of an infusion of ground coffee beans,,
+1750,liquor,-0.114571745,alcoholic beverages,an alcoholic beverage that is distilled rather than fermented,,
+1752,takeaway,-0.114466814,,prepared food that is intended to be eaten off of the premises,,
+1821,sheep,-0.111230289,meats,woolly usually horned ruminant mammal related to the goat,,meats
+1858,appetizers,-0.109875151,snack foods,food or drink to stimulate the appetite (usually served before a meal or as the first course),,
+1860,fritters,-0.109837693,,small quantity of fried batter containing fruit or meat or vegetables,,
+1872,sampled,-0.109494512,,take a sample of,,
+1875,burdock,-0.109454739,vegetables,any of several erect biennial herbs of temperate Eurasia having stout taproots and producing burs,,vegetables
+1881,spirulina,-0.109191637,vegetables,,,vegetables
+1896,veggie,-0.108504687,vegetables,edible seeds or roots or stems or leaves or bulbs or tubers or nonsweet fruits of any of numerous herbaceous plant,,
+1928,kiwi,-0.106778205,fruits,climbing vine native to China; cultivated in New Zealand for its fuzzy edible fruit with green meat,,
+1940,praline,-0.106501948,confectioneries,cookie-sized candy made of brown sugar and butter and pecans,,
+1967,sours,-0.10524705,,a cocktail made of a liquor (especially whiskey or gin) mixed with lemon or lime juice and sugar,beverages,beverages
+1973,anise,-0.105049377,balsamic,native to Egypt but cultivated widely for its aromatic seeds and the oil from them used medicinally and as a flavoring in cookery,,balsamic
