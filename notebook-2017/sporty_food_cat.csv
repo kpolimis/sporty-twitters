@@ -44,7 +44,7 @@
 204,avocado,0.336476081,vegetables,a pear-shaped tropical fruit with green or blackish skin and rich yellowish pulp enclosing a single large seed,,vegetables
 206,curry,0.33410735,herbs and spices,(East Indian cookery) a pungent dish of vegetables or meats flavored with curry powder and usually eaten with rice,,
 219,ginger,0.325702808,herbs and spices,perennial plants having thick branching aromatic rhizomes and leafy reedlike stems,,herbs and spices
-228,caramel,0.322218207,balsamic,firm chewy candy made from caramelized sugar and butter and milk,dairy,balsamic
+228,caramel,0.322218207,sweets,firm chewy candy made from caramelized sugar and butter and milk,dairy,sweets
 233,loaf,0.3195741,meats,a shaped mass of baked bread that is usually sliced before eating,,
 235,cracker,0.318732497,snack foods,a thin crisp wafer made of flour and water with or without leavening and shortening; unsweetened or semisweet,,snack foods
 250,casserole,0.314840699,dishes,food cooked and served in a casserole,,
@@ -71,7 +71,7 @@
 371,berries,0.275007466,fruits,any of numerous small and pulpy edible fruits; used as desserts or in making jams and jellies and preserves,,
 374,bagels,0.273862557,confectioneries,(Yiddish) glazed yeast-raised doughnut-shaped roll with hard crust,,
 379,subs,0.272373162,snack foods,a large sandwich made of a long crusty roll split lengthwise and filled with meats and cheese (and tomato and onion and lettuce and condiments); different names are used in different sections of the United States,vegetables,vegetables
-389,honey,0.267637614,balsamic,a sweet yellow liquid produced by bees,,balsamic
+389,honey,0.267637614,sweets,a sweet yellow liquid produced by bees,,sweets
 390,berry,0.267322553,fruits,any of numerous small and pulpy edible fruits; used as desserts or in making jams and jellies and preserves,,fruits
 405,rosemary,0.263496431,herbs and spices,widely cultivated for its fragrant grey-green leaves used in cooking and in perfumery,,herbs and spices
 406,cob,0.263364456,,nut of any of several trees of the genus Corylus,,
